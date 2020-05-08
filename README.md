@@ -54,12 +54,14 @@ Here we have a very basic Rust application that implements our specification.
 //!
 //! Our main application.
 //! 
-//! The "Implements:" list below is really important. It indicates that this
-//! entire file is responsible for the implementation of all of the logical
-//! units listed.
+//! The "Implements" heading and list below is really important. It indicates
+//! that this entire file is responsible for the implementation of all of the
+//! logical units listed.
 //!
-//! Implements:
+//! # Implements
+//!
 //! * [SPEC-HELLO.1]
+//!
 
 fn main() {
     println!("Hello world!");
