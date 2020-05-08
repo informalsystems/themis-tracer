@@ -7,7 +7,7 @@ tracing *logical units* (chunks of functionality) through:
 * Human-language specifications (written in a slightly extended flavor of
   Markdown)
 * Formal specifications (e.g. in TLA+)
-* Code (primarily in Rust)
+* Code (initially only in Rust)
 
 ## Installation
 
