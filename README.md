@@ -86,20 +86,63 @@ collection of repositories:
 let Tracer = https://raw.githubusercontent.com/informalsystems/themis-tracer/master/config/package.dhall
 
 let project: Tracer.Project =
-    { name = "Hello World"
-    , specifications = 
-        [{ source = "https://github.com/informalsystems/themis-tracer"
-        , path = "/examples/helloworld/spec.md"
-        }]
-    , implementations =
-        [{ source = "https://github.com/informalsystems/themis-tracer"
-        , path = "/examples/helloworld/"
-        }]
+    {
+        {- A human-readable, descriptive, short name for the project -}
+        name = "Hello World",
+        {- The components that make up the project -}
+        components = [
+            {
+                {- A human-readable, descriptive, short name for this component -}
+                name = "Specifications",
+                {- Here we can specify a "git://" (SSH) URL or an HTTPS URL as a source -}
+                source = "git://github.com:informalsystems/themis-tracer#31352cc9977cc6e85444de6a1609b8315cab393d",
+                {- If we only want to process specific files in the source -}
+                path = "/examples/helloworld/**/*.md"
+            },
+            {
+                name = "Rust implementation",
+                source = "git://github.com/informalsystems/themis-tracer#31352cc9977cc6e85444de6a1609b8315cab393d",
+                path = "/examples/helloworld/**/*.rs",
+            }
+        ]
     }
 
 -- Expose the project object
 in project
 ```
+
+This is great for configuring remote repositories associated with your project,
+but what about locally sourced versions of the repositories? For that you need
+**local configuration**. Create a file `~/.themis/tracer/repos.dhall`:
+
+```dhall
+{- repos.dhall
+
+   Configuration mapping remote repositories to local ones.
+-}
+
+let Tracer = https://raw.githubusercontent.com/informalsystems/themis-tracer/master/config/package.dhall
+
+let repoMappings: List Tracer.RepositoryMapping =
+    [
+        {
+            {- A globally unique ID to associate with this repository to allow
+               for quick and easy reference -}
+            id = "themis-tracer",
+            remote = "git://github.com:informalsystems/themis-tracer",
+            local = "/Users/manderson/work/themis-tracer"
+        }
+    ]
+
+-- Expose the mappings
+in repoMappings
+```
+
+If the source repository for a component **is** the repository in which the
+`.tracer.dhall` configuration file is located (automatically detected by Themis
+Tracer), then no mapping is needed.
+
+TODO: Define CLI for managing repository mappings.
 
 ### Step 4: Run Themis Tracer to check that your spec is implemented
 
