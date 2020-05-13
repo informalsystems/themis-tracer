@@ -130,12 +130,17 @@ fn pandoc_inline_to_string(i: &pandoc_ast::Inline) -> String {
         pandoc_ast::Inline::Space => " ".to_string(),
         pandoc_ast::Inline::SoftBreak => "\n".to_string(),
         pandoc_ast::Inline::LineBreak => "\\\n".to_string(),
+        pandoc_ast::Inline::Quoted(t, v) => match t {
+            pandoc_ast::QuoteType::SingleQuote => format!("'{}'", pandoc_inlines_to_string(v)),
+            pandoc_ast::QuoteType::DoubleQuote => format!("\"{}\"", pandoc_inlines_to_string(v)),
+        },
         pandoc_ast::Inline::Link(_, v, (url, _)) => {
             format!("[{}]({})", pandoc_inlines_to_string(v), url,)
-        }
+        },
         pandoc_ast::Inline::Image(_, v, (url, _)) => {
             format!("![{}]({})", pandoc_inlines_to_string(v), url,)
-        }
+        },
+        pandoc_ast::Inline::Code(_, s) => format!("`{}`", s),
         _ => "".to_string(),
     }
 }
@@ -188,19 +193,19 @@ fn merge_project_lu_maps(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{ProjectSourceFile, ProjectSourceFileKind};
+    use crate::{LogicalUnitIDPart, ProjectSourceFile, ProjectSourceFileKind};
     use std::fs::File;
     use std::io::Write;
     use textwrap::dedent;
 
-    const SIMPLE_SPEC: &str = r#"
+    const SIMPLE_SPEC_SRC: &str = r#"
     # Specification
 
     |SPEC-HELLO.1|
     :   When executed, the program must print out the text "Hello world!"
     "#;
 
-    const MULTI_UNIT_SPEC: &str = r#"
+    const MULTI_UNIT_SPEC_SRC: &str = r#"
     # Specification
 
     |SPEC-INPUT.1|
@@ -213,68 +218,201 @@ mod test {
         [SPEC-INPUT.1].
     "#;
 
-    #[test]
-    fn test_simple_spec_parsing() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let file_path = tmp_dir.path().join("simple-spec.md");
-        let mut spec_file = File::create(&file_path).unwrap();
-        spec_file.write_all(dedent(SIMPLE_SPEC).as_bytes()).unwrap();
-        drop(spec_file);
+    const COMPLEX_SPEC_SRC: &str = r#"
+    # Specification
 
-        let spec = ProjectSpecifications::parse_from_source_file(&ProjectSourceFile {
-            filename: file_path.to_str().unwrap().to_string(),
-            kind: ProjectSourceFileKind::Spec,
-        })
-        .unwrap();
-        assert_eq!(
-            1,
-            spec.0.len(),
-            "we expect a single logical unit in the specification"
-        );
+    This is some kind of preamble, which should be ignored.
 
-        assert!(
-            spec.0
-                .contains_key(&LogicalUnitID::from_str("SPEC-HELLO.1").unwrap()),
-            "we expect a logical unit named SPEC-HELLO.1 in the specification"
-        );
+    ## High-Level Specifications
 
-        // clean up temporary directory
-        tmp_dir.close().unwrap();
+    |SPEC-HIGHLEVEL.1|
+    :   This is a high-level specification.
+
+    |SPEC-SECOND.2|
+    :   This is a second high-level specification.
+
+    ## Detailed Specifications
+
+    Some more text that should be ignored.
+
+    |SPEC-HIGHLEVEL.1::DETAILED.1|
+    :   This provides more detail to [SPEC-HIGHLEVEL.1].
+
+    |SPEC-SECOND.2::MORE-DETAILED.3|
+    :   This provides additional detail for [SPEC-SECOND.2].
+    "#;
+
+    struct ExpectedSpec {
+        name: String,
+        source: String,
+        logical_units: HashMap<LogicalUnitID, LogicalUnit>,
+    }
+
+    impl ExpectedSpec {
+        fn new(name: String, source: String, logical_units: Vec<(LogicalUnitID, String)>) -> Self {
+            Self {
+                name,
+                source,
+                logical_units: logical_units.iter().fold(HashMap::new(), |acc, m| {
+                    let mut acc = acc;
+                    let (k, v) = m;
+                    acc.insert(
+                        (*k).clone(),
+                        LogicalUnit {
+                            source_file: ProjectSourceFile {
+                                filename: "".to_string(),
+                                kind: ProjectSourceFileKind::Spec,
+                            },
+                            id: (*k).clone(),
+                            desc: (*v).clone(),
+                        },
+                    );
+                    acc
+                }),
+            }
+        }
     }
 
     #[test]
-    fn test_multi_unit_spec_parsing() {
+    fn test_spec_parsing() {
+        let expected_specs = vec![
+            ExpectedSpec::new(
+                "simple".to_string(),
+                SIMPLE_SPEC_SRC.to_string(),
+                vec![(
+                    LogicalUnitID::from_parts(vec![LogicalUnitIDPart {
+                        tag: "SPEC-HELLO".to_string(),
+                        version: 1,
+                    }]),
+                    "When executed, the program must print out the text \"Hello world!\"".to_string(),
+                )],
+            ),
+            ExpectedSpec::new(
+                "multi-unit".to_string(),
+                MULTI_UNIT_SPEC_SRC.to_string(),
+                vec![
+                    (
+                        LogicalUnitID::from_parts(vec![LogicalUnitIDPart {
+                            tag: "SPEC-INPUT".to_string(),
+                            version: 1,
+                        }]),
+                        // NB: Pandoc has this quirk where it automatically
+                        // converts single apostrophes to the symbol ’. So
+                        // "What's" becomes "What’s".
+                        dedent(r#"
+                            When executed, the program must print the text: "Hello! What’s your name?",
+                            and allow the user to input their name."#).trim().to_string(),
+                    ),
+                    (
+                        LogicalUnitID::from_parts(vec![LogicalUnitIDPart {
+                            tag: "SPEC-HELLO".to_string(),
+                            version: 2,
+                        }]),
+                        dedent(r#"
+                            Once the user’s name has been obtained, the program must print out the text
+                            "Hello {name}!", where `{name}` must be replaced by the name obtained in
+                            [SPEC-INPUT.1]."#).trim().to_string(),
+                    ),
+                ]
+            ),
+            ExpectedSpec::new(
+                "complex".to_string(),
+                COMPLEX_SPEC_SRC.to_string(),
+                vec![
+                    (
+                        LogicalUnitID::from_parts(vec![LogicalUnitIDPart {
+                            tag: "SPEC-HIGHLEVEL".to_string(),
+                            version: 1,
+                        }]),
+                        "This is a high-level specification.".to_string(),
+                    ),
+                    (
+                        LogicalUnitID::from_parts(vec![LogicalUnitIDPart {
+                            tag: "SPEC-SECOND".to_string(),
+                            version: 2,
+                        }]),
+                        "This is a second high-level specification.".to_string(),
+                    ),
+                    (
+                        LogicalUnitID::from_parts(vec![
+                            LogicalUnitIDPart {
+                                tag: "SPEC-HIGHLEVEL".to_string(),
+                                version: 1,
+                            },
+                            LogicalUnitIDPart {
+                                tag: "DETAILED".to_string(),
+                                version: 1,
+                            },
+                        ]),
+                        "This provides more detail to [SPEC-HIGHLEVEL.1].".to_string(),
+                    ),
+                    (
+                        LogicalUnitID::from_parts(vec![
+                            LogicalUnitIDPart {
+                                tag: "SPEC-SECOND".to_string(),
+                                version: 2,
+                            },
+                            LogicalUnitIDPart {
+                                tag: "MORE-DETAILED".to_string(),
+                                version: 3,
+                            },
+                        ]),
+                        "This provides additional detail for [SPEC-SECOND.2].".to_string(),
+                    ),
+                ]
+            )
+        ];
+
+        for expected_spec in expected_specs.iter() {
+            let actual_spec = parse_test_spec(expected_spec.source.as_ref());
+            // check the number of logical units
+            assert_eq!(
+                expected_spec.logical_units.len(),
+                actual_spec.0.len(),
+                "in spec \"{}\"",
+                expected_spec.name,
+            );
+            // check the content of the logical units
+            for (expected_luid, expected_lu) in expected_spec.logical_units.iter() {
+                assert!(
+                    actual_spec.0.contains_key(expected_luid),
+                    "in spec \"{}\"",
+                    expected_spec.name,
+                );
+                let actual_lu = actual_spec.0.get(expected_luid).unwrap();
+                assert_eq!(
+                    expected_lu.id, 
+                    actual_lu.id,
+                    "in spec \"{}\"",
+                    expected_spec.name,
+                );
+                assert_eq!(
+                    expected_lu.desc,
+                    actual_lu.desc,
+                    "in spec \"{}\"",
+                    expected_spec.name,
+                );
+            }
+        }
+    }
+
+    fn parse_test_spec(content: &str) -> ProjectSpecifications {
         let tmp_dir = tempfile::tempdir().unwrap();
         let file_path = tmp_dir.path().join("multi-unit-spec.md");
-        let mut spec_file = File::create(&file_path).unwrap();
-        spec_file
-            .write_all(dedent(MULTI_UNIT_SPEC).as_bytes())
-            .unwrap();
-        drop(spec_file);
+        write_test_file(file_path.as_path(), content).unwrap();
 
         let spec = ProjectSpecifications::parse_from_source_file(&ProjectSourceFile {
             filename: file_path.to_str().unwrap().to_string(),
             kind: ProjectSourceFileKind::Spec,
         })
         .unwrap();
-        assert_eq!(
-            2,
-            spec.0.len(),
-            "we expect two logical units in the specification"
-        );
 
-        assert!(
-            spec.0
-                .contains_key(&LogicalUnitID::from_str("SPEC-INPUT.1").unwrap()),
-            "we expect a logical unit named SPEC-INPUT.1 in the specification"
-        );
-        assert!(
-            spec.0
-                .contains_key(&LogicalUnitID::from_str("SPEC-HELLO.2").unwrap()),
-            "we expect a logical unit named SPEC-HELLO.2 in the specification"
-        );
-
-        // clean up temporary directory
         tmp_dir.close().unwrap();
+        spec
+    }
+
+    fn write_test_file(path: &Path, content: &str) -> std::io::Result<()> {
+        let mut f = File::create(path)?;
+        f.write_all(dedent(content).as_bytes())
     }
 }

@@ -36,6 +36,12 @@ pub struct LogicalUnitIDPart {
     pub version: u32,
 }
 
+impl LogicalUnitID {
+    pub fn from_parts(parts: Vec<LogicalUnitIDPart>) -> LogicalUnitID {
+        LogicalUnitID(parts)
+    }
+}
+
 impl std::fmt::Display for LogicalUnitID {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
