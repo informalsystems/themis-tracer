@@ -136,10 +136,10 @@ fn pandoc_inline_to_string(i: &pandoc_ast::Inline) -> String {
         },
         pandoc_ast::Inline::Link(_, v, (url, _)) => {
             format!("[{}]({})", pandoc_inlines_to_string(v), url,)
-        },
+        }
         pandoc_ast::Inline::Image(_, v, (url, _)) => {
             format!("![{}]({})", pandoc_inlines_to_string(v), url,)
-        },
+        }
         pandoc_ast::Inline::Code(_, s) => format!("`{}`", s),
         _ => "".to_string(),
     }
@@ -381,14 +381,12 @@ mod test {
                 );
                 let actual_lu = actual_spec.0.get(expected_luid).unwrap();
                 assert_eq!(
-                    expected_lu.id, 
-                    actual_lu.id,
+                    expected_lu.id, actual_lu.id,
                     "in spec \"{}\"",
                     expected_spec.name,
                 );
                 assert_eq!(
-                    expected_lu.desc,
-                    actual_lu.desc,
+                    expected_lu.desc, actual_lu.desc,
                     "in spec \"{}\"",
                     expected_spec.name,
                 );
