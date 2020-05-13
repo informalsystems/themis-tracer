@@ -2,12 +2,12 @@
 //! Project specifications-related functionality.
 //!
 
+use super::{Error, LogicalUnit, LogicalUnitID, ProjectSourceFile, Result};
+use failure::Fail;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::str::FromStr;
 use std::process::Command;
-use failure::Fail;
-use super::{Error, LogicalUnit, LogicalUnitID, ProjectSourceFile, Result};
+use std::str::FromStr;
 
 #[derive(Debug, Fail)]
 pub enum SpecificationParseError {
@@ -37,39 +37,11 @@ impl ProjectSpecifications {
             parse_file_with_pandoc(PathBuf::from(f.filename.clone()).as_path())?
                 .blocks
                 .iter()
-                // filter out anything that's not a definition list
-                .filter(|b| {
-                    if let pandoc_ast::Block::DefinitionList(_) = b {
-                        true
-                    } else {
-                        false
-                    }
-                })
                 // convert definition lists to hashmaps mapping logical unit IDs
                 // to logical units
-                .map(|b| match b {
-                    pandoc_ast::Block::DefinitionList(dl) => {
-                        let mut lu_map = HashMap::<LogicalUnitID, LogicalUnit>::new();
-                        for def_pair in dl {
-                            let (tags, contents) = def_pair;
-                            // we're only interested in the first definition
-                            if let Some(tag) = tags.first() {
-                                let tag_str = pandoc_inline_to_string(tag);
-                                if tag_str.starts_with("|") && tag_str.ends_with("|") {
-                                    let luid = LogicalUnitID::from_str(tag_str.trim_matches('|').as_ref())?;
-                                    lu_map.insert(luid.clone(), LogicalUnit {
-                                        // TODO: implement referencing here
-                                        source_file: (*f).clone(),
-                                        id: luid,
-                                        desc: pandoc_blocks_list_to_string(contents),
-                                    });
-                                }
-                            }
-                        }
-                        Ok(lu_map)
-                    },
-                    // is there a better way to do this? it seems pretty ugly
-                    _ => Ok(HashMap::<LogicalUnitID, LogicalUnit>::new()),
+                .filter_map(|b| match b {
+                    pandoc_ast::Block::DefinitionList(dl) => Some(pandoc_deflist_to_specs(f, dl)),
+                    _ => None,
                 })
                 .fold(Ok(HashMap::new()), |acc_res, m_res| match acc_res {
                     Ok(acc) => match m_res {
@@ -95,18 +67,51 @@ impl std::default::Default for ProjectSpecifications {
 fn parse_file_with_pandoc(path: &Path) -> Result<pandoc_ast::Pandoc> {
     let output = Command::new("pandoc")
         .arg("-s")
-        .arg(path.to_str().ok_or_else(|| Error::InternalError(format!("path {:?} contains non-Unicode characters", path)))?)
+        .arg(path.to_str().ok_or_else(|| {
+            Error::InternalError(format!("path {:?} contains non-Unicode characters", path))
+        })?)
         .arg("-t")
         .arg("json")
         .output()
-        .map_err(|e| Error::SpecificationParseError(SpecificationParseError::PandocError(e.to_string())))?;
+        .map_err(|e| {
+            Error::SpecificationParseError(SpecificationParseError::PandocError(e.to_string()))
+        })?;
     if let Some(code) = output.status.code() {
         if code != 0 {
-            return Err(Error::SpecificationParseError(SpecificationParseError::PandocError(format!("Pandoc exited with code {}", code))));
+            return Err(Error::SpecificationParseError(
+                SpecificationParseError::PandocError(format!("Pandoc exited with code {}", code)),
+            ));
         }
     }
-    serde_json::from_str(String::from_utf8_lossy(&output.stdout).as_ref())
-        .map_err(|e| Error::SpecificationParseError(SpecificationParseError::PandocASTParseError(e.to_string())))
+    serde_json::from_str(String::from_utf8_lossy(&output.stdout).as_ref()).map_err(|e| {
+        Error::SpecificationParseError(SpecificationParseError::PandocASTParseError(e.to_string()))
+    })
+}
+
+fn pandoc_deflist_to_specs(
+    f: &ProjectSourceFile,
+    dl: &Vec<(Vec<pandoc_ast::Inline>, Vec<Vec<pandoc_ast::Block>>)>,
+) -> Result<HashMap<LogicalUnitID, LogicalUnit>> {
+    let mut lu_map = HashMap::<LogicalUnitID, LogicalUnit>::new();
+    for def_pair in dl {
+        let (tags, contents) = def_pair;
+        // we're only interested in the first definition
+        if let Some(tag) = tags.first() {
+            let tag_str = pandoc_inline_to_string(tag);
+            if tag_str.starts_with("|") && tag_str.ends_with("|") {
+                let luid = LogicalUnitID::from_str(tag_str.trim_matches('|').as_ref())?;
+                lu_map.insert(
+                    luid.clone(),
+                    LogicalUnit {
+                        source_file: (*f).clone(),
+                        id: luid,
+                        desc: pandoc_blocks_list_to_string(contents),
+                    },
+                );
+            }
+        }
+    }
+    Ok(lu_map)
 }
 
 fn pandoc_inlines_to_string(inlines: &Vec<pandoc_ast::Inline>) -> String {
@@ -120,27 +125,17 @@ fn pandoc_inlines_to_string(inlines: &Vec<pandoc_ast::Inline>) -> String {
 fn pandoc_inline_to_string(i: &pandoc_ast::Inline) -> String {
     match i {
         pandoc_ast::Inline::Str(s) => s.clone(),
-        pandoc_ast::Inline::Emph(v) => format!(
-            "*{}*",
-            pandoc_inlines_to_string(v),
-        ),
-        pandoc_ast::Inline::Strong(v) => format!(
-            "**{}**",
-            pandoc_inlines_to_string(v),
-        ),
+        pandoc_ast::Inline::Emph(v) => format!("*{}*", pandoc_inlines_to_string(v),),
+        pandoc_ast::Inline::Strong(v) => format!("**{}**", pandoc_inlines_to_string(v),),
         pandoc_ast::Inline::Space => " ".to_string(),
         pandoc_ast::Inline::SoftBreak => "\n".to_string(),
         pandoc_ast::Inline::LineBreak => "\\\n".to_string(),
-        pandoc_ast::Inline::Link(_, v, (url, _)) => format!(
-            "[{}]({})",
-            pandoc_inlines_to_string(v),
-            url,
-        ),
-        pandoc_ast::Inline::Image(_, v, (url, _)) => format!(
-            "![{}]({})",
-            pandoc_inlines_to_string(v),
-            url,
-        ),
+        pandoc_ast::Inline::Link(_, v, (url, _)) => {
+            format!("[{}]({})", pandoc_inlines_to_string(v), url,)
+        }
+        pandoc_ast::Inline::Image(_, v, (url, _)) => {
+            format!("![{}]({})", pandoc_inlines_to_string(v), url,)
+        }
         _ => "".to_string(),
     }
 }
@@ -181,7 +176,9 @@ fn merge_project_lu_maps(
     for (luid, lu) in src.iter() {
         // we can't allow duplicate logical unit IDs
         if dest.contains_key(luid) {
-            return Err(Error::SpecificationParseError(SpecificationParseError::DuplicateLogicalUnit((*luid).clone())));
+            return Err(Error::SpecificationParseError(
+                SpecificationParseError::DuplicateLogicalUnit((*luid).clone()),
+            ));
         }
         r.insert((*luid).clone(), (*lu).clone());
     }
@@ -236,7 +233,8 @@ mod test {
         );
 
         assert!(
-            spec.0.contains_key(&LogicalUnitID::from_str("SPEC-HELLO.1").unwrap()),
+            spec.0
+                .contains_key(&LogicalUnitID::from_str("SPEC-HELLO.1").unwrap()),
             "we expect a logical unit named SPEC-HELLO.1 in the specification"
         );
 
@@ -249,7 +247,9 @@ mod test {
         let tmp_dir = tempfile::tempdir().unwrap();
         let file_path = tmp_dir.path().join("multi-unit-spec.md");
         let mut spec_file = File::create(&file_path).unwrap();
-        spec_file.write_all(dedent(MULTI_UNIT_SPEC).as_bytes()).unwrap();
+        spec_file
+            .write_all(dedent(MULTI_UNIT_SPEC).as_bytes())
+            .unwrap();
         drop(spec_file);
 
         let spec = ProjectSpecifications::parse_from_source_file(&ProjectSourceFile {
@@ -264,11 +264,13 @@ mod test {
         );
 
         assert!(
-            spec.0.contains_key(&LogicalUnitID::from_str("SPEC-INPUT.1").unwrap()),
+            spec.0
+                .contains_key(&LogicalUnitID::from_str("SPEC-INPUT.1").unwrap()),
             "we expect a logical unit named SPEC-INPUT.1 in the specification"
         );
         assert!(
-            spec.0.contains_key(&LogicalUnitID::from_str("SPEC-HELLO.2").unwrap()),
+            spec.0
+                .contains_key(&LogicalUnitID::from_str("SPEC-HELLO.2").unwrap()),
             "we expect a logical unit named SPEC-HELLO.2 in the specification"
         );
 
