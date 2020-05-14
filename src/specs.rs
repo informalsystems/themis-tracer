@@ -33,7 +33,7 @@ impl ProjectSpecifications {
     /// file. We assume this file is written in Themis Tracer-compatible
     /// Markdown.
     pub fn parse_from_source_file(f: &ProjectSourceFile) -> Result<ProjectSpecifications> {
-        Ok(ProjectSpecifications(
+        let project_specs = ProjectSpecifications(
             parse_file_with_pandoc(PathBuf::from(f.filename.clone()).as_path())?
                 .blocks
                 .iter()
@@ -54,7 +54,8 @@ impl ProjectSpecifications {
                     // operations
                     Err(e) => Err(e),
                 })?,
-        ))
+        );
+        Ok(project_specs)
     }
 }
 
