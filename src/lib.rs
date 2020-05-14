@@ -2,11 +2,14 @@
 //! Themis Tracer library interface.
 //!
 
+mod luid;
+mod specs;
+
 use failure::Fail;
-use log::{debug, error, info};
 use std::collections::HashMap;
 
-mod parsers;
+pub use luid::{LogicalUnitID, LogicalUnitIDPart};
+pub use specs::{ProjectSpecifications, SpecificationParseError};
 
 /// Themis Tracer's general result type.
 pub type Result<T> = std::result::Result<T, Error>;
@@ -16,6 +19,10 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub enum Error {
     #[fail(display = "failed to parse logical unit: {}", _0)]
     LogicalUnitParseError(String),
+    #[fail(display = "failed to parse specification: {}", _0)]
+    SpecificationParseError(SpecificationParseError),
+    #[fail(display = "internal error: {}", _0)]
+    InternalError(String),
 }
 
 /// A project is a collection of specifications and their implementations. We
@@ -32,10 +39,6 @@ pub struct Project {
     /// of many different files spread across many repositories.
     pub implementation: ProjectImplementation,
 }
-
-/// Project specifications are comprised of logical units, mapped to their IDs.
-#[derive(Debug)]
-pub struct ProjectSpecifications(HashMap<LogicalUnitID, LogicalUnit>);
 
 #[derive(Debug)]
 pub struct ProjectImplementation {
@@ -54,7 +57,7 @@ pub struct ProjectSourceFile {
 }
 
 /// The different kinds of project source files that we can process.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ProjectSourceFileKind {
     /// Specifications can only contain logical units.
     Spec,
@@ -90,19 +93,6 @@ pub struct ProjectComponentRef {
     /// files. If not specified, all visible folders will be scanned for both
     /// specifications and source code files.
     pub path: Option<String>,
-}
-
-/// A fully qualified logical unit ID, e.g. "TRC-TAG.1::SYNTAX.1".
-#[derive(Debug, Eq, PartialEq, Hash)]
-pub struct LogicalUnitID(Vec<LogicalUnitIDPart>);
-
-/// A single part of a logical unit's ID, e.g. "TRC-REF.1".
-#[derive(Debug, Eq, PartialEq, Hash)]
-pub struct LogicalUnitIDPart {
-    /// The tag component of the logical unit ID part, e.g. "TRC-REF".
-    pub tag: String,
-    /// The version number associated with the logical unit ID part.
-    pub version: u32,
 }
 
 /// A logical (or conceptual) unit from our specifications.
@@ -158,12 +148,11 @@ impl Project {
     fn parse(
         source_files: &Vec<ProjectSourceFile>,
     ) -> Result<(ProjectSpecifications, ProjectImplementation)> {
-        let mut specifications = HashMap::<LogicalUnitID, LogicalUnit>::new();
         let mut lu_impls = HashMap::<LogicalUnitID, Vec<ImplUnit>>::new();
         let mut dangling_impls = Vec::<ImplUnit>::new();
         // TODO: Parse specifications and implementations to build the above variables
         Ok((
-            ProjectSpecifications(specifications),
+            ProjectSpecifications::new(),
             ProjectImplementation {
                 lu_impls,
                 dangling_impls,
@@ -182,39 +171,21 @@ impl ProjectConfig {
     }
 }
 
-impl std::fmt::Display for LogicalUnitID {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            self.0
-                .iter()
-                .map(|p| format!("{}", p))
-                .collect::<Vec<String>>()
-                .join("::")
-        )
-    }
-}
-
-impl std::str::FromStr for LogicalUnitID {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        parsers::luid::parse_luid(s)
-    }
-}
-
-impl std::fmt::Display for LogicalUnitIDPart {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}.{}", self.tag, self.version)
-    }
-}
-
-impl Clone for LogicalUnitIDPart {
+impl Clone for ProjectSourceFile {
     fn clone(&self) -> Self {
-        LogicalUnitIDPart {
-            tag: self.tag.clone(),
-            version: self.version,
+        Self {
+            filename: self.filename.clone(),
+            kind: self.kind.clone(),
+        }
+    }
+}
+
+impl Clone for LogicalUnit {
+    fn clone(&self) -> Self {
+        Self {
+            source_file: self.source_file.clone(),
+            id: self.id.clone(),
+            desc: self.desc.clone(),
         }
     }
 }
