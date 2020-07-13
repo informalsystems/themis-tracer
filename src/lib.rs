@@ -146,10 +146,10 @@ impl Project {
     }
 
     fn parse(
-        source_files: &Vec<ProjectSourceFile>,
+        _source_files: &Vec<ProjectSourceFile>,
     ) -> Result<(ProjectSpecifications, ProjectImplementation)> {
-        let mut lu_impls = HashMap::<LogicalUnitID, Vec<ImplUnit>>::new();
-        let mut dangling_impls = Vec::<ImplUnit>::new();
+        let lu_impls = HashMap::<LogicalUnitID, Vec<ImplUnit>>::new();
+        let dangling_impls = Vec::<ImplUnit>::new();
         // TODO: Parse specifications and implementations to build the above variables
         Ok((
             ProjectSpecifications::new(),
@@ -165,7 +165,7 @@ impl ProjectConfig {
     /// Uses the project configuration to scan all file references to discover
     /// project source files.
     pub fn discover_source_files(&self) -> Result<Vec<ProjectSourceFile>> {
-        let mut source_files = Vec::<ProjectSourceFile>::new();
+        let source_files = Vec::<ProjectSourceFile>::new();
         // TODO: Scan the configured components' sources
         Ok(source_files)
     }
