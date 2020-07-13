@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
@@ -5,9 +6,45 @@ use structopt::StructOpt;
     name = "themis-tracer",
     about = "Requirements traceability made easier"
 )]
-struct Opt {}
+enum Opt {
+    /// Parse logical units out of a spec
+    #[structopt(name = "parse")]
+    Parse {
+        /// The file or directory to parse
+        #[structopt(parse(from_os_str))]
+        path: PathBuf,
+    },
+
+    /// List registered specs.
+    #[structopt(name = "list")]
+    List {
+        /// Search criteria to filter out listed spec results
+        filter: Option<String>,
+    },
+
+    /// Register specs
+    #[structopt(name = "add")]
+    Add {
+        /// The path to load sepcs from (will recursce into all sudirectories)
+        #[structopt(parse(from_os_str))]
+        project: Option<PathBuf>,
+    },
+
+    /// Update the spec DB for the current project with all specs from registered sources
+    #[structopt(name = "sync")]
+    Sync {
+        /// The project whose db should be updated
+        #[structopt(parse(from_os_str))]
+        project: Option<PathBuf>,
+    },
+}
 
 fn main() {
     let opt = Opt::from_args();
-    println!("{:?}", opt);
+    match opt {
+        Opt::Parse { path: _ } => (),
+        Opt::List { filter: _ } => (),
+        Opt::Add { project: _ } => (),
+        Opt::Sync { project: _ } => (),
+    }
 }
