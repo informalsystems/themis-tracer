@@ -48,7 +48,7 @@ pub struct ProjectImplementation {
     pub dangling_impls: Vec<ImplUnit>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ProjectSourceFile {
     /// The full path to the source file.
     pub filename: String,
@@ -96,7 +96,7 @@ pub struct ProjectComponentRef {
 }
 
 /// A logical (or conceptual) unit from our specifications.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LogicalUnit {
     /// The source file from which this logical unit was extracted.
     pub source_file: ProjectSourceFile,
@@ -168,24 +168,5 @@ impl ProjectConfig {
         let source_files = Vec::<ProjectSourceFile>::new();
         // TODO: Scan the configured components' sources
         Ok(source_files)
-    }
-}
-
-impl Clone for ProjectSourceFile {
-    fn clone(&self) -> Self {
-        Self {
-            filename: self.filename.clone(),
-            kind: self.kind.clone(),
-        }
-    }
-}
-
-impl Clone for LogicalUnit {
-    fn clone(&self) -> Self {
-        Self {
-            source_file: self.source_file.clone(),
-            id: self.id.clone(),
-            desc: self.desc.clone(),
-        }
     }
 }
