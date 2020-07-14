@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::process;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
@@ -39,12 +40,16 @@ enum Opt {
     },
 }
 
+fn unimplemented() {
+    println!("Not yet implemented!");
+    process::exit(1)
+}
 fn main() {
     let opt = Opt::from_args();
     match opt {
-        Opt::Parse { path: _ } => (),
-        Opt::List { filter: _ } => (),
-        Opt::Add { project: _ } => (),
-        Opt::Sync { project: _ } => (),
+        Opt::Parse { path: _ } => unimplemented(),
+        Opt::List { filter: _ } => unimplemented(),
+        Opt::Add { project: _ } => unimplemented(),
+        Opt::Sync { project: _ } => unimplemented(),
     }
 }
