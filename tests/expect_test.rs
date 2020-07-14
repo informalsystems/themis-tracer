@@ -15,7 +15,10 @@ fn mdx_tests() {
                 .with_extension("md.corrected"),
         );
 
-        Command::new("ocaml-mdx")
+        Command::new("opam")
+            .arg("exec")
+            .arg("--")
+            .arg("ocaml-mdx")
             .arg("test")
             .arg(expected.to_owned())
             .arg("--output")
