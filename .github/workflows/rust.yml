@@ -22,14 +22,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: avsm/setup-ocaml@v1
-      - run: opam install mdx
-      - uses: actions-rs/toolchain@v1
+      - name: Setup opam
+        uses: avsm/setup-ocaml@v1
+      - name: Install mdx
+        run: opam install mdx
+      - name: Setup toolchain
+        uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: nightly
           override: true
-      - uses: actions-rs/cargo@v1
+      - name: Run tests
+        env:
+          CFG_RELEASE_CHANNEL: nightly
+          CFG_RELEASE: nightly
+        uses: actions-rs/cargo@v1
         with:
           command: test
 
