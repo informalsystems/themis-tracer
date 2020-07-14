@@ -25,6 +25,8 @@ serde_dhall = "^0.5.2"
 serde_json = "^1.0.53"
 
 [dev-dependencies]
+assert_cmd = "*"
+glob = "*"
 racer = "*"
 rust-analyzer = "*"
 rustfmt-nightly = "*"
