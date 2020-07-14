@@ -91,7 +91,7 @@ fn parse_file_with_pandoc(path: &Path) -> Result<pandoc_ast::Pandoc> {
 
 fn pandoc_deflist_to_specs(
     f: &ProjectSourceFile,
-    dl: &Vec<(Vec<pandoc_ast::Inline>, Vec<Vec<pandoc_ast::Block>>)>,
+    dl: &[(Vec<pandoc_ast::Inline>, Vec<Vec<pandoc_ast::Block>>)],
 ) -> Result<HashMap<LogicalUnitID, LogicalUnit>> {
     let mut lu_map = HashMap::<LogicalUnitID, LogicalUnit>::new();
     for def_pair in dl {
@@ -99,7 +99,7 @@ fn pandoc_deflist_to_specs(
         // we're only interested in the first definition
         if let Some(tag) = tags.first() {
             let tag_str = pandoc_inline_to_string(tag);
-            if tag_str.starts_with("|") && tag_str.ends_with("|") {
+            if tag_str.starts_with('|') && tag_str.ends_with('|') {
                 let luid = LogicalUnitID::from_str(tag_str.trim_matches('|').as_ref())?;
                 lu_map.insert(
                     luid.clone(),
@@ -115,7 +115,7 @@ fn pandoc_deflist_to_specs(
     Ok(lu_map)
 }
 
-fn pandoc_inlines_to_string(inlines: &Vec<pandoc_ast::Inline>) -> String {
+fn pandoc_inlines_to_string(inlines: &[pandoc_ast::Inline]) -> String {
     inlines
         .iter()
         .map(pandoc_inline_to_string)
@@ -146,7 +146,7 @@ fn pandoc_inline_to_string(i: &pandoc_ast::Inline) -> String {
     }
 }
 
-fn pandoc_blocks_list_to_string(blocks_list: &Vec<Vec<pandoc_ast::Block>>) -> String {
+fn pandoc_blocks_list_to_string(blocks_list: &[Vec<pandoc_ast::Block>]) -> String {
     blocks_list
         .iter()
         .map(pandoc_blocks_to_string)
@@ -154,6 +154,7 @@ fn pandoc_blocks_list_to_string(blocks_list: &Vec<Vec<pandoc_ast::Block>>) -> St
         .join("\n\n")
 }
 
+#[allow(clippy::ptr_arg)]
 fn pandoc_blocks_to_string(blocks: &Vec<pandoc_ast::Block>) -> String {
     blocks
         .iter()

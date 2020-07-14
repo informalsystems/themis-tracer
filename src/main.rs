@@ -1,3 +1,6 @@
+// Fial on warnings
+#![cfg_attr(feature = "strict", deny(warnings))]
+
 use std::path::PathBuf;
 use std::process;
 use structopt::StructOpt;

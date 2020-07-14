@@ -2,6 +2,9 @@
 //! Themis Tracer library interface.
 //!
 
+// Fial on warnings
+#![cfg_attr(feature = "strict", deny(warnings))]
+
 mod luid;
 mod specs;
 
@@ -146,7 +149,7 @@ impl Project {
     }
 
     fn parse(
-        _source_files: &Vec<ProjectSourceFile>,
+        _source_files: &[ProjectSourceFile],
     ) -> Result<(ProjectSpecifications, ProjectImplementation)> {
         let lu_impls = HashMap::<LogicalUnitID, Vec<ImplUnit>>::new();
         let dangling_impls = Vec::<ImplUnit>::new();
