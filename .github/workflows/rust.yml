@@ -96,6 +96,10 @@ jobs:
           toolchain: nightly
           override: true
       - run: rustup component add clippy
+      - name: Version info
+        run: |
+          rustup show
+          cargo clippy -- --version
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
