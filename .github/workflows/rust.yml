@@ -58,9 +58,8 @@ jobs:
         run: opam install mdx
       - name: Install pandoc
         run: |
-          sudo apt-get update
-          sudo apt-get install pandoc -y
-          pandoc --version
+          curl -O https://github.com/jgm/pandoc/releases/download/2.10/pandoc-2.10-1-amd64.deb
+          sudo dpkg -i pandoc-2.10-1-amd64.deb
       - name: Setup toolchain
         uses: actions-rs/toolchain@v1
         with:
