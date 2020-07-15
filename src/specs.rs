@@ -66,11 +66,15 @@ impl std::default::Default for ProjectSpecifications {
 }
 
 fn parse_file_with_pandoc(path: &Path) -> Result<pandoc_ast::Pandoc> {
+    let source = path.to_str().ok_or_else(|| {
+        Error::InternalError(format!("path {:?} contains non-Unicode characters", path))
+    })?;
+
     let output = Command::new("pandoc")
         .arg("-s")
-        .arg(path.to_str().ok_or_else(|| {
-            Error::InternalError(format!("path {:?} contains non-Unicode characters", path))
-        })?)
+        .arg("--from")
+        .arg("markdown-smart")
+        .arg(source)
         .arg("-t")
         .arg("json")
         .output()
@@ -298,9 +302,7 @@ mod test {
                             tag: "SPEC-INPUT".to_string(),
                             version: 1,
                         }]),
-                        // NB: Pandoc has this quirk where it automatically
-                        // converts single apostrophes to the symbol ’. So
-                        // "What's" becomes "What’s".
+
                         dedent(r#"
                             When executed, the program must print the text: "Hello! What's your name?",
                             and allow the user to input their name."#).trim().to_string(),
@@ -311,7 +313,7 @@ mod test {
                             version: 2,
                         }]),
                         dedent(r#"
-                            Once the user’s name has been obtained, the program must print out the text
+                            Once the user's name has been obtained, the program must print out the text
                             "Hello {name}!", where `{name}` must be replaced by the name obtained in
                             [SPEC-INPUT.1]."#).trim().to_string(),
                     ),
