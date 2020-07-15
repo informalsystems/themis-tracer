@@ -1,0 +1,133 @@
+on: [push]
+
+# TODO: don't repeat the rust toolchain version
+
+name: Themis Tracer Continuous integration
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Rust cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-check-${{ hashFiles('**/Cargo.lock') }}
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly-2020-07-12
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: check
+
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install pandoc
+        run: |
+          sudo apt-get install wget -y
+          sudo wget https://github.com/jgm/pandoc/releases/download/2.10/pandoc-2.10-1-amd64.deb
+          sudo dpkg -i ./pandoc-2.10-1-amd64.deb
+
+      - name: Opam cache
+        if: runner.os != 'Windows'
+        id: opam-cache
+        uses: actions/cache@v2
+        with:
+          path: "~/.opam"
+          key: ${{ runner.os }}-opam
+
+      - name: Rust cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Setup opam
+        uses: avsm/setup-ocaml@v1
+      - name: Install mdx
+        run: opam install mdx
+      # - name: Setup toolchain
+      #   uses: actions-rs/toolchain@v1
+      #   with:
+      #     profile: minimal
+      #     toolchain: nightly-2020-07-12
+      #     override: true
+      # - name: Run tests
+      #   env:
+      #     CFG_RELEASE_CHANNEL: nightly
+      #     CFG_RELEASE: nightly
+      #   uses: actions-rs/cargo@v1
+      #   with:
+      #     command: test
+
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly-2020-07-12
+          override: true
+      - run: rustup component add rustfmt
+
+      - name: Rust cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-fmt-${{ hashFiles('**/Cargo.lock') }}
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Rust cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-clippy-${{ hashFiles('**/Cargo.lock') }}
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly-2020-07-12
+          override: true
+      - run: rustup component add clippy
+      - name: Version info
+        run: |
+          rustup show
+          cargo clippy -- --version
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
