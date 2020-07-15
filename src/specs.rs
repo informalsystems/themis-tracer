@@ -302,7 +302,7 @@ mod test {
                         // converts single apostrophes to the symbol ’. So
                         // "What's" becomes "What’s".
                         dedent(r#"
-                            When executed, the program must print the text: "Hello! What’s your name?",
+                            When executed, the program must print the text: "Hello! What's your name?",
                             and allow the user to input their name."#).trim().to_string(),
                     ),
                     (
