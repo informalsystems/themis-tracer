@@ -6,6 +6,10 @@
 
 TEST_MD_FILES := $(wildcard tests/*.md)
 
+PHONY: test build
+
+all: build test
+
 build:
 	cargo build
 
@@ -15,5 +19,8 @@ tests/%.md: target/test-artifacts/%.md.corrected
 	cp -f $< $@
 
 make test:
+	cargo check
+	cargo fmt --all -- --check
+	cargo clippy -- -D warnings
 	cargo test
 # end
