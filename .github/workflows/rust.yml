@@ -81,6 +81,16 @@ jobs:
           toolchain: nightly-2020-07-12
           override: true
       - run: rustup component add rustfmt
+
+      - name: Rust cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
