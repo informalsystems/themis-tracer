@@ -37,8 +37,9 @@ jobs:
 
       - name: Install pandoc
         run: |
-          curl -O https://github.com/jgm/pandoc/releases/download/2.10/pandoc-2.10-1-amd64.deb
-          sudo dpkg -i ./pandoc-2.10-1-amd64.deb
+          sudp apt-get install wget -y
+          sudo wget https://github.com/jgm/pandoc/releases/download/2.10/pandoc-2.10-1-amd64.deb
+          sudo dpkg -i pandoc-1.15.1-1-amd64.deb
 
       - name: Opam cache
         if: runner.os != 'Windows'
