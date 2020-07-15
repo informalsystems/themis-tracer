@@ -57,7 +57,10 @@ jobs:
       - name: Install mdx
         run: opam install mdx
       - name: Install pandoc
-        run: sudo apt-get install pandoc -y
+        run: |
+          sudo apt-get update
+          sudo apt-get install pandoc -y
+          pandoc --version
       - name: Setup toolchain
         uses: actions-rs/toolchain@v1
         with:
