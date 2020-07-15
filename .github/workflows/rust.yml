@@ -35,6 +35,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install pandoc
+        run: |
+          curl -O https://github.com/jgm/pandoc/releases/download/2.10/pandoc-2.10-1-amd64.deb
+          sudo dpkg -i ./pandoc-2.10-1-amd64.deb
+
       - name: Opam cache
         if: runner.os != 'Windows'
         id: opam-cache
@@ -56,23 +61,19 @@ jobs:
         uses: avsm/setup-ocaml@v1
       - name: Install mdx
         run: opam install mdx
-      - name: Install pandoc
-        run: |
-          curl -O https://github.com/jgm/pandoc/releases/download/2.10/pandoc-2.10-1-amd64.deb
-          sudo dpkg -i pandoc-2.10-1-amd64.deb
-      - name: Setup toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly-2020-07-12
-          override: true
-      - name: Run tests
-        env:
-          CFG_RELEASE_CHANNEL: nightly
-          CFG_RELEASE: nightly
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
+      # - name: Setup toolchain
+      #   uses: actions-rs/toolchain@v1
+      #   with:
+      #     profile: minimal
+      #     toolchain: nightly-2020-07-12
+      #     override: true
+      # - name: Run tests
+      #   env:
+      #     CFG_RELEASE_CHANNEL: nightly
+      #     CFG_RELEASE: nightly
+      #   uses: actions-rs/cargo@v1
+      #   with:
+      #     command: test
 
   fmt:
     name: Rustfmt
