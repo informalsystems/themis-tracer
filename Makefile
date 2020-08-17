@@ -6,7 +6,7 @@
 
 TEST_MD_FILES := $(wildcard tests/*.md)
 
-PHONY: test build
+PHONY: test build lint ci
 
 all: build test
 
@@ -18,9 +18,13 @@ promote: $(TEST_MD_FILES)
 tests/%.md: target/test-artifacts/%.md.corrected
 	cp -f $< $@
 
-make test:
-	cargo check
-	cargo fmt --all -- --check
+ci: lint test
+
+lint:
 	cargo clippy -- -D warnings
+
+test:
+	cargo check --features "strict"
+	cargo fmt --all -- --check
 	cargo test
 # end
