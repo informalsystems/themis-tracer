@@ -1,11 +1,16 @@
 // use super::luid::LogicalUnitID;
+use std::fmt;
 use std::path::Path;
 
 // Private Id type for type safe internal representation of Ids
-#[derive(Debug, Clone)]
+// Ensures an id field cannot be created without going through the
+// constructors that enforce validation.
+#[derive(Debug, Clone, PartialEq)]
 struct Id_(Vec<(String, u32)>);
 
-type Id = Vec<(String, u32)>;
+// The publically available type alias, allows clients to
+// consume `Id`s as transpranet vecs of tupples.
+pub type Id = Vec<(String, u32)>;
 
 peg::parser! {
     grammar parser() for str {
@@ -53,7 +58,7 @@ fn id_of_string(s: String) -> Result<Id_, String> {
         .map_err(|_| "parsing id".to_string())
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Kind {
     Requirement,
     Model,
@@ -61,11 +66,11 @@ pub enum Kind {
     Test,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct LogicalUnit {
     id: Id_,
     pub kind: Kind,
-    pub source_file: String,
+    pub source_file: Option<String>,
     pub content: String,
     /// Logical units referred to
     pub references: Vec<Id>,
@@ -74,14 +79,23 @@ pub struct LogicalUnit {
 }
 
 // TODO
-fn references_of_content(s: &str) -> Vec<Id> {
+fn references_of_content(_s: &str) -> Vec<Id> {
     vec![]
 }
 
 impl LogicalUnit {
-    pub fn new(p: &Path, kind: Kind, id: String, content: String) -> Result<LogicalUnit, String> {
+    pub fn new(
+        p: Option<&Path>,
+        kind: Kind,
+        id: String,
+        content: String,
+    ) -> Result<LogicalUnit, String> {
         let id = id_of_string(id)?;
-        let source_file = p.to_str().ok_or("logical unit source file")?.to_owned();
+        let source_file = if let Some(p) = p {
+            Some(p.to_str().ok_or("logical unit source file")?.to_owned())
+        } else {
+            None
+        };
         let references = references_of_content(&content);
         Ok(LogicalUnit {
             id,
@@ -96,5 +110,32 @@ impl LogicalUnit {
 
     pub fn get_id(&self) -> Id {
         self.id.0.clone()
+    }
+}
+
+impl fmt::Display for Id_ {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            self.0
+                .iter()
+                .map(|(tag, version)| format!("{}.{}", tag, version))
+                .collect::<Vec<String>>()
+                .join("::")
+        )
+    }
+}
+
+impl fmt::Display for Kind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl fmt::Display for LogicalUnit {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let source = self.source_file.clone().unwrap_or("".to_string());
+        write!(f, "{} {} {} <{}>", source, self.id, self.kind, self.content)
     }
 }

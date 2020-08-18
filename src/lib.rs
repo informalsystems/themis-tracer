@@ -5,7 +5,7 @@
 mod logical_unit;
 mod luid;
 mod pandoc;
-mod parse;
+pub mod parse;
 mod specs;
 
 use failure::Fail;

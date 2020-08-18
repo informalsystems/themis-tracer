@@ -2,6 +2,8 @@ use std::path::PathBuf;
 use std::process;
 use structopt::StructOpt;
 
+use tracer::parse;
+
 #[derive(Debug, StructOpt)]
 #[structopt(
     name = "themis-tracer",
@@ -47,7 +49,7 @@ fn unimplemented() {
 fn main() {
     let opt = Opt::from_args();
     match opt {
-        Opt::Parse { path: _ } => unimplemented(),
+        Opt::Parse { path } => parse::run(&path),
         Opt::List { filter: _ } => unimplemented(),
         Opt::Add { project: _ } => unimplemented(),
         Opt::Sync { project: _ } => unimplemented(),

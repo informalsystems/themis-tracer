@@ -24,6 +24,7 @@ pub fn parse_string(s: String) -> Result {
     let process = Command::new(PANDOC)
         .args(ARGS)
         .stdout(Stdio::piped())
+        .stdin(Stdio::piped())
         .spawn()
         .map_err(|_| "spawning panodc process".to_string())?;
 
@@ -45,6 +46,36 @@ pub fn parse_string(s: String) -> Result {
 
     pandoc_from_bytes(&bytes)
 }
+
+/// Renders a pandoc AST into a markdown string
+// pub fn render_ast(p: &Pandoc) -> std::result::Result<String, String> {
+//     let process = Command::new(PANDOC)
+//         .args(&["--from", "native", "--to", "markdown"])
+//         .stdout(Stdio::piped())
+//         .spawn()
+//         .map_err(|_| "spawning panodc process".to_string())?;
+
+//     let s = serde_json::to_string(p).map_err(|_| "serializing to json")?;
+
+//     process
+//         .stdin
+//         .unwrap()
+//         .write_all(s.as_bytes())
+//         .map_err(|_| "writing to pandoc process")?;
+
+//     let mut bytes = Vec::new();
+//     process
+//         .stdout
+//         .ok_or("receiving pandoc process output")
+//         .and_then(|mut c| {
+//             c.read_to_end(&mut bytes)
+//                 .or(Err("reading from pandoc process"))
+//         })?;
+
+//     std::str::from_utf8(&bytes)
+//         .map_err(|_| "decoding markdown string".to_string())
+//         .map(str::to_string)
+// }
 
 pub fn parse_file(path: &Path) -> Result {
     let source = path.to_str().ok_or("Failed to convert path to string")?;
