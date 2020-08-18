@@ -1,9 +1,9 @@
 ## Setting the environment
 
-<!-- $MDX set-CMD=./target/debug/themis-tracer -->
+<!-- $MDX set-CMD=../target/debug/themis-tracer -->
 ```sh
 $ echo CMD: $CMD
-CMD: ./target/debug/themis-tracer
+CMD: ../target/debug/themis-tracer
 ```
 
 
@@ -20,6 +20,6 @@ themis-tracer 0.1.0
 
 ```sh
 $ $CMD parse spec.md
-Not yet implemented!
-[1]
+spec.md FOO.1 Requirement <Bish bosh.>
+spec.md BAR.1::BAZ.2 Requirement <Bloop drop.>
 ```

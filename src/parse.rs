@@ -6,7 +6,13 @@ use std::path::Path;
 
 pub fn run(path: &Path) {
     // TODO Error handling
-    file(path).map(render).expect("failed to parse")
+    match file(path) {
+        Ok(logical_units) => render(logical_units),
+        Err(err) => {
+            println!(">>>> {:?}", err);
+            panic!("WAH")
+        }
+    }
 }
 
 pub fn render(lus: Vec<LogicalUnit>) -> () {

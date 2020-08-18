@@ -46,6 +46,7 @@ fn unimplemented() {
     println!("Not yet implemented!");
     process::exit(1)
 }
+
 fn main() {
     let opt = Opt::from_args();
     match opt {

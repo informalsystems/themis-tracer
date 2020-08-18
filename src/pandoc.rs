@@ -14,7 +14,11 @@ static ARGS: &'static [&str] = &["--standalone", "--from", "markdown-smart", "--
 type Result = std::result::Result<Pandoc, String>;
 
 fn pandoc_from_bytes(b: &[u8]) -> Result {
-    serde_json::from_str(String::from_utf8_lossy(b).as_ref()).map_err(|_| "josn error".to_string())
+    match b[..] {
+        [] => Err("no data read from file".to_string()),
+        _ => serde_json::from_str(String::from_utf8_lossy(b).as_ref())
+            .map_err(|_| "json error".to_string()),
+    }
 }
 
 /// Returns an [`Ok`] [`Pandoc`] value if the string can be parsed into the
@@ -86,9 +90,13 @@ pub fn parse_file(path: &Path) -> Result {
         .output()
         .map_err(|_| "pandoc cli".to_string())?;
 
-    if !output.status.success() {
+    if output.status.success() {
         pandoc_from_bytes(&output.stdout)
     } else {
-        Err(format!("call to pandoc failed with {:?}", output.status))
+        Err(format!(
+            "call to pandoc failed with {:?}. stderr: {:?}",
+            output.status,
+            String::from_utf8_lossy(&output.stderr).as_ref()
+        ))
     }
 }
