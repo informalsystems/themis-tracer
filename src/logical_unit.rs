@@ -54,7 +54,7 @@ mod test_parser {
 
 fn id_of_string(s: String) -> Result<Id_, String> {
     parser::id(&s)
-        .map(|i| Id_(i))
+        .map(Id_)
         .map_err(|_| "parsing id".to_string())
 }
 
@@ -135,7 +135,7 @@ impl fmt::Display for Kind {
 
 impl fmt::Display for LogicalUnit {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let source = self.source_file.clone().unwrap_or("".to_string());
+        let source = self.source_file.clone().unwrap_or_else(|| "".to_string());
         write!(f, "{} {} {} <{}>", source, self.id, self.kind, self.content)
     }
 }

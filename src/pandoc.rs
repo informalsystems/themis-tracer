@@ -8,7 +8,7 @@ use std::path::Path;
 use std::process::{Command, Stdio};
 
 static PANDOC: &str = "pandoc";
-static ARGS: &'static [&str] = &["--standalone", "--from", "markdown-smart", "--to", "json"];
+static ARGS: &[&str] = &["--standalone", "--from", "markdown-smart", "--to", "json"];
 
 // TODO
 type Result = std::result::Result<Pandoc, String>;

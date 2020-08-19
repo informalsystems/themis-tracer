@@ -15,7 +15,7 @@ pub fn run(path: &Path) {
     }
 }
 
-pub fn render(lus: Vec<LogicalUnit>) -> () {
+pub fn render(lus: Vec<LogicalUnit>) {
     for lu in lus {
         println!("{}", lu)
     }
@@ -54,7 +54,7 @@ peg::parser! {
 
 fn logical_units_of_deflist(
     path: Option<&Path>,
-    deflist: &Vec<(Vec<Inline>, Vec<Vec<Block>>)>,
+    deflist: &[(Vec<Inline>, Vec<Vec<Block>>)],
 ) -> Vec<LogicalUnit> {
     // TODO Infer from file type?
     deflist
@@ -77,7 +77,7 @@ fn logical_units_of_deflist(
         .collect()
 }
 
-fn logical_unit_definiendum(tags: &Vec<Inline>) -> Option<String> {
+fn logical_unit_definiendum(tags: &[Inline]) -> Option<String> {
     match &tags[..] {
         // Only defininiendum's with a single inline element are taken to be
         // logical unit defs
