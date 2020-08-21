@@ -22,21 +22,19 @@ name = "themis-tracer"
 doc = false
 
 [dependencies]
+csv = "*"
 failure = "*"
 pandoc_ast = "*"
 log = "*"
 peg = "*"
 simple_logger = "*"
 structopt = "*"
-serde = "*"
-serde_dhall = "*"
-serde_json = "*"
+serde = { version = "1", features = ["derive"] }
+# serde_dhall = "*"
+serde_json = "1.0.5"
 
 [dev-dependencies]
 assert_cmd = "*"
 glob = "*"
-racer = "*"
-rustfmt-nightly = "*"
-cargo-check = "*"
 textwrap = "^0.11.0"
 tempfile = "^3.1.0"
