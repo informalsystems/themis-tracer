@@ -1,4 +1,5 @@
 // use super::luid::LogicalUnitID;
+use crate::util;
 use serde::{Serialize, Serializer};
 use std::fmt;
 use std::path::Path;
@@ -13,7 +14,7 @@ pub struct Id {
 
 impl Id {
     pub fn new(s: &str) -> Result<Id, String> {
-        let parts = parser::id(s).map_err(|_| "parsing id")?;
+        let parts = util::parser::logical_unit_id(s).map_err(|_| "parsing id")?;
         Ok(Id { parts })
     }
 
@@ -66,46 +67,6 @@ impl LogicalUnit {
             column: None, // TODO
             line: None,   // TODO
         })
-    }
-}
-
-peg::parser! {
-    grammar parser() for str {
-        pub rule id() -> Vec<(String, u32)> =
-            id:(part() ** "::")
-        { id }
-
-        rule letter() -> String =
-            l:$(['a'..='z' | 'A'..='Z' ])
-        { l.to_string() }
-
-        rule tag() -> String =
-            t:$((letter() / ['_']) (letter() / ['0'..='9' | '-' | '_'])+)
-        { t.to_string() }
-
-        rule version() -> u32 =
-            v:$(['1'..='9'] ['0'..='9']*)
-        { v.parse().unwrap() }
-
-        rule part() -> (String, u32) =
-            t:tag() "."  v:version()
-        { (t, v) }
-    }
-}
-
-#[cfg(test)]
-mod test_parser {
-    use super::*;
-    #[test]
-    fn test_id() {
-        assert_eq!(
-            parser::id("FOO.1::BAR-BAZ.2::BING.3"),
-            Ok(vec![
-                ("FOO".to_string(), 1),
-                ("BAR-BAZ".to_string(), 2),
-                ("BING".to_string(), 3)
-            ])
-        )
     }
 }
 

@@ -7,6 +7,7 @@ mod luid;
 mod pandoc;
 pub mod parse;
 mod specs;
+mod util;
 
 use failure::Fail;
 use std::collections::HashMap;

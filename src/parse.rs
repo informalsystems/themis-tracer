@@ -1,6 +1,6 @@
 // use super::logical_unit::LogicalUnit;
 use crate::logical_unit::{Kind, LogicalUnit};
-use crate::pandoc;
+use crate::{pandoc, util};
 use pandoc_ast::{Block, Inline, Pandoc, QuoteType};
 use std::fmt;
 use std::io;
@@ -96,15 +96,6 @@ fn parse_ast(path: Option<&Path>, ast: Pandoc) -> Vec<LogicalUnit> {
         .collect()
 }
 
-peg::parser! {
-    grammar parser() for str {
-        pub rule definiendum() -> String =
-            // "|" d:$([_]+) "|"
-            "|" d:$(['a'..='z' | 'A'..='Z' | '0'..='9' | '.' | '_' | ':']+) "|"
-        { d.to_string() }
-    }
-}
-
 fn logical_units_of_deflist(
     path: Option<&Path>,
     deflist: &[(Vec<Inline>, Vec<Vec<Block>>)],
@@ -135,7 +126,7 @@ fn logical_unit_definiendum(tags: &[Inline]) -> Option<String> {
         // Only defininiendum's with a single inline element are taken to be
         // logical unit defs
         [lu] => match lu {
-            Inline::Str(s) => parser::definiendum(&s).ok(),
+            Inline::Str(s) => util::parser::logical_unit_definiendum(&s).ok(),
             Inline::Emph(v) => logical_unit_definiendum(&v),
             Inline::Strong(v) => logical_unit_definiendum(&v),
             Inline::Link(_, v, _) => logical_unit_definiendum(&v),
@@ -201,14 +192,6 @@ fn pandoc_block_to_string(b: &Block) -> String {
 #[cfg(test)]
 mod test {
     use super::*;
-
-    #[test]
-    fn can_parse_defininiendum() {
-        assert_eq!(
-            Ok("FOO.1::BAR.1::BAZ.1".to_string()),
-            parser::definiendum(&"|FOO.1::BAR.1::BAZ.1|")
-        )
-    }
 
     #[test]
     fn can_parse_logical_unit() {
