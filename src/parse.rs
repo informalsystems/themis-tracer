@@ -2,22 +2,75 @@
 use crate::logical_unit::{Kind, LogicalUnit};
 use crate::pandoc;
 use pandoc_ast::{Block, Inline, Pandoc, QuoteType};
+use std::fmt;
+use std::io;
 use std::path::Path;
 
-pub fn run(path: &Path) {
-    // TODO Error handling
-    match file(path) {
-        Ok(logical_units) => render(logical_units),
-        Err(err) => {
-            println!(">>>> {:?}", err);
-            panic!("WAH")
+#[derive(Debug)]
+pub enum Format {
+    CSV,
+    JSON,
+}
+
+impl fmt::Display for Format {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            Format::CSV => "csv",
+            Format::JSON => "json",
+        };
+        write!(f, "{}", s)
+    }
+}
+
+impl Default for Format {
+    fn default() -> Self {
+        Format::JSON
+    }
+}
+
+impl std::str::FromStr for Format {
+    type Err = ParseFormatError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "csv" => Ok(Format::CSV),
+            "json" => Ok(Format::JSON),
+            _ => Err(ParseFormatError(s.to_string())),
         }
     }
 }
 
-pub fn render(lus: Vec<LogicalUnit>) {
-    for lu in lus {
-        println!("{}", lu)
+#[derive(Debug, Clone)]
+pub struct ParseFormatError(String);
+
+impl fmt::Display for ParseFormatError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "unable to parse format {}", self.0)
+    }
+}
+
+pub fn run(path: &Path, format: Format) -> Result<(), String> {
+    // TODO Error handling
+    file(path).and_then(|lus| render(format, lus))
+}
+
+pub fn render(format: Format, lus: Vec<LogicalUnit>) -> Result<(), String> {
+    match format {
+        Format::CSV => {
+            // See https://docs.rs/csv/1.1.3/csv/tutorial/index.html#writing-csv
+            let mut wtr = csv::Writer::from_writer(io::stdout());
+            lus.iter()
+                .map(|x| wtr.serialize(x).map_err(|e| format!("{}", e))) // TODO
+                .collect()
+        }
+        Format::JSON => lus
+            .iter()
+            .map(|x| {
+                serde_json::to_string(x)
+                    .map_err(|e| format!("{}", e))
+                    .map(|x| println!("{}", x))
+            })
+            .collect(),
     }
 }
 
