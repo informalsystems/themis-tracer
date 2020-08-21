@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 use structopt::StructOpt;
-use tracer::parse;
+use tracer::cmd;
 
 #[derive(Debug, StructOpt)]
 #[structopt(
@@ -15,7 +15,7 @@ enum Opt {
         #[structopt(parse(from_os_str))]
         path: PathBuf,
         #[structopt(short, long, default_value, parse(try_from_str))]
-        format: parse::Format,
+        format: cmd::parse::Format,
     },
 
     /// List registered specs.
@@ -49,7 +49,7 @@ fn unimplemented() -> Result<(), String> {
 fn main() -> Result<(), String> {
     let opt = Opt::from_args();
     match opt {
-        Opt::Parse { path, format } => parse::run(&path, format),
+        Opt::Parse { path, format } => cmd::parse::run(&path, format),
         Opt::List { filter: _ } => unimplemented(),
         Opt::Add { project: _ } => unimplemented(),
         Opt::Sync { project: _ } => unimplemented(),
