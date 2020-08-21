@@ -23,7 +23,7 @@ ci: lint test
 lint:
 	cargo clippy -- -D warnings
 
-test:
+test: lint
 	cargo check --features "strict"
 	cargo fmt --all -- --check
 	cargo test
