@@ -1,4 +1,12 @@
-// use super::logical_unit::LogicalUnit;
+//! This module implements the `parse` subcommand
+//!
+//! The `parse` subcommand parses a single file or string into a vector of
+//! [`LogicalUnit`]s and then renders those in the specified
+//! serialization [`Format`].
+//!
+//! [`LogicalUnit`]: crate::logical_unit::LogicalUnit
+//! [`Format`]: Format
+
 use crate::logical_unit::{Kind, LogicalUnit};
 use crate::{pandoc, util};
 use pandoc_ast::{Block, Inline, Pandoc, QuoteType};
@@ -6,6 +14,7 @@ use std::fmt;
 use std::io;
 use std::path::Path;
 
+/// Formats supported for rendering parsed requirement data
 #[derive(Debug)]
 pub enum Format {
     CSV,
@@ -40,6 +49,7 @@ impl std::str::FromStr for Format {
     }
 }
 
+/// Errors arising from parsing invalid formats arguments
 #[derive(Debug, Clone)]
 pub struct ParseFormatError(String);
 
@@ -49,12 +59,16 @@ impl fmt::Display for ParseFormatError {
     }
 }
 
+/// Run the the parser on the file `path` rendering the data in `format`
+/// to `stdout`.
 pub fn run(path: &Path, format: Format) -> Result<(), String> {
     // TODO Error handling
     file(path).and_then(|lus| render(format, lus))
 }
 
-pub fn render(format: Format, lus: Vec<LogicalUnit>) -> Result<(), String> {
+/// Render the [`LogicalUnits`]s `lus` according to `format`.
+/// Prints rendered results to stdout.
+fn render(format: Format, lus: Vec<LogicalUnit>) -> Result<(), String> {
     match format {
         Format::CSV => {
             // See https://docs.rs/csv/1.1.3/csv/tutorial/index.html#writing-csv
@@ -74,14 +88,56 @@ pub fn render(format: Format, lus: Vec<LogicalUnit>) -> Result<(), String> {
     }
 }
 
-pub fn file(path: &Path) -> Result<Vec<LogicalUnit>, String> {
+/// Parse the file at `path`.
+fn file(path: &Path) -> Result<Vec<LogicalUnit>, String> {
     pandoc::parse_file(path).map(|ast| parse_ast(Some(path), ast))
 }
 
-pub fn string(s: String) -> Result<Vec<LogicalUnit>, String> {
+/// Parse the string `s` into logical units
+///
+/// # Examples
+///
+/// ```
+/// use tracer::cmd::parse;
+/// use tracer::logical_unit::{LogicalUnit, Id, Kind};
+///
+/// let spec =  "
+/// # Title of Spec
+///
+/// |REQUIREMENT.1|
+/// : Definition of requirement 1.
+///
+/// |REQUIREMENT.2|
+/// : Definition of requirement 2.
+/// ";
+///
+/// assert_eq!(Ok(vec![
+///                 LogicalUnit {
+///                     id: Id::new("REQUIREMENT.1").unwrap(),
+///                     kind: Kind::Requirement,
+///                     source_file: None,
+///                     content: "Definition of requirement 1.".to_string(),
+///                     references: vec![],
+///                     line: None,
+///                     column: None,
+///                 },
+///                 LogicalUnit {
+///                     id: Id::new("REQUIREMENT.2").unwrap(),
+///                     kind: Kind::Requirement,
+///                     source_file: None,
+///                     content: "Definition of requirement 2.".to_string(),
+///                     references: vec![],
+///                     line: None,
+///                     column: None,
+///                 },
+///             ]),
+///            parse::string(&spec))
+/// ```
+pub fn string(s: &str) -> Result<Vec<LogicalUnit>, String> {
     pandoc::parse_string(s).map(|ast| parse_ast(None, ast))
 }
 
+// Parse logical units out of the pandoc AST.
 fn parse_ast(path: Option<&Path>, ast: Pandoc) -> Vec<LogicalUnit> {
     ast.blocks
         .iter()
@@ -96,6 +152,8 @@ fn parse_ast(path: Option<&Path>, ast: Pandoc) -> Vec<LogicalUnit> {
         .collect()
 }
 
+// Given the `pandoc_ast` representation of a description list,
+// this finds any items that are valid logical units.
 fn logical_units_of_deflist(
     path: Option<&Path>,
     deflist: &[(Vec<Inline>, Vec<Vec<Block>>)],
@@ -121,6 +179,7 @@ fn logical_units_of_deflist(
         .collect()
 }
 
+// Is `Some(s)` if `s` can be a logical unit ID enclosed in pipes.
 fn logical_unit_definiendum(tags: &[Inline]) -> Option<String> {
     match &tags[..] {
         // Only defininiendum's with a single inline element are taken to be
@@ -218,7 +277,7 @@ mod test {
             )
             .unwrap(),
         ]);
-        let result = string(spec.to_string());
+        let result = string(&spec);
         assert_eq!(expected, result)
     }
 }

@@ -24,7 +24,7 @@ fn pandoc_from_bytes(b: &[u8]) -> Result {
 /// Returns an [`Ok`] [`Pandoc`] value if the string can be parsed into the
 /// pandoc AST, otherwise returns an [`Err`] with a string explaining the
 /// failure.
-pub fn parse_string(s: String) -> Result {
+pub fn parse_string(s: &str) -> Result {
     let process = Command::new(PANDOC)
         .args(ARGS)
         .stdout(Stdio::piped())

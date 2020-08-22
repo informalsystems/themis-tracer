@@ -3,7 +3,7 @@
 //!
 
 pub mod cmd;
-mod logical_unit;
+pub mod logical_unit;
 mod luid;
 mod pandoc;
 mod specs;
