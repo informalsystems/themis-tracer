@@ -2,11 +2,12 @@
 //! Themis Tracer library interface.
 //!
 
-// Fial on warnings
-#![cfg_attr(feature = "strict", deny(warnings))]
-
+pub mod cmd;
+pub mod logical_unit;
 mod luid;
+mod pandoc;
 mod specs;
+mod util;
 
 use failure::Fail;
 use std::collections::HashMap;

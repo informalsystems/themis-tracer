@@ -1,5 +1,6 @@
 [package]
 name = "themis-tracer"
+# TODO Add version constraints before incrementing version
 version = "0.1.0"
 authors = [
 "Thane Thomson <thane@informal.systems>",
@@ -13,27 +14,28 @@ edition = "2018"
 # Treat warnings as a build error.
 strict = []
 
+[lib]
+name = "tracer"
+path = "src/lib.rs"
+
 [[bin]]
 name = "themis-tracer"
 doc = false
 
 [dependencies]
+csv = "*"
 failure = "*"
 pandoc_ast = "*"
 log = "*"
 peg = "*"
 simple_logger = "*"
 structopt = "*"
-serde = "*"
-serde_dhall = "*"
+serde = { version = "*", features = ["derive"] }
+# serde_dhall = "*"
 serde_json = "*"
 
 [dev-dependencies]
 assert_cmd = "*"
 glob = "*"
-racer = "*"
-rust-analyzer = "*"
-rustfmt-nightly = "*"
-cargo-check = "*"
-textwrap = "^0.11.0"
-tempfile = "^3.1.0"
+textwrap = "*"
+tempfile = "*"

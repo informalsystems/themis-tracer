@@ -1,9 +1,6 @@
-// Fial on warnings
-#![cfg_attr(feature = "strict", deny(warnings))]
-
 use std::path::PathBuf;
-use std::process;
 use structopt::StructOpt;
+use tracer::cmd;
 
 #[derive(Debug, StructOpt)]
 #[structopt(
@@ -17,6 +14,8 @@ enum Opt {
         /// The file or directory to parse
         #[structopt(parse(from_os_str))]
         path: PathBuf,
+        #[structopt(short, long, default_value, parse(try_from_str))]
+        format: cmd::parse::Format,
     },
 
     /// List registered specs.
@@ -43,14 +42,15 @@ enum Opt {
     },
 }
 
-fn unimplemented() {
-    println!("Not yet implemented!");
-    process::exit(1)
+// FIXME
+fn unimplemented() -> Result<(), String> {
+    Err("Not yet implemented!".to_string())
 }
-fn main() {
+
+fn main() -> Result<(), String> {
     let opt = Opt::from_args();
     match opt {
-        Opt::Parse { path: _ } => unimplemented(),
+        Opt::Parse { path, format } => cmd::parse::run(&path, format),
         Opt::List { filter: _ } => unimplemented(),
         Opt::Add { project: _ } => unimplemented(),
         Opt::Sync { project: _ } => unimplemented(),
