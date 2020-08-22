@@ -1,12 +1,11 @@
-// use super::luid::LogicalUnitID;
 use crate::util;
 use serde::{Serialize, Serializer};
 use std::fmt;
 use std::path::Path;
 
-// Private Id type for type safe internal representation of Ids
-// Ensures an id field cannot be created without going through the
-// constructors that enforce validation.
+/// # Implements
+///
+/// * [TRC-TAG.1::SYNTAX.1]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 pub struct Id {
     parts: Vec<(String, u32)>,
