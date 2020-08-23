@@ -6,7 +6,7 @@ use std::path::Path;
 /// # Implements
 ///
 /// * [TRC-TAG.1::SYNTAX.1]
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Id {
     parts: Vec<(String, u32)>,
 }
@@ -22,7 +22,7 @@ impl Id {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Hash)]
 pub enum Kind {
     Requirement,
     Model,
@@ -30,7 +30,7 @@ pub enum Kind {
     Test,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Hash)]
 pub struct LogicalUnit {
     pub id: Id,
     pub kind: Kind,

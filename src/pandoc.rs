@@ -2,7 +2,7 @@
 //! Interface to the pandoc CLI
 //!
 
-use pandoc_ast::Pandoc;
+use pandoc_ast::{Block, Inline, Pandoc, QuoteType};
 use std::io::{Read, Write};
 use std::path::Path;
 use std::process::{Command, Stdio};
@@ -10,7 +10,9 @@ use std::process::{Command, Stdio};
 static PANDOC: &str = "pandoc";
 static ARGS: &[&str] = &["--standalone", "--from", "markdown-smart", "--to", "json"];
 
-// TODO
+/// # Running the pandoc executable
+
+// TODO: Better error types
 type Result = std::result::Result<Pandoc, String>;
 
 fn pandoc_from_bytes(b: &[u8]) -> Result {
@@ -98,5 +100,59 @@ pub fn parse_file(path: &Path) -> Result {
             output.status,
             String::from_utf8_lossy(&output.stderr).as_ref()
         ))
+    }
+}
+
+/// # Parsing the pandoc AST
+///
+pub fn inlines_to_string(inlines: &[pandoc_ast::Inline]) -> String {
+    inlines
+        .iter()
+        .map(inline_to_string)
+        .collect::<Vec<String>>()
+        .join("")
+}
+
+pub fn inline_to_string(i: &pandoc_ast::Inline) -> String {
+    match i {
+        Inline::Str(s) => s.clone(),
+        Inline::Emph(v) => format!("*{}*", inlines_to_string(v),),
+        Inline::Strong(v) => format!("**{}**", inlines_to_string(v),),
+        Inline::Space => " ".to_string(),
+        Inline::SoftBreak => "\n".to_string(),
+        Inline::LineBreak => "\\\n".to_string(),
+        Inline::Quoted(t, v) => match t {
+            QuoteType::SingleQuote => format!("'{}'", inlines_to_string(v)),
+            QuoteType::DoubleQuote => format!("\"{}\"", inlines_to_string(v)),
+        },
+        Inline::Link(_, v, (url, _)) => format!("[{}]({})", inlines_to_string(v), url,),
+        Inline::Image(_, v, (url, _)) => format!("![{}]({})", inlines_to_string(v), url,),
+        Inline::Code(_, s) => format!("`{}`", s),
+        _ => "TODO".to_string(),
+    }
+}
+
+pub fn blocks_list_to_string(blocks_list: &[Vec<Block>]) -> String {
+    blocks_list
+        .iter()
+        .map(blocks_to_string)
+        .collect::<Vec<String>>()
+        .join("\n\n")
+}
+
+#[allow(clippy::ptr_arg)]
+pub fn blocks_to_string(blocks: &Vec<Block>) -> String {
+    blocks
+        .iter()
+        .map(block_to_string)
+        .collect::<Vec<String>>()
+        .join("\n\n")
+}
+
+pub fn block_to_string(b: &Block) -> String {
+    match b {
+        Block::Plain(v) => inlines_to_string(v),
+        Block::Para(v) => inlines_to_string(v),
+        _ => "TODO".to_string(),
     }
 }

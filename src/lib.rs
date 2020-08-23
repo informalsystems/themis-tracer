@@ -2,8 +2,11 @@
 //! Themis Tracer library interface.
 //!
 
+pub mod artifact;
 pub mod cmd;
 pub mod logical_unit;
+pub mod repo;
+
 mod luid;
 mod pandoc;
 mod specs;
