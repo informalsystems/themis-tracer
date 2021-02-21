@@ -6,7 +6,15 @@ See [./tests/README.md](./tests/README.md).
 
 ## Development Environment
 
-### Doom Emacs (using lsp)
+### `rustup`
+
+We are currently working with our toolchain and components pinned. These
+constraints are defined in [./rust-toolchain](./rust-toolchain) and they should
+be picked up by your rust development environment automatically.
+
+### Editors
+
+#### Doom Emacs (using lsp)
 
 Install [direnv](https://direnv.net/).
 

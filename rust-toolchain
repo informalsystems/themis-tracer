@@ -1,1 +1,10 @@
-nightly-2020-08-20
+[toolchain]
+channel = "nightly-2021-02-20"
+components = [
+           "rustfmt",
+           "clippy",
+           "rust-src",
+           "rust-analysis",
+           "rls"
+           ]
+# targets = [ "wasm32-unknown-unknown", "thumbv2-none-eabi" ]
