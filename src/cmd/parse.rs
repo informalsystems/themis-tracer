@@ -62,7 +62,9 @@ impl fmt::Display for ParseFormatError {
 /// to `stdout`.
 pub fn run(path: &Path, format: Format) -> Result<(), String> {
     // TODO Error handling
-    file(path).and_then(|lus| render(format, lus))
+    Artifact::from_file(path)
+        .map(|a| a.logical_units.iter().cloned().collect())
+        .and_then(|lus| render(format, lus))
 }
 
 /// Render the [`LogicalUnits`]s `lus` according to `format`.
@@ -88,10 +90,4 @@ fn render(format: Format, lus: Vec<LogicalUnit>) -> Result<(), String> {
             })
             .collect(),
     }
-}
-
-/// Parse the file at `path`.
-pub fn file(path: &Path) -> Result<Vec<LogicalUnit>, String> {
-    let artifact = Artifact::from_file(path)?;
-    Ok(artifact.logical_units.iter().cloned().collect())
 }
