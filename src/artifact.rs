@@ -89,7 +89,7 @@ fn logical_units_of_deflist(
 
 // Is `Some(s)` if `s` can be a logical unit ID enclosed in pipes.
 fn logical_unit_definiendum(tags: &[Inline]) -> Option<String> {
-    match &tags[..] {
+    match tags {
         // Only defininiendum's with a single inline element are taken to be
         // logical unit defs
         [lu] => match lu {

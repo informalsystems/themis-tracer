@@ -5,21 +5,21 @@
 // FIXME rm after rapid dev
 #![allow(dead_code)]
 
-
 pub mod artifact;
 pub mod cmd;
 pub mod logical_unit;
-pub mod repo;
-
-mod luid;
 mod pandoc;
-mod specs;
+pub mod repo;
 mod util;
+
+// TODO RM
+mod luid;
+mod specs;
 
 use failure::Fail;
 use std::collections::HashMap;
 
-pub use luid::{LogicalUnitID, LogicalUnitIDPart};
+pub use luid::{LogicalUnitId, LogicalUnitIdPart};
 pub use specs::{ProjectSpecifications, SpecificationParseError};
 
 /// Themis Tracer's general result type.
@@ -54,7 +54,7 @@ pub struct Project {
 #[derive(Debug)]
 pub struct ProjectImplementation {
     /// Implementations attached to specific logical units.
-    pub lu_impls: HashMap<LogicalUnitID, Vec<ImplUnit>>,
+    pub lu_impls: HashMap<LogicalUnitId, Vec<ImplUnit>>,
     /// Dangling implementations without reference to specific logical units.
     pub dangling_impls: Vec<ImplUnit>,
 }
@@ -112,7 +112,7 @@ pub struct LogicalUnit {
     /// The source file from which this logical unit was extracted.
     pub source_file: ProjectSourceFile,
     /// This logical unit's fully qualified ID.
-    pub id: LogicalUnitID,
+    pub id: LogicalUnitId,
     /// The human-readable description of the logical unit. In future we should
     /// consider using the AST here instead of a plain string.
     pub desc: String,
@@ -124,7 +124,7 @@ pub struct ImplUnit {
     /// The source file from which this implementation unit was extracted.
     pub source_file: ProjectSourceFile,
     /// The logical unit to which this implementation unit refers, if any.
-    pub id: Option<LogicalUnitID>,
+    pub id: Option<LogicalUnitId>,
     /// An optional line number for the code that makes up this implementation
     /// of the logical unit. This line number is present for references attached
     /// to specific methods or structs, whereas the line number will not be
@@ -156,10 +156,11 @@ impl Project {
         })
     }
 
+    #[allow(clippy::unnecessary_wraps)]
     fn parse(
         _source_files: &[ProjectSourceFile],
     ) -> Result<(ProjectSpecifications, ProjectImplementation)> {
-        let lu_impls = HashMap::<LogicalUnitID, Vec<ImplUnit>>::new();
+        let lu_impls = HashMap::<LogicalUnitId, Vec<ImplUnit>>::new();
         let dangling_impls = Vec::<ImplUnit>::new();
         // TODO: Parse specifications and implementations to build the above variables
         Ok((

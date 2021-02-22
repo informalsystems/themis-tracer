@@ -20,11 +20,9 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-check-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly-2020-07-12
-          override: true
+      - name: Setup rust toolchain
+        run: rustup show
+
       - uses: actions-rs/cargo@v1
         with:
           command: check
@@ -62,16 +60,11 @@ jobs:
         uses: avsm/setup-ocaml@v1
       - name: Install mdx
         run: opam install mdx
-      - name: Setup toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly-2020-07-12
-          override: true
+
+      - name: Setup rust toolchain
+        run: rustup show
+
       - name: Run tests
-        env:
-          CFG_RELEASE_CHANNEL: nightly
-          CFG_RELEASE: nightly
         uses: actions-rs/cargo@v1
         with:
           command: test
@@ -81,12 +74,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly-2020-07-12
-          override: true
-      - run: rustup component add rustfmt
+
+      - name: Setup rust toolchain
+        run: rustup show
 
       - name: Rust cache
         uses: actions/cache@v2
@@ -117,12 +107,9 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-clippy-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly-2020-07-12
-          override: true
-      - run: rustup component add clippy
+      - name: Setup rust toolchain
+        run: rustup show
+
       - name: Version info
         run: |
           rustup show
