@@ -45,13 +45,13 @@ pub struct LogicalUnit {
 
 impl LogicalUnit {
     pub fn new(
-        p: Option<&Path>,
+        path: Option<&Path>,
         kind: Kind,
         id: String,
         content: String,
     ) -> Result<LogicalUnit, String> {
         let id = Id::new(&id)?;
-        let source_file = if let Some(p) = p {
+        let source_file = if let Some(p) = path {
             Some(p.to_str().ok_or("logical unit source file")?.to_owned())
         } else {
             None
