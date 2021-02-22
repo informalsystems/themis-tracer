@@ -116,6 +116,9 @@ mod test {
 
 |FOO.1::BAZ.1|
 :  Pop crink splot.
+
+[|FOO.1::BOP.1|](./url)
+:  Can parse URLs
 ";
 
         let logical_units: HashSet<LogicalUnit> = vec![
@@ -131,6 +134,13 @@ mod test {
                 Kind::Requirement,
                 "FOO.1::BAZ.1".to_string(),
                 "Pop crink splot.".to_string(),
+            )
+            .unwrap(),
+            LogicalUnit::new(
+                None,
+                Kind::Requirement,
+                "FOO.1::BOP.1".to_string(),
+                "Can parse URLs".to_string(),
             )
             .unwrap(),
         ]
