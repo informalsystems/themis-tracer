@@ -6,43 +6,43 @@ use crate::{Error, Result};
 
 peg::parser! {
     grammar luid_parser() for str {
-        pub rule luid() -> LogicalUnitID
+        pub rule luid() -> LogicalUnitId
             = p0:luid_part() p:(luid_suffix_part()*) {
                 let mut v = vec![p0];
                 v.extend(p.iter().cloned());
-                LogicalUnitID(v)
+                LogicalUnitId(v)
             }
 
-        rule luid_part() -> LogicalUnitIDPart
+        rule luid_part() -> LogicalUnitIdPart
             = tag:$(['a'..='z' | 'A'..='Z' | '_'] ['a'..='z' | 'A'..='Z' | '0'..='9' | '-' | '_']+) "." version:$(['1'..='9'] ['0'..='9']*) {
-                LogicalUnitIDPart{ tag: String::from(tag), version: version.parse().unwrap() }
+                LogicalUnitIdPart{ tag: String::from(tag), version: version.parse().unwrap() }
             }
 
-        rule luid_suffix_part() -> LogicalUnitIDPart
+        rule luid_suffix_part() -> LogicalUnitIdPart
             = "::" p:luid_part() { p }
     }
 }
 
 /// A fully qualified logical unit ID, e.g. "TRC-TAG.1::SYNTAX.1".
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
-pub struct LogicalUnitID(Vec<LogicalUnitIDPart>);
+pub struct LogicalUnitId(Vec<LogicalUnitIdPart>);
 
 /// A single part of a logical unit's ID, e.g. "TRC-REF.1".
 #[derive(Debug, Eq, PartialEq, Hash)]
-pub struct LogicalUnitIDPart {
+pub struct LogicalUnitIdPart {
     /// The tag component of the logical unit ID part, e.g. "TRC-REF".
     pub tag: String,
     /// The version number associated with the logical unit ID part.
     pub version: u32,
 }
 
-impl LogicalUnitID {
-    pub fn from_parts(parts: Vec<LogicalUnitIDPart>) -> LogicalUnitID {
-        LogicalUnitID(parts)
+impl LogicalUnitId {
+    pub fn from_parts(parts: Vec<LogicalUnitIdPart>) -> LogicalUnitId {
+        LogicalUnitId(parts)
     }
 }
 
-impl std::fmt::Display for LogicalUnitID {
+impl std::fmt::Display for LogicalUnitId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -56,7 +56,7 @@ impl std::fmt::Display for LogicalUnitID {
     }
 }
 
-impl std::str::FromStr for LogicalUnitID {
+impl std::str::FromStr for LogicalUnitId {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self> {
@@ -64,15 +64,15 @@ impl std::str::FromStr for LogicalUnitID {
     }
 }
 
-impl std::fmt::Display for LogicalUnitIDPart {
+impl std::fmt::Display for LogicalUnitIdPart {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}.{}", self.tag, self.version)
     }
 }
 
-impl Clone for LogicalUnitIDPart {
+impl Clone for LogicalUnitIdPart {
     fn clone(&self) -> Self {
-        LogicalUnitIDPart {
+        LogicalUnitIdPart {
             tag: self.tag.clone(),
             version: self.version,
         }
@@ -87,32 +87,32 @@ mod test {
     #[test]
     fn test_simple_luid_parsing() {
         assert_eq!(
-            LogicalUnitID(vec![LogicalUnitIDPart {
+            LogicalUnitId(vec![LogicalUnitIdPart {
                 tag: "SPEC-INPUT".to_string(),
                 version: 1
             },]),
-            LogicalUnitID::from_str("SPEC-INPUT.1").unwrap(),
+            LogicalUnitId::from_str("SPEC-INPUT.1").unwrap(),
         );
     }
 
     #[test]
     fn test_complex_luid_parsing() {
         assert_eq!(
-            LogicalUnitID(vec![
-                LogicalUnitIDPart {
+            LogicalUnitId(vec![
+                LogicalUnitIdPart {
                     tag: "SPEC-INPUT".to_string(),
                     version: 1
                 },
-                LogicalUnitIDPart {
+                LogicalUnitIdPart {
                     tag: "HELLO-WORLD".to_string(),
                     version: 2
                 },
-                LogicalUnitIDPart {
+                LogicalUnitIdPart {
                     tag: "TO-SOMEONE".to_string(),
                     version: 3
                 },
             ]),
-            LogicalUnitID::from_str("SPEC-INPUT.1::HELLO-WORLD.2::TO-SOMEONE.3").unwrap(),
+            LogicalUnitId::from_str("SPEC-INPUT.1::HELLO-WORLD.2::TO-SOMEONE.3").unwrap(),
         );
     }
 }

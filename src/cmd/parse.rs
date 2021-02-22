@@ -16,15 +16,15 @@ use std::path::Path;
 /// Formats supported for rendering parsed requirement data
 #[derive(Debug)]
 pub enum Format {
-    CSV,
-    JSON,
+    Csv,
+    Json,
 }
 
 impl fmt::Display for Format {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            Format::CSV => "csv",
-            Format::JSON => "json",
+            Format::Csv => "csv",
+            Format::Json => "json",
         };
         write!(f, "{}", s)
     }
@@ -32,7 +32,7 @@ impl fmt::Display for Format {
 
 impl Default for Format {
     fn default() -> Self {
-        Format::JSON
+        Format::Json
     }
 }
 
@@ -41,8 +41,8 @@ impl std::str::FromStr for Format {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "csv" => Ok(Format::CSV),
-            "json" => Ok(Format::JSON),
+            "csv" => Ok(Format::Csv),
+            "json" => Ok(Format::Json),
             _ => Err(ParseFormatError(s.to_string())),
         }
     }
@@ -69,25 +69,20 @@ pub fn run(path: &Path, format: Format) -> Result<(), String> {
 
 /// Render the [`LogicalUnits`]s `lus` according to `format`.
 /// Prints rendered results to stdout.
-fn render(format: Format, lus: Vec<LogicalUnit>) -> Result<(), String> {
-    let mut lus = lus.to_owned();
+fn render(format: Format, mut lus: Vec<LogicalUnit>) -> Result<(), String> {
     lus.sort();
 
     match format {
-        Format::CSV => {
+        Format::Csv => {
             // See https://docs.rs/csv/1.1.3/csv/tutorial/index.html#writing-csv
             let mut wtr = csv::Writer::from_writer(io::stdout());
             lus.iter()
-                .map(|x| wtr.serialize(x).map_err(|e| format!("{}", e))) // TODO
-                .collect()
+                .try_for_each(|x| wtr.serialize(x).map_err(|e| format!("{}", e)))
         }
-        Format::JSON => lus
-            .iter()
-            .map(|x| {
-                serde_json::to_string(x)
-                    .map_err(|e| format!("{}", e))
-                    .map(|x| println!("{}", x))
-            })
-            .collect(),
+        Format::Json => lus.iter().try_for_each(|x| {
+            serde_json::to_string(x)
+                .map_err(|e| format!("{}", e))
+                .map(|x| println!("{}", x))
+        }),
     }
 }

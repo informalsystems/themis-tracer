@@ -2,7 +2,7 @@
 //! Project specifications-related functionality.
 //!
 
-use super::{Error, LogicalUnit, LogicalUnitID, ProjectSourceFile, Result};
+use super::{Error, LogicalUnit, LogicalUnitId, ProjectSourceFile, Result};
 use failure::Fail;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -12,16 +12,16 @@ use std::str::FromStr;
 #[derive(Debug, Fail)]
 pub enum SpecificationParseError {
     #[fail(display = "duplicate logical unit found with ID: {}", _0)]
-    DuplicateLogicalUnit(LogicalUnitID),
+    DuplicateLogicalUnit(LogicalUnitId),
     #[fail(display = "Pandoc execution failed: {}", _0)]
     PandocError(String),
     #[fail(display = "failed to parse Pandoc AST: {}", _0)]
-    PandocASTParseError(String),
+    PandocAstParseError(String),
 }
 
 /// Project specifications are comprised of logical units, mapped to their IDs.
 #[derive(Debug)]
-pub struct ProjectSpecifications(HashMap<LogicalUnitID, LogicalUnit>);
+pub struct ProjectSpecifications(HashMap<LogicalUnitId, LogicalUnit>);
 
 impl ProjectSpecifications {
     /// Creates an empty set of project specifications.
@@ -89,22 +89,22 @@ fn parse_file_with_pandoc(path: &Path) -> Result<pandoc_ast::Pandoc> {
         }
     }
     serde_json::from_str(String::from_utf8_lossy(&output.stdout).as_ref()).map_err(|e| {
-        Error::SpecificationParseError(SpecificationParseError::PandocASTParseError(e.to_string()))
+        Error::SpecificationParseError(SpecificationParseError::PandocAstParseError(e.to_string()))
     })
 }
 
 fn pandoc_deflist_to_specs(
     f: &ProjectSourceFile,
     dl: &[(Vec<pandoc_ast::Inline>, Vec<Vec<pandoc_ast::Block>>)],
-) -> Result<HashMap<LogicalUnitID, LogicalUnit>> {
-    let mut lu_map = HashMap::<LogicalUnitID, LogicalUnit>::new();
+) -> Result<HashMap<LogicalUnitId, LogicalUnit>> {
+    let mut lu_map = HashMap::<LogicalUnitId, LogicalUnit>::new();
     for def_pair in dl {
         let (tags, contents) = def_pair;
         // we're only interested in the first definition
         if let Some(tag) = tags.first() {
             let tag_str = pandoc_inline_to_string(tag);
             if tag_str.starts_with('|') && tag_str.ends_with('|') {
-                let luid = LogicalUnitID::from_str(tag_str.trim_matches('|').as_ref())?;
+                let luid = LogicalUnitId::from_str(tag_str.trim_matches('|').as_ref())?;
                 lu_map.insert(
                     luid.clone(),
                     LogicalUnit {
@@ -177,13 +177,13 @@ fn pandoc_block_to_string(b: &pandoc_ast::Block) -> String {
 
 // TODO: Fix this horrifically inefficient mess.
 fn merge_project_lu_maps(
-    dest: HashMap<LogicalUnitID, LogicalUnit>,
-    src: HashMap<LogicalUnitID, LogicalUnit>,
-) -> Result<HashMap<LogicalUnitID, LogicalUnit>> {
+    dest: HashMap<LogicalUnitId, LogicalUnit>,
+    src: HashMap<LogicalUnitId, LogicalUnit>,
+) -> Result<HashMap<LogicalUnitId, LogicalUnit>> {
     let mut r = dest
         .iter()
         .map(|(k, v)| ((*k).clone(), (*v).clone()))
-        .collect::<HashMap<LogicalUnitID, LogicalUnit>>();
+        .collect::<HashMap<LogicalUnitId, LogicalUnit>>();
     for (luid, lu) in src.iter() {
         // we can't allow duplicate logical unit IDs
         if dest.contains_key(luid) {
@@ -199,7 +199,7 @@ fn merge_project_lu_maps(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{LogicalUnitIDPart, ProjectSourceFile, ProjectSourceFileKind};
+    use crate::{LogicalUnitIdPart, ProjectSourceFile, ProjectSourceFileKind};
     use std::fs::File;
     use std::io::Write;
     use textwrap::dedent;
@@ -251,11 +251,11 @@ mod test {
     struct ExpectedSpec {
         name: String,
         source: String,
-        logical_units: HashMap<LogicalUnitID, LogicalUnit>,
+        logical_units: HashMap<LogicalUnitId, LogicalUnit>,
     }
 
     impl ExpectedSpec {
-        fn new(name: String, source: String, logical_units: Vec<(LogicalUnitID, String)>) -> Self {
+        fn new(name: String, source: String, logical_units: Vec<(LogicalUnitId, String)>) -> Self {
             Self {
                 name,
                 source,
@@ -286,7 +286,7 @@ mod test {
                 "simple".to_string(),
                 SIMPLE_SPEC_SRC.to_string(),
                 vec![(
-                    LogicalUnitID::from_parts(vec![LogicalUnitIDPart {
+                    LogicalUnitId::from_parts(vec![LogicalUnitIdPart {
                         tag: "SPEC-HELLO".to_string(),
                         version: 1,
                     }]),
@@ -298,7 +298,7 @@ mod test {
                 MULTI_UNIT_SPEC_SRC.to_string(),
                 vec![
                     (
-                        LogicalUnitID::from_parts(vec![LogicalUnitIDPart {
+                        LogicalUnitId::from_parts(vec![LogicalUnitIdPart {
                             tag: "SPEC-INPUT".to_string(),
                             version: 1,
                         }]),
@@ -308,7 +308,7 @@ mod test {
                             and allow the user to input their name."#).trim().to_string(),
                     ),
                     (
-                        LogicalUnitID::from_parts(vec![LogicalUnitIDPart {
+                        LogicalUnitId::from_parts(vec![LogicalUnitIdPart {
                             tag: "SPEC-HELLO".to_string(),
                             version: 2,
                         }]),
@@ -324,26 +324,26 @@ mod test {
                 COMPLEX_SPEC_SRC.to_string(),
                 vec![
                     (
-                        LogicalUnitID::from_parts(vec![LogicalUnitIDPart {
+                        LogicalUnitId::from_parts(vec![LogicalUnitIdPart {
                             tag: "SPEC-HIGHLEVEL".to_string(),
                             version: 1,
                         }]),
                         "This is a high-level specification.".to_string(),
                     ),
                     (
-                        LogicalUnitID::from_parts(vec![LogicalUnitIDPart {
+                        LogicalUnitId::from_parts(vec![LogicalUnitIdPart {
                             tag: "SPEC-SECOND".to_string(),
                             version: 2,
                         }]),
                         "This is a second high-level specification.".to_string(),
                     ),
                     (
-                        LogicalUnitID::from_parts(vec![
-                            LogicalUnitIDPart {
+                        LogicalUnitId::from_parts(vec![
+                            LogicalUnitIdPart {
                                 tag: "SPEC-HIGHLEVEL".to_string(),
                                 version: 1,
                             },
-                            LogicalUnitIDPart {
+                            LogicalUnitIdPart {
                                 tag: "DETAILED".to_string(),
                                 version: 1,
                             },
@@ -351,12 +351,12 @@ mod test {
                         "This provides more detail to [SPEC-HIGHLEVEL.1].".to_string(),
                     ),
                     (
-                        LogicalUnitID::from_parts(vec![
-                            LogicalUnitIDPart {
+                        LogicalUnitId::from_parts(vec![
+                            LogicalUnitIdPart {
                                 tag: "SPEC-SECOND".to_string(),
                                 version: 2,
                             },
-                            LogicalUnitIDPart {
+                            LogicalUnitIdPart {
                                 tag: "MORE-DETAILED".to_string(),
                                 version: 3,
                             },
