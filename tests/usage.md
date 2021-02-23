@@ -1,3 +1,15 @@
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+**Table of Contents**
+
+- [-](#-)
+    - [Show the current `version`](#show-the-current-version)
+    - [`init` a new context](#init-a-new-context)
+    - [`parse` specs](#parse-specs)
+        - [Default [`--format json`]](#default---format-json)
+        - [`--format csv`](#--format-csv)
+
+<!-- markdown-toc end -->
+
 ## Setting the environment
 
 <!-- $MDX set-CMD=../target/debug/themis-tracer -->
@@ -16,6 +28,16 @@ $ $CMD --version
 themis-tracer 0.1.0
 ```
 
+### `init`ialize a new context
+
+```sh
+$ $CMD init mycontext
+Initialized a new context in mycontext
+$ ls -a mycontext
+.
+..
+.themis
+```
 
 ### `parse` specs
 

@@ -40,6 +40,14 @@ enum Opt {
         #[structopt(parse(from_os_str))]
         project: Option<PathBuf>,
     },
+
+    /// Initialize a new context
+    #[structopt(name = "init")]
+    Init {
+        /// The name of directory in which the context should be created
+        #[structopt(parse(from_os_str))]
+        name: PathBuf,
+    },
 }
 
 // FIXME
@@ -47,9 +55,11 @@ fn unimplemented() -> Result<(), String> {
     Err("Not yet implemented!".to_string())
 }
 
+// TODO Replace String with error type
 fn main() -> Result<(), String> {
     let opt = Opt::from_args();
     match opt {
+        Opt::Init { name } => cmd::init::run(name),
         Opt::Parse { path, format } => cmd::parse::run(&path, format),
         Opt::List { filter: _ } => unimplemented(),
         Opt::Add { project: _ } => unimplemented(),
