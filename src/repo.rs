@@ -1,20 +1,20 @@
-// TODO
+//! Repos represent any self-contained repository of artifacts.
+//!
+//! A repo can be directory of files or a git repository, or, as a degenerate
+//! case, a single flat file.
+
 use crate::artifact::Artifact;
 use std::collections::HashSet;
-use std::path::Path;
+use std::path::PathBuf;
 
-pub struct Repo<'a> {
-    artifacts: HashSet<Artifact<'a>>,
+pub struct Repo {
+    artifacts: HashSet<Artifact>,
     remote: String,
-    local: Option<&'a Path>,
+    local: Option<PathBuf>,
 }
 
-impl<'a> Repo<'a> {
-    pub fn new(
-        artifacts: HashSet<Artifact<'a>>,
-        remote: String,
-        local: Option<&'a Path>,
-    ) -> Repo<'a> {
+impl Repo {
+    pub fn new(artifacts: HashSet<Artifact>, remote: String, local: Option<PathBuf>) -> Repo {
         Repo {
             artifacts,
             remote,

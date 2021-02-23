@@ -11,7 +11,7 @@ use crate::artifact::Artifact;
 use crate::logical_unit::LogicalUnit;
 use std::fmt;
 use std::io;
-use std::path::Path;
+use std::path::PathBuf;
 
 /// Formats supported for rendering parsed requirement data
 #[derive(Debug)]
@@ -21,7 +21,7 @@ pub enum Format {
 }
 
 impl fmt::Display for Format {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let s = match self {
             Format::Csv => "csv",
             Format::Json => "json",
@@ -60,7 +60,7 @@ impl fmt::Display for ParseFormatError {
 
 /// Run the the parser on the file `path` rendering the data in `format`
 /// to `stdout`.
-pub fn run(path: &Path, format: Format) -> Result<(), String> {
+pub fn run(path: &PathBuf, format: Format) -> Result<(), String> {
     // TODO Error handling
     Artifact::from_file(path)
         .map(|a| a.logical_units.iter().cloned().collect())

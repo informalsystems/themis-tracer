@@ -4,16 +4,16 @@ use crate::util;
 use pandoc_ast::{Block, Inline, Pandoc};
 use std::collections::HashSet;
 use std::fmt;
-use std::path::Path;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct Artifact<'a> {
-    pub source: Option<&'a Path>,
+pub struct Artifact {
+    pub source: Option<PathBuf>,
     pub logical_units: HashSet<LogicalUnit>,
 }
 
-impl<'a> Artifact<'a> {
-    pub fn new(source: Option<&'a Path>, logical_units: HashSet<LogicalUnit>) -> Artifact<'a> {
+impl Artifact {
+    pub fn new(source: Option<PathBuf>, logical_units: HashSet<LogicalUnit>) -> Artifact {
         Artifact {
             source,
             logical_units,
@@ -21,10 +21,10 @@ impl<'a> Artifact<'a> {
     }
 
     /// Parse the file `path` into an artifact
-    pub fn from_file(path: &Path) -> Result<Artifact, String> {
+    pub fn from_file(path: &PathBuf) -> Result<Artifact, String> {
         pandoc::parse_file(path)
             .map(|ast| parse_ast(Some(path), ast))
-            .map(|lus| Artifact::new(Some(path), lus.iter().cloned().collect()))
+            .map(|lus| Artifact::new(Some(path.to_owned()), lus.iter().cloned().collect()))
     }
 
     /// Parse the string `s` into an artifact with no source
@@ -35,8 +35,8 @@ impl<'a> Artifact<'a> {
     }
 }
 
-impl<'a> fmt::Display for Artifact<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl fmt::Display for Artifact {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
             "Artifact from source '{:?}' content: {:?}",
@@ -46,7 +46,7 @@ impl<'a> fmt::Display for Artifact<'a> {
 }
 
 // Parse logical units out of the pandoc AST.
-fn parse_ast(path: Option<&Path>, ast: Pandoc) -> HashSet<LogicalUnit> {
+fn parse_ast(path: Option<&PathBuf>, ast: Pandoc) -> HashSet<LogicalUnit> {
     ast.blocks
         .iter()
         .filter_map(|b| match b {
@@ -63,7 +63,7 @@ fn parse_ast(path: Option<&Path>, ast: Pandoc) -> HashSet<LogicalUnit> {
 // Given the `pandoc_ast` representation of a description list,
 // this finds any items that are valid logical units.
 fn logical_units_of_deflist(
-    path: Option<&Path>,
+    path: Option<&PathBuf>,
     deflist: &[(Vec<Inline>, Vec<Vec<Block>>)],
 ) -> Vec<LogicalUnit> {
     // TODO Infer from file type?

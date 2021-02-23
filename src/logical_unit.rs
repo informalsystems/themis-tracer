@@ -1,7 +1,7 @@
 use crate::util;
 use serde::{Serialize, Serializer};
 use std::fmt;
-use std::path::Path;
+use std::path::PathBuf;
 
 /// # Implements
 ///
@@ -45,7 +45,7 @@ pub struct LogicalUnit {
 
 impl LogicalUnit {
     pub fn new(
-        path: Option<&Path>,
+        path: Option<&PathBuf>,
         kind: Kind,
         id: String,
         content: String,
