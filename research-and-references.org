@@ -1,0 +1,38 @@
+#+TITLE: Research And References
+
+* References
+
+** Related
+- https://en.wikipedia.org/wiki/Requirements_traceability
+- http://scenarioplus.org.uk/index.htm :: An extensive list of requirements
+  engineering tools.
+
+** Papers
+*** [[https://pdf.sciencedirectassets.com/271600/1-s2.0-S0167642314X0002X/1-s2.0-S0167642313000683/main.pdf?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEIb%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJHMEUCIQCT%2F4myezjfTFtE89YzisHOYqtT2qFF%2B2xZE%2BlAEFZlzwIgWxknZGmQaZiFGMbdWv4ejPiQWdG9dbGtii1ObDy7O5cqtAMIfxADGgwwNTkwMDM1NDY4NjUiDK%2BzsRLqrCwS3NfrsyqRA8nHSJ4MhOTs0qRxyRhlxAlqd4x%2BQIV2Mhucz188pAZxkmgd9lsZi05k6jmzpV3Qv3XKy0YtlMYzec50nG6oHJkKZ2b31BhCyCwbAOmOUNsbamqgBAgpmhuxLMZpK5N2BB5D3Yp%2FIDrOJMR8a2%2BGKonZgvI7eOeTJqpXHi%2BvdwNCJRfPctz7%2BXRUIWNqRPoFQUoitqji0IE38ICZWkpBzK6QMzGGrAgZjMVx5VyvE0XfcdQBBHzgf8vh%2FM9kaZTm1U%2FM3BIV3iHTTj0E%2B8%2B61dCfrxF0t9lvtyZCUAISbvhGBnzenjNywgK%2FarHyqZBWR01ijb6Ft6m8lZd0H3t2Xeif6%2FgwL9TN0gDAGn2h227W1SlzLqaLLsARfGv4EZIkdC%2FysntmNkIxVVkT8c6KISjTqCm2AwBs5nBcJ%2BS0HFHMcvspWffIJbKaRwgTUvVfShN6E05zrIVlhxD2Apc9Smqot5q0XdI%2FOVKkqr1TSdHiSForztXLaF8R2dV32zNnGPUp%2F2jOBuHqxE77srjUrCp4MP3bhoEGOusBr5IaeMhRA6Ci4gJC2Wcnp9CAXqztpcMaSpdxvmy9ouq95ZPo0nNxOBDWPv10kNKJ6PWvU5A4YRcL7KLzx2o32NHML3HLVY1wySwCvpghUwuc8UoxbenCzsBgIqxCvkehnK4yib1vBrwUMOx1YmFqUupjPu1zKiTrcFROwE7hjMnOT3dlAYdZaEAf9O%2F4fCScLpOVJvsFTYy%2FmwEGc8kHpBY8SkNm9q5SvR0DpxeKYYOoLG47TcsqGF6ohfNPtVmryiHlS09P2BF6wogOFU53rvpOubY3hguUggebWPfm5nOmdD8w2oYwIZhnsg%3D%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20210208T222638Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=ASIAQ3PHCVTY4QUNCLQE%2F20210208%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=4c555042fcb8d72ed9c1aacc52e1f7b4e3fd107d5d24c6701b17535dd2729f53&hash=11aeb169fe2af84e0665f6c4b4efb7d54b48cfa813c33755a5d0c69cc952b262&host=68042c943591013ac2b2430a89b270f6af2c76d8dfd086a07176afe7c76c2c61&pii=S0167642313000683&tid=spdf-88d46fff-1dee-42d4-872a-ca27ca96f239&sid=3498c551241e29459a2a6ea87f7d5ec4c022gxrqa&type=client][A Method and Tool For Tracing Requirements into Specifications]]
+- Incremental approach to building systems description combining formal and
+  informal artifacts, with a tracability system that supports systematic
+  validation and change management, and a tool that integrates requirements
+  modeling, formal modelling and model checking.
+*** [[https://pdf.sciencedirectassets.com/280203/1-s2.0-S1877050915X00032/1-s2.0-S1877050915003002/main.pdf?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEIX%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJGMEQCIFe2PGwgQjlC3WGCgiXm9inqnFyPmGyE0hNlnzN5aCJaAiBFoTJB0MQeYMF%2B8fHXg6UGVC%2Bkvss9WGDXsZHKKvYdTCq0Awh%2BEAMaDDA1OTAwMzU0Njg2NSIMplcsZW4w%2B0uWP%2Fx5KpED9OyvCV%2FNZ6%2F6kV%2FWHBmAHbX17z5EM19DwLNQbCpeNfMzPE5gXPFtG25pNYXVWPlfHy6llPv8m5N5BX0HyeICFajxRrXGDl9%2BsrCEMt3ogqNRcIqhU1mzjgfZg%2Fy96IrRHy7mIpUq8m8y535sGz4Gb6EEgt2EufU11XIr%2FOO9nF%2BpohXURMbFlD2Ci8b%2BVra%2FS4QV8DxOC%2FNfWD6AghDTdkm2S1xthvN98WztGw4uSESjeq78DHbHworai2e%2FM9VUQjpkGcEjkazyqIRi03xEVdcPM%2BFrvk2ShIj8s6EM7%2BtQ8%2FuTrBDr%2FL%2B5ZrdlTtSaGRDeaK3%2BXIxyIVpEQ25hC6Z%2Fllf2kYfAsKnB7v2mEGWdSmquge5wJ5LuLmCXwaAIydjbaoZLYAxtAvBq9Sy1%2FKyLtPL84vH2JGLTib5Fxow0ir5Sq3MVsxVpo3gj9N00lxrnXq6nw8%2BfD5eGe6KDyowC8bR53kJbgwVHaK4ozc9wmOiCJzQsUBw2HtHsd7f1BWG9QsLqpA%2FFCmbJCDBGj6sw9sqGgQY67AHxYM%2BHNoaRPY6ezaFOwt7UDz0JjHtQvycpyRl%2BncA0N%2Fy7oDEAfwX%2Fbh0KCbjsnRySuriC631k%2FRpyq12JKMlertzpc4gnktTVpx%2BqqYZ2awtIux0X%2FAtj5zNCvFXrKE2wyDdCHq%2FvhCpxjt4XuTCWthXFDAvdmqsWE561esNlvJDXpm3Dc6X4WH%2Fj5cBqSNuzzZptbwM4FPSzX7MGJDi7maCk7D4nezx60%2BvtHU6p3UgQ4aM9Y3b9z4ipG8NTjjchzTwEvc3WTnosRhA%2BQ%2BZhTrfr4ok6SVp6a801MUYgSerS9s%2BQmk7yM0oI2w%3D%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20210208T222135Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=ASIAQ3PHCVTYWY77NNJW%2F20210208%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=bd4f5d188d3e28883e89e109664342f39c1015837191bf655575318623e31082&hash=613d34bddf6d43a71fe1d4e1b628d92a65a3cdbea947aad462b4e9de536a4d99&host=68042c943591013ac2b2430a89b270f6af2c76d8dfd086a07176afe7c76c2c61&pii=S1877050915003002&tid=spdf-55492de8-7e2b-4196-bbb0-6e54d1238138&sid=3498c551241e29459a2a6ea87f7d5ec4c022gxrqa&type=client][An Evolutionary Theory-Systems Approach to a Science of the Ilities]]
+- Proposes an "evolutionary" approach to evolving requirements out of a
+  dialectic between formal specification and user encounters with derived
+  artifacts.
+*** [[http://seclab.illinois.edu/wp-content/uploads/2011/04/GunterGJZ00a.pdf][A Reference Model for Requirements and Specifications]]
+*** [[https://ieeexplore.ieee.org/document/885895][Embedding UML and type theory to formalize the process of requirement engineering]]
+*** [[https://research.utwente.nl/files/6471260/JSS-EmpiRE_2014_Special_Issue_Editorial-Maya_Daneva.pdf][Empirical research methodologies and studies in Requirements Engineering How far did we come?]]
+*** [[https://www.researchgate.net/profile/Francisco_Pinheiro11/publication/2358928_Formal_and_Informal_Aspects_of_Requirements_Tracing/links/597511d6458515e26d09cb66/Formal-and-Informal-Aspects-of-Requirements-Tracing.pdf][Formal and Informal Aspects of Requirements Tracing]]
+*** [[https://www.sciencedirect.com/science/article/pii/B9780128168011000037][Hypergraph-based type theory for software development in a Cyber-Physical context]]
+*** [[http://www.rm-odp.net/files/X.901-1997.pdf][Information technology – Open distributed processing – Reference Model: Overview]]
+*** [[https://digitalcommons.lsu.edu/cgi/viewcontent.cgi?referer=https://scholar.google.ca/&httpsredir=1&article=2219&context=gradschool_dissertations][Perpetual Requirement Engineering]]
+- Proposes process for requirements engineering of "MCS (mission critical
+  systems) applications deployed in rapidly evolving scenarios" -- this is a
+  perfect description of our predicament.
+*** [[http://mcs.open.ac.uk/mj665/TopsyTurvy.pdf][Topsy Turvey Requiquirements]]
+- Argues that the practice of engineering requirements via fragmented MUST/SHALL
+  statements or isolated pre/post conditions is fundamentally faulty and error
+  prone.
+- Advocates instead for a coherent process of requirement engineering starting
+  with clear models and formalizations of the domain etc.
+*** [[https://dl.acm.org/doi/10.1109/ITNG.2008.268][Towards Maude-Tla based Foundation for Complex Concurrent Systems Specification and Certification]]
+- Derives TLA from Maude specifications, giving both composable and modular
+  specification and model checking.
