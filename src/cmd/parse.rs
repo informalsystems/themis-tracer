@@ -9,9 +9,8 @@
 
 use crate::artifact::Artifact;
 use crate::logical_unit::LogicalUnit;
-use std::fmt;
 use std::io;
-use std::path::PathBuf;
+use std::{fmt, path::Path};
 
 /// Formats supported for rendering parsed requirement data
 #[derive(Debug)]
@@ -60,7 +59,7 @@ impl fmt::Display for ParseFormatError {
 
 /// Run the the parser on the file `path` rendering the data in `format`
 /// to `stdout`.
-pub fn run(path: &PathBuf, format: Format) -> Result<(), String> {
+pub fn run(path: &Path, format: Format) -> Result<(), String> {
     // TODO Error handling
     Artifact::from_file(path)
         .map(|a| a.logical_units.iter().cloned().collect())

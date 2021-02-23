@@ -2,9 +2,9 @@ use crate::logical_unit::{Kind, LogicalUnit};
 use crate::pandoc;
 use crate::util;
 use pandoc_ast::{Block, Inline, Pandoc};
-use std::collections::HashSet;
 use std::fmt;
 use std::path::PathBuf;
+use std::{collections::HashSet, path::Path};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Artifact {
@@ -21,7 +21,7 @@ impl Artifact {
     }
 
     /// Parse the file `path` into an artifact
-    pub fn from_file(path: &PathBuf) -> Result<Artifact, String> {
+    pub fn from_file(path: &Path) -> Result<Artifact, String> {
         pandoc::parse_file(path)
             .map(|ast| parse_ast(Some(path), ast))
             .map(|lus| Artifact::new(Some(path.to_owned()), lus.iter().cloned().collect()))
@@ -46,7 +46,7 @@ impl fmt::Display for Artifact {
 }
 
 // Parse logical units out of the pandoc AST.
-fn parse_ast(path: Option<&PathBuf>, ast: Pandoc) -> HashSet<LogicalUnit> {
+fn parse_ast(path: Option<&Path>, ast: Pandoc) -> HashSet<LogicalUnit> {
     ast.blocks
         .iter()
         .filter_map(|b| match b {
@@ -63,7 +63,7 @@ fn parse_ast(path: Option<&PathBuf>, ast: Pandoc) -> HashSet<LogicalUnit> {
 // Given the `pandoc_ast` representation of a description list,
 // this finds any items that are valid logical units.
 fn logical_units_of_deflist(
-    path: Option<&PathBuf>,
+    path: Option<&Path>,
     deflist: &[(Vec<Inline>, Vec<Vec<Block>>)],
 ) -> Vec<LogicalUnit> {
     // TODO Infer from file type?
