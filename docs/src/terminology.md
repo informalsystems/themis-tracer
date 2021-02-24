@@ -8,7 +8,7 @@
   (see con-) + texere "to weave, to make"  ([etymonline](https://www.etymonline.com/search?q=context))
 : A context gathers together the artifacts involved in an enterprise.
 : Ideally a context is grounded in a [TERMINOLOGY.1][] and composed of all the
-  intricate [traces][] that determine the relations between these
+  intricate [traces][TRACE.1] that determine the relations between these
   artifacts. The traces should weave together all the influences from inception,
   to specification, to implementation, to documentation, to revision and
   iteration.
