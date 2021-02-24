@@ -4,8 +4,8 @@ use tracer::cmd;
 
 #[derive(Debug, StructOpt)]
 #[structopt(
-    name = "themis-tracer",
-    about = "Requirements traceability made easier"
+    name = "whorl",
+    about = "Spining threads of signifcance for the context of critical systems"
 )]
 enum Opt {
     /// Parse logical units out of a spec
@@ -41,13 +41,12 @@ enum Opt {
         project: Option<PathBuf>,
     },
 
-    /// Initialize a new context
+    /// Initialize whorl
+    ///
+    /// Defaults to initializing in your home directory. Set `WHORL_HOME` to
+    /// override.
     #[structopt(name = "init")]
-    Init {
-        /// The name of directory in which the context should be created
-        #[structopt(parse(from_os_str))]
-        name: PathBuf,
-    },
+    Init {},
 }
 
 // FIXME
@@ -59,7 +58,7 @@ fn unimplemented() -> Result<(), String> {
 fn main() -> Result<(), String> {
     let opt = Opt::from_args();
     match opt {
-        Opt::Init { name } => cmd::init::run(name),
+        Opt::Init {} => cmd::init::run(),
         Opt::Parse { path, format } => cmd::parse::run(&path, format),
         Opt::List { filter: _ } => unimplemented(),
         Opt::Add { project: _ } => unimplemented(),

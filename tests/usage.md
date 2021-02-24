@@ -12,6 +12,7 @@
 
 ## Setting the environment
 
+<!-- TODO replace by adding the executable to the path -->
 <!-- $MDX set-CMD=../target/debug/themis-tracer -->
 ```sh
 $ echo CMD: $CMD
@@ -25,18 +26,16 @@ Where you see `$CMD` in the following you should just use the installed binary
 
 ```sh
 $ $CMD --version
-themis-tracer 0.1.0
+whorl 0.1.0
 ```
 
 ### `init`ialize a new context
 
 ```sh
-$ $CMD init mycontext
-Initialized a new context in mycontext
-$ ls -a mycontext
-.
-..
-.themis
+$ WHORL_HOME=/tmp $CMD init
+Initialized whorl to /tmp/.whorl
+$ ls /tmp/.whorl
+contexts
 ```
 
 ### `parse` specs
