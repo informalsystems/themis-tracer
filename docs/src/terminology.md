@@ -1,5 +1,7 @@
 # Terminology
 
+## Essential concepts
+
 <a id="CONTEXT.1" class="lu-tag">|CONTEXT.1|</a>
 : > from Latin contextus "a joining together," originally past participle of
   contexere "to weave together," from assimilated form of com "with, together"
@@ -28,7 +30,27 @@
 |REPOSITORY.1|
 : TODO
 
+|USER-AUTHOR.1|
+: A user of an open source text (including a program) who is also empowered and
+  encouraged to alter and transform the text.
+
+|WORKSITE.1|
+: A worksite is place where work is performed. Worksites include
+
+  - Local directories holding projects (e.g., a local git repo of software a UA
+    is implementing).
+  - An office building or room.
+  - A chat server (such as Slack or Zulip)
+  - A software [forge](https://en.wikipedia.org/wiki/Forge_(software)), such as
+    GitHub, GitLab, or [Radicle](https://radicle.xyz/).
+
+## Abbreviations
+
+UA
+: [USER-AUTHOR.1][]
+
 [CONTEXT.1]: #CONTEXT.1
 [TERMINOLOGY.1]: #TERMINOLOGY.1
 [REPOSITORY.1]: #REPOSITORY.1
 [TRACE.1]: #TRACE.1
+[USER-AUTHOR.1]: #USER-AUTHOR.1
