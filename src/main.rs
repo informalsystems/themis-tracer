@@ -4,7 +4,7 @@ use tracer::cmd;
 
 #[derive(Debug, StructOpt)]
 #[structopt(
-    name = "whorl",
+    name = "tracer",
     about = "Spining threads of signifcance for the context of critical systems"
 )]
 enum Opt {
@@ -41,12 +41,29 @@ enum Opt {
         project: Option<PathBuf>,
     },
 
-    /// Initialize whorl
+    /// Initialize tracer
     ///
-    /// Defaults to initializing in your home directory. Set `WHORL_HOME` to
+    /// Defaults to initializing in your home directory. Set `TRACER_HOME` to
     /// override.
     #[structopt(name = "init")]
     Init {},
+
+    /// Manage contexts
+    ///
+    /// Defaults to initializing in your home directory. Set `TRACER_HOME` to
+    /// override.
+    Context(Context),
+}
+
+#[derive(Debug, StructOpt)]
+struct Context {
+    #[structopt(subcommand)]
+    cmds: ContextCmds,
+}
+
+#[derive(Debug, StructOpt)]
+enum ContextCmds {
+    New {},
 }
 
 // FIXME
@@ -63,5 +80,6 @@ fn main() -> Result<(), String> {
         Opt::List { filter: _ } => unimplemented(),
         Opt::Add { project: _ } => unimplemented(),
         Opt::Sync { project: _ } => unimplemented(),
+        Opt::Context(_opt) => unimplemented(),
     }
 }
