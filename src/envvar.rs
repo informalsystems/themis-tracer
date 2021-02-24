@@ -1,1 +1,1 @@
-pub const WHORL_HOME: &str = "WHORL_HOME";
+pub const TRACER_HOME: &str = "TRACER_HOME";

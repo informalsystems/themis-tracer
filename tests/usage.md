@@ -26,15 +26,15 @@ Where you see `$CMD` in the following you should just use the installed binary
 
 ```sh
 $ $CMD --version
-whorl 0.1.0
+tracer 0.1.0
 ```
 
 ### `init`ialize a new context
 
 ```sh
-$ WHORL_HOME=/tmp $CMD init
-Initialized whorl to /tmp/.whorl
-$ ls /tmp/.whorl
+$ TRACER_HOME=/tmp $CMD init
+Initialized tracer to /tmp/.tracer
+$ ls /tmp/.tracer
 contexts
 ```
 
