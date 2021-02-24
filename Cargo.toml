@@ -31,6 +31,7 @@ peg = "*"
 simple_logger = "*"
 structopt = "*"
 serde = { version = "*", features = ["derive"] }
+home = "*"
 # serde_dhall = "*"
 serde_json = "*"
 
