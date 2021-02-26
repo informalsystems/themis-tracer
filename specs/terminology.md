@@ -28,14 +28,22 @@
 : The elementary components of a context, between which traces are to be
   captured, are called "logical units".
 :
-: We distinguish 5 kinds of logical units:
+: We distinguish 3 basic kinds of logical units:
 
-  - [LOGICAL-UNIT.1::WRITTEN-SPEC.1]
-  - [LOGICAL-UNIT.1::EXECUTABLE-SPEC.1]
+  - [LOGICAL-UNIT.1::SPEC.1]
   - [LOGICAL-UNIT.1::IMPLEMENTATION.1]
   - [LOGICAL-UNIT.1::VERIFICATION.1]
 
-|LOGICAL-UNIT.1::WRITTEN-SPEC.1|
+|LOGICAL-UNIT.1::SPEC.1|
+: "A  **specification**  is  a  written  description  of  what  a  system  is
+  supposed  to  do" (Lamport, [Specifying Systems][]).
+:
+: We further divide specs into
+
+  - [LOGICAL-UNIT.1::SPEC.1::WRITTEN.1]
+  - [LOGICAL-UNIT.1::SPEC.1::EXEUCTABLE.1]
+
+|LOGICAL-UNIT.1::SPEC.1::WRITTEN.1|
 : A logical unit is a **written spec** if it is a recorded specification of some
   properties of a system. A written spec communicates requirements between
   humans, but may not be executable by machines. 
@@ -52,8 +60,8 @@ specifications of the properties of key words within the system of communication
 used to establish the context of development and operations. The 5 logical units
 in this terminology are examples.
 
-|LOGICAL-UNIT.1::EXECUTABLE-SPEC.1|
-: A logical unit that is a [written spec][LOGICAL-UNIT.1::WRITTEN-SPEC.1] is
+|LOGICAL-UNIT.1::SPEC.1::EXEUCTABLE.1|
+: A logical unit that is a [written spec][LOGICAL-UNIT.1::SPEC.1::WRITTEN.1] is
   also an **executable spec** if it can be executed by a machine for use in
   verification, implementation, reference, etc.
   
@@ -72,6 +80,9 @@ These are examples of implementation units:
 - A constant definition
 - A function declaration 
 - A module
+- A more specific specification that describes how a more general specification
+  is to be implemented (see [TRC-IMPL.2::PREFIX.1][]). Thus,
+  [LOGICAL-UNIT.1::IMPLEMENTATION.1][] is an implementation of [LOGICAL-UNIT.1][].
 
 |LOGICAL-UNIT.1::VERIFICATION.1|
 : A logical unit is a **verification*** if it verifies that an
@@ -88,8 +99,8 @@ These are examples of verification units:
 
 Verification units generally serve to verify that the
 [implementation][LOGICAL-UNIT.1::IMPLEMENTATION.1] satisfies or ensures a
-property recorded in a [written][LOGICAL-UNIT::WRITTEN-SPEC.1] or
-[executable][LOGICAL-UNIT::EXECUTABLE-SPEC.1] spec.
+property recorded in a [written][LOGICAL-UNIT::SPEC.1::WRITTEN.1] or
+[executable][LOGICAL-UNIT::SPEC.1::EXEUCTABLE.1] spec.
 
 **Note:** These distinctions are (1) relational and (2) not mutually exclusive.
 
@@ -121,6 +132,8 @@ property recorded in a [written][LOGICAL-UNIT::WRITTEN-SPEC.1] or
   - A software [forge](https://en.wikipedia.org/wiki/Forge_(software)), such as
     GitHub, GitLab, or [Radicle](https://radicle.xyz/).
 
+[Specifying Systems]: https://www.microsoft.com/en-us/research/publication/specifying-systems-the-tla-language-and-tools-for-hardware-and-software-engineers/?from=http%3A%2F%2Fresearch.microsoft.com%2Fusers%2Flamport%2Ftla%2Fbook.html
+
 ## Abbreviations
 
 UA
@@ -131,3 +144,4 @@ UA
 [REPOSITORY.1]: #REPOSITORY.1
 [TRACE.1]: #TRACE.1
 [USER-AUTHOR.1]: #USER-AUTHOR.1
+
