@@ -1,0 +1,86 @@
+#+TITLE: Design Notes
+
+This is a scratch pad used for staging notes before they find their place in
+more structured and permanent locations.
+
+* Aim
+
+Tracer is a prosthetic device for cultivating, and connecting within, the [[./docs/src/terminology.md#CONTEXT.1][context]]
+of software development for critical systems.
+
+It is designed to support *DOVES:dove:*: Development and Operations that are
+Verifiable and Explicitly Specified.
+
+It seeks to improve the productivity of distributed teams of developers by
+supporting them throughout the development process and providing means to ensure
+the correctness and continuity of communication, implementation, and operation.
+
+- Maximally :: To enable formally specified and verified development of proven
+  correct programs shaped through distributed and modular development.
+- Minimally :: To provide the automated convenience of relevant information
+  ready to hand while doing the work of specification, implementation, and
+  verification.
+
+* Features
+
+- Simplifies navigation through different project artifacts including
+  - English specs
+  - Formal specs (e.g., TLA+)
+  - Source code of implementation(s)
+- Cross-repo search capabilities
+
+* Principles
+** Integrate semiotics systems
+This is the core functionality we aim to provide: a way of integrating semiotic
+systems by providing a way of mapping one system onto another according to the
+traces left.
+** Maximize economy of cognition
+Every disruption to the process of cogitating and synthesizing the systems
+presented increases risks of misunderstanding and failed comprehension.
+
+* Tasks
+** TODO Use a lightweight database for storing info, rather the file system
+
+* Ideas
+
+** Requirement tagging via macros
+
+#+BEGIN_SRC rust
+#[implements("SPEC-HELLO.1")]
+fn hello() {
+    ...
+}
+#+END_SRC
+** Use a mergeable and branchable datastore
+*** TODO Rationale
+Viewpoints, diversity of tracing networks.
+*** TODO Advantages
+*** TODO Options
+- TerminusDB
+- Irmin
+
+* The tracer dir
+#+begin_src sh
+~/.tracer/
+        |- contexts/
+                   |- order          # Records the mereological relations between contexts 
+                   |- current        # Tracks which context is current
+                   |- context-foo\...
+                   |- context-bar\...
+        |- user                      # User info?
+#+end_src
+    
+* References
+
+- sexp lib :: https://github.com/rotty/lexpr-rs
+
+* STRT Research
+** STRT Read ICS 1 and EIP 1
+These set out approaches to requirement engineering. The fact that the state of
+the art is some ad hoc rules in a markdown file makes it pretty clear this area
+is ripe for invetions.
+
+- https://github.com/cosmos/ics/tree/master/spec/ics-001-ics-standard
+- https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1.md
+** STRT Review light client spec
+https://github.com/tendermint/spec/tree/master/rust-spec/lightclient
