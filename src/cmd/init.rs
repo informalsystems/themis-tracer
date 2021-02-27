@@ -15,7 +15,7 @@ pub fn run() -> Result<(), String> {
         };
         Err(msg)
     } else {
-        let contexts_dir = tracer_dir.join("contexts");
+        let contexts_dir = locations::contexts_dir()?;
         fs::create_dir_all(contexts_dir).map_err(|e| format!("{:?}", e))?;
         match tracer_dir.into_os_string().into_string() {
             Ok(fname) => println!("Initialized tracer to {}", fname),

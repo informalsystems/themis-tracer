@@ -7,18 +7,36 @@ use crate::artifact::Artifact;
 use std::collections::HashSet;
 use std::path::PathBuf;
 
+pub struct Local {
+    path: PathBuf,
+    // Used to determine wehre to sync from
+    default_upstream: Option<String>,
+    // Used to determine wehre to sync from
+    default_branch: Option<String>,
+}
+
+pub struct Remote {
+    // TODO URL type?
+    url: String,
+    // Used to determine wehre to sync from
+    default_branch: Option<String>,
+}
+
+pub enum Location {
+    Local(Local),
+    Remote(Remote),
+}
+
 pub struct Repo {
     artifacts: HashSet<Artifact>,
-    remote: String,
-    local: Option<PathBuf>,
+    location: Location,
 }
 
 impl Repo {
-    pub fn new(artifacts: HashSet<Artifact>, remote: String, local: Option<PathBuf>) -> Repo {
+    pub fn new(artifacts: HashSet<Artifact>, location: Location) -> Repo {
         Repo {
             artifacts,
-            remote,
-            local,
+            location,
         }
     }
 
