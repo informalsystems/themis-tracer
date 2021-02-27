@@ -34,6 +34,7 @@ serde = { version = "*", features = ["derive"] }
 home = "*"
 # serde_dhall = "*"
 serde_json = "*"
+proto-vulcan = "*"
 
 [dev-dependencies]
 assert_cmd = "*"
