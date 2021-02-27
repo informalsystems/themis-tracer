@@ -26,7 +26,7 @@ pub enum Kind {
     Requirement,
     Model,
     Implementation,
-    Test,
+    Verification,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Hash)]
