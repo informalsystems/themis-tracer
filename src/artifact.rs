@@ -1,15 +1,31 @@
-use crate::logical_unit::{Kind, LogicalUnit};
-use crate::pandoc;
-use crate::util;
-use pandoc_ast::{Block, Inline, Pandoc};
-use std::fmt;
-use std::path::PathBuf;
-use std::{collections::HashSet, path::Path};
+use {
+    crate::{
+        logical_unit::{Kind, LogicalUnit},
+        pandoc, util,
+    },
+    anyhow::Result,
+    pandoc_ast::{Block, Inline, Pandoc},
+    std::{
+        collections::HashSet,
+        fmt,
+        path::{Path, PathBuf},
+    },
+    thiserror::Error,
+};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Artifact {
     pub source: Option<PathBuf>,
     pub logical_units: HashSet<LogicalUnit>,
+}
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("parsing artifact {0}")]
+    ParsingArtifact(PathBuf),
+
+    #[error("parsing artifact from string {0}")]
+    ParsingString(String),
 }
 
 impl Artifact {
@@ -21,17 +37,19 @@ impl Artifact {
     }
 
     /// Parse the file `path` into an artifact
-    pub fn from_file(path: &Path) -> Result<Artifact, String> {
+    pub fn from_file(path: &Path) -> Result<Artifact> {
         pandoc::parse_file(path)
             .map(|ast| parse_ast(Some(path), ast))
             .map(|lus| Artifact::new(Some(path.to_owned()), lus.iter().cloned().collect()))
+            .map_err(|_| Error::ParsingArtifact(PathBuf::from(path)).into())
     }
 
     /// Parse the string `s` into an artifact with no source
-    pub fn from_string(s: &str) -> Result<Artifact, String> {
+    pub fn from_string(s: &str) -> Result<Artifact> {
         pandoc::parse_string(s)
             .map(|ast| parse_ast(None, ast))
             .map(|lus| Artifact::new(None, lus.iter().cloned().collect()))
+            .map_err(|_| Error::ParsingString(s.into()).into())
     }
 }
 

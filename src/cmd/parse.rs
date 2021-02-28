@@ -7,10 +7,11 @@
 //! [`LogicalUnit`]: crate::logical_unit::LogicalUnit
 //! [`Format`]: Format
 
-use crate::artifact::Artifact;
-use crate::logical_unit::LogicalUnit;
-use std::io;
-use std::{fmt, path::Path};
+use {
+    crate::{artifact::Artifact, logical_unit::LogicalUnit},
+    anyhow::Result,
+    std::{fmt, io, path::Path},
+};
 
 /// Formats supported for rendering parsed requirement data
 #[derive(Debug)]
@@ -59,7 +60,7 @@ impl fmt::Display for ParseFormatError {
 
 /// Run the the parser on the file `path` rendering the data in `format`
 /// to `stdout`.
-pub fn run(path: &Path, format: Format) -> Result<(), String> {
+pub fn run(path: &Path, format: Format) -> Result<()> {
     // TODO Error handling
     Artifact::from_file(path)
         .map(|a| a.logical_units.iter().cloned().collect())
@@ -68,7 +69,7 @@ pub fn run(path: &Path, format: Format) -> Result<(), String> {
 
 /// Render the [`LogicalUnits`]s `lus` according to `format`.
 /// Prints rendered results to stdout.
-fn render(format: Format, mut lus: Vec<LogicalUnit>) -> Result<(), String> {
+fn render(format: Format, mut lus: Vec<LogicalUnit>) -> Result<()> {
     lus.sort();
 
     match format {
@@ -76,11 +77,11 @@ fn render(format: Format, mut lus: Vec<LogicalUnit>) -> Result<(), String> {
             // See https://docs.rs/csv/1.1.3/csv/tutorial/index.html#writing-csv
             let mut wtr = csv::Writer::from_writer(io::stdout());
             lus.iter()
-                .try_for_each(|x| wtr.serialize(x).map_err(|e| format!("{}", e)))
+                .try_for_each(|x| wtr.serialize(x).map_err(|e| e.into()))
         }
         Format::Json => lus.iter().try_for_each(|x| {
             serde_json::to_string(x)
-                .map_err(|e| format!("{}", e))
+                .map_err(|e| e.into())
                 .map(|x| println!("{}", x))
         }),
     }

@@ -1,13 +1,16 @@
-use structopt::StructOpt;
-use tracer::{cmd, cmd::opt::Cmd};
+use {
+    anyhow::{anyhow, Result},
+    structopt::StructOpt,
+    tracer::{cmd, cmd::opt::Cmd},
+};
 
 // FIXME
-fn unimplemented() -> Result<(), String> {
-    Err("Not yet implemented!".to_string())
+fn unimplemented() -> Result<()> {
+    Err(anyhow!("{}", "Not yet implemented!"))
 }
 
 // TODO Replace String with error type
-fn main() -> Result<(), String> {
+fn main() -> Result<()> {
     let opt = Cmd::from_args();
     match opt {
         Cmd::Init {} => cmd::init::run(),

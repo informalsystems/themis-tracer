@@ -27,6 +27,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.38"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "afddf7f520a80dbf76e6f50a35bca42a2331ef227a28b3b6dc5c2e2338d114b1"
+
+[[package]]
 name = "assert_cmd"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -637,9 +643,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.63"
+version = "1.0.64"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43535db9747a4ba938c0ce0a98cc631a46ebf943c9e1d604e091df6007620bf6"
+checksum = "799e97dc9fdae36a5c8b8f2cae9ce2ee9fdce2058c57a93e6099d919fd982f79"
 dependencies = [
  "itoa",
  "ryu",
@@ -777,6 +783,7 @@ dependencies = [
 name = "themis-tracer"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "assert_cmd",
  "csv",
  "failure",
