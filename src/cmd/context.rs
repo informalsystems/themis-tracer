@@ -10,5 +10,6 @@ fn new(_name: String) -> Result<(), String> {
 pub fn run(opt: opt::Context) -> Result<(), String> {
     match opt.cmd {
         Cmd::New { name } => new(name),
+        Cmd::List {} => Ok(()),
     }
 }

@@ -66,4 +66,6 @@ pub enum ContextCmd {
         /// The name of the context
         name: String,
     },
+
+    List {},
 }
