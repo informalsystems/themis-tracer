@@ -7,6 +7,7 @@ use std::path::PathBuf;
 pub const WORKSITE_FILE_NAME: &str = ".tracer";
 pub const CONTEXTS_DIR_NAME: &str = "contexts";
 
+// TODO DOcument TRACER_HOME var
 /// The directory used as HOME for tracer
 pub fn tracer_home() -> Option<PathBuf> {
     match std::env::var_os(envvar::TRACER_HOME) {

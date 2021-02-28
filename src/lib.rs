@@ -9,7 +9,6 @@ pub mod artifact;
 pub mod cmd;
 pub mod context;
 mod envvar;
-pub mod intf;
 mod locations;
 pub mod logical_unit;
 mod pandoc;
