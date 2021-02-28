@@ -39,7 +39,24 @@ Every disruption to the process of cogitating and synthesizing the systems
 presented increases risks of misunderstanding and failed comprehension.
 
 * Tasks
-** TODO Use a lightweight database for storing info, rather the file system
+** TODO Use a lightweight database for storing info, rather than the file system
+** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17
+
+** TODO Software development as a value flow
+
+| activity       | inputs                                    | process | output                       |
+|----------------+-------------------------------------------+---------+------------------------------|
+| all            | I = time, commons (OSS, domain knowledge) | any     | all                          |
+| specification  | I                                         | writing | specs                        |
+| implementation | I, specs                                  | coding  | program                      |
+| verification   | I, program                                | testing | evidence of program -> specs |
+
+#+begin_quote
+To trace: follow the completed path backwards from its current point to where it began.
+
+To track: follow the emerging path forwards from your starting point to wherever the thing currently is.
+#+end_quote
+https://valueflo.ws/appendix/track.html
 
 * Ideas
 
@@ -59,17 +76,40 @@ Viewpoints, diversity of tracing networks.
 - TerminusDB
 - Irmin
 
-* The tracer dir
-#+begin_src sh
-~/.tracer/
-        |- contexts/
-                   |- order          # Records the mereological relations between contexts 
-                   |- current        # Tracks which context is current
-                   |- context-foo\...
-                   |- context-bar\...
-        |- user                      # User info?
+* Data storage
+
+#+begin_src fundamental
+~/.tracer\
+        |- user # User info
+        |- repo\ # Tracked repos
+               |- repo-1/
+               |- repo-2\
+                        |- self.cfb # Info on where to find the repo
+                        |- unit\
+                               |- TRC-TAG.1\
+                                           |- SYNTAX.1\
+                                                      |- {kind, content, references, source} # A Logical unit
+         |- contexts\
+                    |- order                 # Records the mereological relations between contexts
+                    |- current ->  <contxt> # Symbolic link to current context
+                    |- context-1.cfg
+                    |- context-2.cfg
 #+end_src
-    
+
+Context =.cfg= files
+
+#+begin_src json
+{ "name": "context-1"
+, "repos": [ "repo-1", "repo-2" ] }
+#+end_src
+
+Repos =.cfg= files:
+
+#+begin_src json
+{ "location": "<location>" }
+#+end_src
+
+
 * References
 
 - sexp lib :: https://github.com/rotty/lexpr-rs

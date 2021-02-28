@@ -133,8 +133,9 @@ module Logical_unit = struct
   (** |TRC-GITHUB-REF.1::IMPL.1::LOC.1|*)
   module Source = struct
     type t =
-      { line : int option
-      ; column : int option
+      { repo : string option
+      ; file : path option
+      ; line : int option
       }
   end
 
@@ -151,18 +152,10 @@ module Logical_unit = struct
   let version : t -> int = raise TODO
 end
 
-(** |TRC-GITHUB-REF.1::IMPL.1::ARTIFACT.1|*)
-module Artifact = struct
-  type t =
-    { source : path option
-    ; logical_units : Logical_unit.t set
-    }
-end
-
 (** |TRC-GITHUB-REF.1::IMPL.1::REPO.1|*)
 module Repo = struct
   type local =
-    { path : path
+    { name : string option
     ; default_upstream : string option
     ; default_branch : string option
     }
@@ -196,15 +189,21 @@ module Context = struct
 
   type t =
     { name : name
-    ; registry : Logical_unit.t set
     ; repos : Repo.t set
     }
 
+  let list_repos : t -> Repo.t set = raise TODO
+
   let add_repo : t -> Repo.t -> t = raise TODO
 
-  let remove_remove : t -> Repo.t -> t = raise TODO
+  let remove_repo : t -> Repo.t -> t = raise TODO
+
+  (** List all specs in the context *)
+  let list_units : t -> Logical_unit.t set = raise TODO
 
   let add_unit : t -> Repo.t -> t = raise TODO
+
+  let remove_unit : t -> Repo.t -> t = raise TODO
 
   let sync : t -> t = raise TODO
 end
@@ -270,6 +269,8 @@ module Db = struct
       not (set_is_empty newer_parents)
     in
     find_all_units db is_outdated
+
+  let unit_source : t -> Logical_unit.t -> Artifact.t = raise TODO
 end
 
 module Report = struct
