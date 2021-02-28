@@ -89,11 +89,11 @@ Viewpoints, diversity of tracing networks.
                                |- TRC-TAG.1\
                                            |- SYNTAX.1\
                                                       |- {kind, content, references, source} # A Logical unit
-         |- contexts\
-                    |- order                 # Records the mereological relations between contexts
-                    |- current ->  <contxt> # Symbolic link to current context
-                    |- context-1.cfg
-                    |- context-2.cfg
+        |- contexts\
+                   |- order                 # Records the mereological relations between contexts
+                   |- current ->  <contxt> # Symbolic link to current context
+                   |- context-1.cfg
+                   |- context-2.cfg
 #+end_src
 
 Context =.cfg= files

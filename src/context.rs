@@ -1,7 +1,7 @@
 //! A context is a gathering of related artifact repositories.
 //! TODO Expand
 
-use {crate::locations, sled, std::path::PathBuf, thiserror::Error};
+use {crate::locations, anyhow::Result, sled, std::path::PathBuf, thiserror::Error};
 
 #[derive(Error, Debug)]
 enum Error {
@@ -18,7 +18,7 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new(name: &String) -> Result<Context, String> {
+    pub fn new(name: &String) -> Result<Context> {
         let ctxt = Context {
             name: name.clone(),
             db: Context::db(&name)?,
@@ -29,30 +29,30 @@ impl Context {
         Ok(ctxt)
     }
 
-    pub fn repos(&self) -> Result<sled::Tree, String> {
+    pub fn repos(&self) -> Result<sled::Tree> {
         self.db
             .open_tree("repos")
-            .map_err(|_| "repos tree".to_string())
+            .map_err(|e| Error::LoadDb(e).into())
     }
 
-    pub fn units(&self) -> Result<sled::Tree, String> {
+    pub fn units(&self) -> Result<sled::Tree> {
         self.db
             .open_tree("units")
-            .map_err(|_| "repos tree".to_string())
+            .map_err(|e| Error::LoadDb(e).into())
     }
 
-    fn db(name: &String) -> Result<sled::Db, String> {
-        let dir = Context::db_dir(name).map_err(|_| "TODO".to_string())?;
-        sled::open(dir).map_err(|_| "TODO".to_string())
+    fn db(name: &String) -> Result<sled::Db> {
+        let dir = Context::db_dir(name)?;
+        sled::open(dir).map_err(|e| Error::LoadDb(e).into())
     }
 
-    fn db_dir(name: &String) -> Result<PathBuf, Error> {
+    fn db_dir(name: &String) -> Result<PathBuf> {
         locations::contexts_dir()
             .map(|p| p.join(name))
-            .map_err(|_| Error::FindDb(name.clone()))
+            .map_err(|_| Error::FindDb(name.clone()).into())
     }
 
-    fn exists(name: &String) -> Result<bool, Error> {
+    fn exists(name: &String) -> Result<bool> {
         Context::db_dir(name).map(|p| p.exists())
     }
 }

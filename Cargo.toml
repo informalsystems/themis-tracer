@@ -37,6 +37,7 @@ serde_json = "*"
 sled = "*"
 zerocopy = "*"
 thiserror = "*"
+anyhow = "*"
 
 [dev-dependencies]
 assert_cmd = "*"

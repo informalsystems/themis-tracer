@@ -1,8 +1,18 @@
 //! Constants and derived values recording location in computer space.
 //! Dirs, URLs, etc.
 
-use crate::envvar;
-use std::path::PathBuf;
+use {
+    crate::envvar,
+    anyhow::{Context, Result},
+    std::path::PathBuf,
+    thiserror::Error,
+};
+
+#[derive(Error, Debug)]
+enum Error {
+    #[error("Cannot identify home directory")]
+    NoHome,
+}
 
 pub const WORKSITE_FILE_NAME: &str = ".tracer";
 pub const CONTEXTS_DIR_NAME: &str = "contexts";
@@ -17,14 +27,16 @@ pub fn tracer_home() -> Option<PathBuf> {
 }
 
 /// The directory used for storing local data
-pub fn tracer_dir() -> Result<PathBuf, String> {
-    let mut path = tracer_home().ok_or_else(|| "Cannot identify home directory".to_string())?;
+pub fn tracer_dir() -> Result<PathBuf> {
+    let mut path = tracer_home()
+        .ok_or_else(|| Error::NoHome)
+        .context("looking from $HOME or a value set by $TRACER_HOME")?;
     path.push(WORKSITE_FILE_NAME);
     Ok(path)
 }
 
 /// Directory in which contexts are stored
-pub fn contexts_dir() -> Result<PathBuf, String> {
+pub fn contexts_dir() -> Result<PathBuf> {
     let mut path = tracer_dir()?;
     path.push(CONTEXTS_DIR_NAME);
     Ok(path)
