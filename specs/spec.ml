@@ -169,12 +169,7 @@ module Repo = struct
     | Local of local
     | Remote of remote
 
-  type t =
-    { artifacts : Artifact.t set
-    ; location : location
-    }
-
-  let artifacts : t -> Artifact.t set = raise TODO
+  type t = { location : location }
 
   let logical_units : t -> Logical_unit.t set = raise TODO
 
@@ -190,6 +185,7 @@ module Context = struct
   type t =
     { name : name
     ; repos : Repo.t set
+    ; units : Logical_unit.t set
     }
 
   let list_repos : t -> Repo.t set = raise TODO
@@ -270,7 +266,7 @@ module Db = struct
     in
     find_all_units db is_outdated
 
-  let unit_source : t -> Logical_unit.t -> Artifact.t = raise TODO
+  let unit_source : t -> Logical_unit.t -> Logical_unit.Source.t = raise TODO
 end
 
 module Report = struct

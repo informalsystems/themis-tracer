@@ -8,9 +8,11 @@
 pub mod artifact;
 pub mod cmd;
 pub mod context;
+pub mod db;
+pub mod logical_unit;
+pub mod repo;
+
 mod envvar;
 mod locations;
-pub mod logical_unit;
 mod pandoc;
-pub mod repo;
 mod util;

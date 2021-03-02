@@ -3,6 +3,12 @@
 This is a scratch pad used for staging notes before they find their place in
 more structured and permanent locations.
 
+* Sprint deliverables
+- Parsing spec reference IDs out of artifacs (including markdown and code)
+- Creation of database of linked artifacts
+- Linkification of spec reference IDs in the artifacts
+- Generation of a static site to give an overview of connected artifacts
+- Suggestion of link reference IDs by fuzzy matching on spec text and ID tag
 * Aim
 
 Tracer is a prosthetic device for cultivating, and connecting within, the [[./docs/src/terminology.md#CONTEXT.1][context]]
@@ -78,6 +84,99 @@ Viewpoints, diversity of tracing networks.
 
 * Data storage
 
+After quite in depth consideration, I've opted to use sqlite as the backend for
+prototyping and initial development.
+
+** tl;dr:
+
+- it is a long-established industry standard
+- it is high-level
+- it will save time in implementing a bespoke storage data scheme
+- it will likely save hundreds of lines of code of relational lookup logic
+- it is not likely to meet with pushback from technologically conservative
+  people in our org.
+
+** Requirements
+
+- Need to be able to update all LUs of a repo.
+- Need to be able to switch contexts
+- Need to be able to lookup logical units
+- Need to be able to load all logical units of a context
+- Need to be able to update and add/remove logical units
+- Need to be able to update and add/remove repos
+- Need to be able to find the source for a logical unit
+
+** Pros/cons evaluation table of options
+
+| Option       | Cons                                                                                               | Pros                                                        | Risk                  |
+|--------------+----------------------------------------------------------------------------------------------------+-------------------------------------------------------------+-----------------------|
+| Files system | Low-level,                                                                                         | Integration with git, can share without rebuilding          |                       |
+| KV-Store     | Some queries are convoluted and inefficient, opaque storage                                        | Mid-level                                                   |                       |
+| Sqlite       | Learning curve, expressivity limits, opaque storage, why rust then?                                | High-level, easy to query complex relations                 |                       |
+| Prolog       | External dependency (just package), have implement integration, pushback from team, why rust then? | Very-high-level, git integration, can share with rebuilding | Integration? Pushback |
+
+** Sketch of options
+*** KV-Store
+
+A single sled db, with trees:
+
+- context
+  - current: context
+  - foo: context
+  - bar: context
+- repo/a:
+  - lu1-id: lu1
+  - lu2-id: lu2
+- repo/b: lus
+- repo/info
+  - repo/a : {location}
+
+Each context entry includes:
+
+- name: string
+- repos: repo-ids list
+
+Each repo entry includes
+
+- repo-location info
+- logical-units
+
+**** Sharing
+
+Export the =context=. Share that, Other users reconstruct.
+
+*** Sqlite
+
+The usual. Logic follows Prolog, but queries will be more cumbersome. Tech is
+more widely known tho.
+
+*** Prolog
+
+#+begin_src prolog
+current_context(foo).
+
+context(foo).
+context(bao).
+
+context_repo(foo, repo-a).
+context_repo(foo, repo-b).
+
+repo(repo-a, location).
+repo(repo-b, loation).
+
+lu(id1, def, source, repo).
+lu(id2, def, source, repo).
+#+end_src
+
+#+begin_quote prolog
+repo_lu(Repo, Lu):- Lu = lu(ID, Def, Src, Repo), Lu.
+repo_lus(Repo, Lus) :- findall(Lu, repo_lu(Repo, Lu), Lus).
+
+context_repos(Context, Repos) :- findall(Repo, context_repo(Context, Repo), Repos).
+#+end_quote
+
+*** File system
+
 #+begin_src fundamental
 ~/.tracer\
         |- user # User info
@@ -92,7 +191,9 @@ Viewpoints, diversity of tracing networks.
         |- contexts\
                    |- order                 # Records the mereological relations between contexts
                    |- current ->  <contxt> # Symbolic link to current context
-                   |- context-1.cfg
+                   |- context\
+                             |- info
+                             |- repo-1 -> repo-1 
                    |- context-2.cfg
 #+end_src
 
