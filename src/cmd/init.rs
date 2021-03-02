@@ -26,15 +26,14 @@ pub(super) fn ensured() -> Result<sql::Connection> {
         Ok(conn)
     } else {
         fs::create_dir_all(dir.clone()).map_err(|e| InitError::Home(e.to_string()))?;
-        match dir.into_os_string().into_string() {
-            Err(_) => {
-                println!("Initialization succeeded but the home location cannot be dispalyed.")
-            }
-            Ok(fname) => {
-                println!("Initialized to {}", fname)
-            }
-        }
-        Ok(db::connection()?)
+        let location = dir
+            .into_os_string()
+            .into_string()
+            .unwrap_or_else(|_| "<cannot be displayed>".into());
+        let conn = db::connection()?;
+        db::init(&conn)?;
+        println!("Initialized into {}", location);
+        Ok(conn)
     }
 }
 
