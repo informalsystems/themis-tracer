@@ -1,9 +1,9 @@
 //! Initialize new contexts
 
 use {
-    crate::locations,
+    crate::{db, locations},
     anyhow::Result,
-    // sled,
+    rusqlite as sql,
     std::{fs, path::PathBuf},
     thiserror::Error,
 };
@@ -16,34 +16,34 @@ pub enum InitError {
     Exists(PathBuf),
 }
 
-/// Returns `Ok(Some(path))` if already inited to `path`, `Ok(None)` if
-/// initalized on call, and `Err(msg)` if something goes wrong during
-/// initialization.
-pub(super) fn ensured() -> Result<Option<PathBuf>> {
+/// Returns `Ok(conn)` if the db connection `conn` can be iniated with the app's
+/// db. If needed, the config dir is created.
+pub(super) fn ensured() -> Result<sql::Connection> {
     let dir = locations::tracer_dir()?;
     if dir.exists() {
         // If the directory exists, we assume proper initialization
-        Ok(Some(dir))
+        let conn = db::connection()?;
+        Ok(conn)
     } else {
-        let contexts_dir = locations::contexts_dir()?;
-        fs::create_dir_all(contexts_dir).map_err(|e| InitError::Home(e.to_string()))?;
+        fs::create_dir_all(dir.clone()).map_err(|e| InitError::Home(e.to_string()))?;
         match dir.into_os_string().into_string() {
-            Ok(fname) => println!("Initialized tracer to {}", fname),
             Err(_) => {
-                // TODO output warning
                 println!("Initialization succeeded but the home location cannot be dispalyed.")
             }
+            Ok(fname) => {
+                println!("Initialized to {}", fname)
+            }
         }
-        Ok(None)
+        Ok(db::connection()?)
     }
 }
 
-// TODO Cleanup
 /// Run the tool initializion program
 pub fn run() -> Result<()> {
-    if let Some(dir) = ensured()? {
+    let dir = locations::tracer_dir()?;
+    if dir.exists() {
         Err(InitError::Exists(dir).into())
     } else {
-        Ok(())
+        ensured().map(|_| ())
     }
 }

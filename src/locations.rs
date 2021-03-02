@@ -29,10 +29,14 @@ pub fn tracer_home() -> Option<PathBuf> {
 /// The directory used for storing local data
 pub fn tracer_dir() -> Result<PathBuf> {
     let mut path = tracer_home()
-        .ok_or_else(|| Error::NoHome)
+        .ok_or(Error::NoHome)
         .context("looking from $HOME or a value set by $TRACER_HOME")?;
     path.push(WORKSITE_FILE_NAME);
     Ok(path)
+}
+
+pub fn tracer_db() -> Result<PathBuf> {
+    tracer_dir().map(|p| p.join("tracer.db"))
 }
 
 /// Directory in which contexts are stored
