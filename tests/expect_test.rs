@@ -1,8 +1,9 @@
 use assert_cmd::Command;
 use glob::glob;
-use std::env;
 use std::fs;
+use std::io;
 use std::path::Path;
+use std::{env, io::Write};
 
 #[test]
 fn mdx_tests() {
@@ -26,11 +27,17 @@ fn mdx_tests() {
             .assert()
             .success();
 
-        Command::new("diff")
+        let output = Command::new("diff")
             .arg("--color")
             .arg(expected)
             .arg(corrected)
-            .assert()
-            .success();
+            .output()
+            .unwrap();
+
+        if !output.status.success() {
+            io::stdout().write_all(&output.stdout).unwrap();
+            io::stderr().write_all(&output.stderr).unwrap();
+            assert!(false)
+        }
     }
 }
