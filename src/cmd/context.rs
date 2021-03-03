@@ -13,7 +13,7 @@ use {
 fn new(name: String) -> Result<()> {
     let conn = db::connection()?;
     db::context::add(&conn, Context::new(&name))?;
-    println!("Created the new context `{}`", name);
+    println!("Created the context `{}`", name);
     Ok(())
 }
 
