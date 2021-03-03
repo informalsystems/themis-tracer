@@ -13,10 +13,12 @@
 ## Setting the environment
 
 <!-- TODO replace by adding the executable to the path -->
-<!-- $MDX set-CMD=../target/debug/themis-tracer -->
+<!-- $MDX set-CMD=../target/debug/themis-tracer,set-TRACER_HOME=/tmp -->
 ```sh
 $ echo CMD: $CMD
 CMD: ../target/debug/themis-tracer
+$ echo TRACER_HOME: $TRACER_HOME
+TRACER_HOME: /tmp
 ```
 
 Where you see `$CMD` in the following you should just use the installed binary
@@ -29,13 +31,13 @@ $ $CMD --version
 tracer 0.1.0
 ```
 
-### `init`ialize a new context
+### `init`ialize the tool
 
 ```sh
-$ TRACER_HOME=/tmp $CMD init
-Initialized tracer to /tmp/.tracer
+$ $CMD init
+Initialized into /tmp/.tracer
 $ ls /tmp/.tracer
-contexts
+tracer.db
 ```
 
 ### `parse` specs
@@ -63,4 +65,30 @@ FOO.1,Requirement,spec.md,"Bish bosh, flip flop.",,
 ZAP.1::ZING.2::ZOG.12,Requirement,spec.md,"Floop droop drop plop.
 Floop droop drop plop.
 Floop droop drop plop.",,
+```
+
+## Manage `context`s
+
+### `context new`
+
+```sh
+$ $CMD context new foo
+Created the context `foo`
+$ $CMD context new bar
+Created the context `bar`
+```
+
+### `context list`
+
+```sh
+$ $CMD context list
+  bar
+  foo
+```
+
+<!-- FIXME: Remove need for this -->
+## Cleanup
+
+```sh
+$ rm -rf /tmp/.tracer
 ```
