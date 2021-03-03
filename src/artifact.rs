@@ -166,8 +166,8 @@ mod test {
         .cloned()
         .collect();
 
-        let expected: Result<Artifact, String> = Ok(Artifact::new(None, logical_units));
-        let result = Artifact::from_string(&spec);
+        let expected: Artifact = Artifact::new(None, logical_units);
+        let result = Artifact::from_string(&spec).unwrap();
         assert_eq!(expected, result)
     }
 }
