@@ -11,6 +11,8 @@ enum Error {
     DbPath,
     #[error("Error while querying database: {0}")]
     Query(#[from] sql::Error),
+    #[error("Context {0} does not exists")]
+    Nonexistent(String),
 }
 
 fn create(conn: &sql::Connection, name: &str, statement: &str) -> Result<()> {
@@ -162,7 +164,7 @@ pub mod context {
     ///    the db
     /// - `Ok(None)` if there is not a context with the the given `name`
     /// - `Err(err)` if the query fails for some reason
-    pub fn get(conn: &sql::Connection, name: String) -> Result<Option<Context>> {
+    pub fn get(conn: &sql::Connection, name: &str) -> Result<Option<Context>> {
         let mut stmt = conn.prepare("SELECT * FROM context WHERE name = :name")?;
         stmt.query_row_named(&[(":name", &name)], of_row)
             .optional()
@@ -170,16 +172,20 @@ pub mod context {
     }
 
     pub fn set(conn: &sql::Connection, name: String) -> Result<()> {
-        let query = r#"
-            UPDATE OR FAIL appstate
-            SET context = context.id
-            FROM context
-            WHERE context.name = :name
+        if get(conn, &name)?.is_none() {
+            Err(Error::Nonexistent(name).into())
+        } else {
+            let query = r#"
+                UPDATE OR FAIL appstate
+                SET context = context.id
+                FROM context
+                WHERE context.name = :name
             "#;
-        let mut stmt = conn.prepare(query)?;
-        stmt.execute_named(&[(":name", &name)])
-            .map_err(|e| Error::Query(e).into())
-            .map(|_| ())
+            let mut stmt = conn.prepare(query)?;
+            stmt.execute_named(&[(":name", &name)])
+                .map_err(|e| Error::Query(e).into())
+                .map(|_| ())
+        }
     }
 
     pub fn current(conn: &sql::Connection) -> Result<Option<Context>> {

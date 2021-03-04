@@ -29,7 +29,7 @@ fn mdx_tests() {
 
         let output = Command::new("diff")
             .arg("--color")
-            .arg(expected)
+            .arg(expected.clone())
             .arg(corrected)
             .output()
             .unwrap();
@@ -37,6 +37,7 @@ fn mdx_tests() {
         if !output.status.success() {
             io::stdout().write_all(&output.stdout).unwrap();
             io::stderr().write_all(&output.stderr).unwrap();
+            eprintln!("failure in {:?}", expected);
             assert!(false)
         }
     }

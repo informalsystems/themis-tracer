@@ -62,8 +62,20 @@ Error: Already initialized in ../target/test-sandbox/.tracer
 
 ```sh
 $ $CMD context new foo
+$ $CMD context list
+  foo
 $ $CMD context new foo
 Error: A context named foo already exists
+[1]
+$ $CMD context list
+  foo
+```
+
+### `switch` to a non-existent context
+
+```sh
+$ $CMD context switch nonexistent
+Error: Context nonexistent does not exists
 [1]
 ```
 
