@@ -55,8 +55,9 @@ pub fn init(conn: &sql::Connection) -> Result<()> {
             "create repo table",
             r#"
             CREATE TABLE IF NOT EXISTS repo (
-                id       INTEGER PRIMARY KEY,
-                location TEXT       -- A JSON serialization of the rust struct
+                id    INTEGER PRIMARY KEY,
+                path  TEXT NOT NULL UNIQUE, -- Path to repo (remote or local)
+                json  TEXT NOT NULL         -- A JSON serialization of the rust struct
             );
             "#,
         ),
