@@ -15,7 +15,7 @@ enum Error {
 
 fn create(conn: &sql::Connection, name: &str, statement: &str) -> Result<()> {
     conn.prepare(statement)
-        .with_context(|| format!("createing table {}", name))?
+        .with_context(|| format!("init step: {}", name))?
         .execute(sql::NO_PARAMS)
         .map(|_| ()) // We don't care about the number of rows changed
         .map_err(|e| e.into())
@@ -28,18 +28,19 @@ pub fn init(conn: &sql::Connection) -> Result<()> {
     let statements = vec![
         // Records the state of the app
         (
-            "appstate",
+            "create appstate table",
             r#"
             CREATE TABLE IF NOT EXISTS appstate (
-                id      INTEGER PRIMARY KEY CHECK (id = 0),
-                context INTEGER NOT NULL,
+                id      INTEGER PRIMARY KEY CHECK (id = 1), -- Ensure there is only a single row
+                context INTEGER,
                 FOREIGN KEY(context) REFERENCES context(id)
             );
             "#,
         ),
+        // TODO Need to make context name unique
         // Records all contexts and their properties
         (
-            "context",
+            "create context table",
             r#"
             CREATE TABLE IF NOT EXISTS context (
                 id   INTEGER PRIMARY KEY,
@@ -49,7 +50,7 @@ pub fn init(conn: &sql::Connection) -> Result<()> {
         ),
         // Records all repos and their properties
         (
-            "repo",
+            "create repo table",
             r#"
             CREATE TABLE IF NOT EXISTS repo (
                 id       INTEGER PRIMARY KEY,
@@ -59,7 +60,7 @@ pub fn init(conn: &sql::Connection) -> Result<()> {
         ),
         // Records all logical units and their properties
         (
-            "units",
+            "create units table",
             r#"
             CREATE TABLE IF NOT EXISTS units (
                 id      INTEGER PRIMARY KEY,
@@ -73,7 +74,7 @@ pub fn init(conn: &sql::Connection) -> Result<()> {
         ),
         // Records which repos are in which contexts
         (
-            "context_repo",
+            "create context_repo table",
             r#"
             CREATE TABLE IF NOT EXISTS context_repo (
                 id      INTEGER PRIMARY KEY,
@@ -86,7 +87,7 @@ pub fn init(conn: &sql::Connection) -> Result<()> {
         ),
         // Records which units are in which repos
         (
-            "unit_repo",
+            "create unit_repo table",
             r#"
             CREATE TABLE IF NOT EXISTS unit_repo (
                 id      INTEGER PRIMARY KEY,
@@ -96,6 +97,14 @@ pub fn init(conn: &sql::Connection) -> Result<()> {
                 FOREIGN KEY(repo) REFERENCES repo(id)
             );
             "#,
+        ),
+        // Initialize a blank state of the app
+        (
+            "insert empty appstate row",
+            r#"
+           INSERT INTO appstate (context)
+           VALUES (NULL)
+           "#,
         ),
     ];
 
@@ -116,7 +125,10 @@ pub fn connection() -> Result<sql::Connection> {
 }
 
 pub mod context {
+    use sql::OptionalExtension;
+
     use super::*;
+
     pub fn add(conn: &sql::Connection, ctx: Context) -> Result<()> {
         conn.prepare("INSERT INTO context (name) VALUES (:name)")?
             .execute_named(&[(":name", &ctx.name)])
@@ -142,5 +154,36 @@ pub mod context {
         }
 
         Ok(ctxs)
+    }
+
+    pub fn get(conn: &sql::Connection, name: String) -> Result<Context> {
+        let mut stmt = conn.prepare("SELECT * FROM context WEHRE name = :name")?;
+        stmt.query_row_named(&[(":name", &name)], of_row)
+            .map_err(|e| Error::Query(e).into())
+    }
+
+    pub fn set(conn: &sql::Connection, name: String) -> Result<()> {
+        let query = r#"
+            UPDATE OR FAIL appstate
+            SET context = context.id
+            FROM context
+            WHERE context.name = :name
+            "#;
+        let mut stmt = conn.prepare(query)?;
+        stmt.execute_named(&[(":name", &name)])
+            .map_err(|e| Error::Query(e).into())
+            .map(|_| ())
+    }
+
+    pub fn current(conn: &sql::Connection) -> Result<Option<Context>> {
+        let query = r#"
+            SELECT c.*
+            FROM context c
+            INNER JOIN appstate a ON a.context = c.id
+            "#;
+        let mut stmt = conn.prepare(query)?;
+        stmt.query_row(sql::NO_PARAMS, of_row)
+            .optional()
+            .map_err(|e| Error::Query(e).into())
     }
 }
