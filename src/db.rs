@@ -138,14 +138,14 @@ pub mod context {
 
     fn of_row(row: &sql::Row) -> sql::Result<Context> {
         let name = row.get(1)?;
-        Ok(Context::new(&name))
+        Ok(Context::new(name))
     }
 
     pub fn get_all(conn: &sql::Connection) -> Result<Vec<Context>> {
         let mut stmt = conn.prepare("SELECT * FROM context")?;
         let rows = stmt
             .query_map(sql::NO_PARAMS, of_row)
-            .map_err(|e| Error::Query(e))
+            .map_err(Error::Query)
             .context("fetching all contexts")?;
 
         let mut ctxs = Vec::new();

@@ -12,10 +12,8 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new(name: &String) -> Context {
-        Context {
-            name: name.to_string(),
-        }
+    pub fn new(name: String) -> Context {
+        Context { name }
     }
 }
 

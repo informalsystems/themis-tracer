@@ -12,7 +12,7 @@ use {
 #[allow(clippy::unnecessary_wraps)]
 fn new(name: String) -> Result<()> {
     let conn = db::connection()?;
-    db::context::add(&conn, Context::new(&name))?;
+    db::context::add(&conn, Context::new(name.clone()))?;
     println!("Created the context `{}`", name);
     Ok(())
 }
