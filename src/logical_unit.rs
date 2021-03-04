@@ -95,7 +95,7 @@ impl<'de> de::Visitor<'de> for IdVisitor {
     where
         E: de::Error,
     {
-        Id::new(value).map_err(|e| E::custom(format!("Invalid logical unit tag: {}", value)))
+        Id::new(value).map_err(|_| E::custom(format!("Invalid logical unit tag: {}", value)))
     }
 }
 
@@ -144,7 +144,7 @@ mod test {
     fn can_serialize_id() {
         let id = Id::new("FOO.1::BAR.2::BAZ.3").unwrap();
         let actual = serde_json::to_string(&id).unwrap();
-        let expected = "FOO.1::BAR.2::BAZ.3";
+        let expected = "\"FOO.1::BAR.2::BAZ.3\"";
         assert_eq!(actual, expected);
     }
 
