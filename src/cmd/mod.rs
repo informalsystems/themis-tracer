@@ -1,4 +1,7 @@
-pub mod context;
-pub mod init;
-pub mod opt;
-pub mod parse;
+mod add;
+mod context;
+mod init;
+mod opt;
+mod parse;
+
+pub mod run;
