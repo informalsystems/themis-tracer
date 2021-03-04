@@ -5,16 +5,33 @@ use {
         db,
     },
     anyhow::{Context as AnyhowContext, Result},
+    thiserror::Error,
 };
 // use crate::context::Context;
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("A context named {0} already exists")]
+    ContextExists(String),
+}
 
 // FIXME
 #[allow(clippy::unnecessary_wraps)]
 fn new(name: String) -> Result<()> {
     let conn = db::connection()?;
-    db::context::add(&conn, Context::new(name.clone()))?;
-    println!("Created the context `{}`", name);
-    Ok(())
+    match db::context::add(&conn, Context::new(name.clone())) {
+        Ok(()) => Ok(()),
+        Err(err) => {
+            if err
+                .to_string()
+                .contains("UNIQUE constraint failed: context.name")
+            {
+                Err(Error::ContextExists(name).into())
+            } else {
+                Err(err)
+            }
+        }
+    }
 }
 
 fn list() -> Result<()> {
