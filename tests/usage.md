@@ -86,6 +86,19 @@ $ $CMD context list
   foo
 ```
 
+### `context switch`
+
+```sh
+$ $CMD context switch bar
+$ $CMD context list
+* bar
+  foo
+$ $CMD context switch foo
+$ $CMD context list
+  bar
+* foo
+```
+
 <!-- FIXME: Remove need for this -->
 ## Cleanup
 

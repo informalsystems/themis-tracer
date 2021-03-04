@@ -67,5 +67,12 @@ pub enum ContextCmd {
         name: String,
     },
 
+    /// List all available contexts
     List {},
+
+    /// Switch to a different context
+    Switch {
+        /// The name of the context to switch to
+        name: String,
+    },
 }
