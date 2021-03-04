@@ -44,7 +44,7 @@ pub fn init(conn: &sql::Connection) -> Result<()> {
             r#"
             CREATE TABLE IF NOT EXISTS context (
                 id   INTEGER PRIMARY KEY,
-                name TEXT NOT NULL
+                name TEXT NOT NULL UNIQUE
             );
             "#,
         ),
@@ -64,7 +64,7 @@ pub fn init(conn: &sql::Connection) -> Result<()> {
             r#"
             CREATE TABLE IF NOT EXISTS units (
                 id      INTEGER PRIMARY KEY,
-                tag     TEXT NOT NULL,
+                tag     TEXT NOT NULL UNIQUE,
                 kind    TEXT NOT NULL,
                 content TEXT NOT NULL,
                 refs    TEXT NOT NULL,      -- JSON encoded tag list
