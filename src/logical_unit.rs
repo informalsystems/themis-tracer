@@ -1,10 +1,10 @@
-use crate::util;
-use serde::{Serialize, Serializer};
-use std::{fmt, path::Path};
+use {
+    crate::util,
+    serde::{de, Deserialize, Deserializer, Serialize, Serializer},
+    std::{fmt, path::Path},
+};
 
-/// # Implements
-///
-/// * [TRC-TAG.1::SYNTAX.1]
+///  |TRC-TAG.1::SYNTAX.1::IMPL.1|
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Id {
     parts: Vec<(String, u32)>,
@@ -21,7 +21,7 @@ impl Id {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum Kind {
     Requirement,
     Model,
@@ -29,7 +29,7 @@ pub enum Kind {
     Verification,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct LogicalUnit {
     pub id: Id,
     pub kind: Kind,
@@ -82,6 +82,32 @@ impl Serialize for Id {
     }
 }
 
+struct IdVisitor;
+
+impl<'de> de::Visitor<'de> for IdVisitor {
+    type Value = Id;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("a string that is a valid logical unit ID")
+    }
+
+    fn visit_str<E>(self, value: &str) -> Result<Id, E>
+    where
+        E: de::Error,
+    {
+        Id::new(value).map_err(|e| E::custom(format!("Invalid logical unit tag: {}", value)))
+    }
+}
+
+impl<'de> Deserialize<'de> for Id {
+    fn deserialize<D>(deserializer: D) -> Result<Id, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_any(IdVisitor)
+    }
+}
+
 impl fmt::Display for Id {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
@@ -106,5 +132,26 @@ impl fmt::Display for LogicalUnit {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let source = self.source_file.clone().unwrap_or_else(|| "".to_string());
         write!(f, "{} {} {} <{}>", source, self.id, self.kind, self.content)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use serde_json;
+
+    #[test]
+    fn can_serialize_id() {
+        let id = Id::new("FOO.1::BAR.2::BAZ.3").unwrap();
+        let actual = serde_json::to_string(&id).unwrap();
+        let expected = "FOO.1::BAR.2::BAZ.3";
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn can_deserialize_id() {
+        let actual: Id = serde_json::from_str(&"\"FOO.1::BAR.2::BAZ.3\"").unwrap();
+        let expected = Id::new("FOO.1::BAR.2::BAZ.3").unwrap();
+        assert_eq!(actual, expected);
     }
 }
