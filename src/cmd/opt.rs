@@ -29,7 +29,7 @@ pub enum Cmd {
     /// Register specs
     #[structopt(name = "add")]
     Add {
-        /// The path to load sepcs from (will recursce into all sudirectories)
+        /// The path to load specs from (will recursce into all sudirectories)
         #[structopt(parse(from_os_str))]
         project: Option<PathBuf>,
     },
