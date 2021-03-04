@@ -1,3 +1,8 @@
+# Usage
+
+This document contains integration tests which also serve as succinct,
+reference-friendly, documentation of the tool's usage.
+
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
 
@@ -18,12 +23,12 @@
 ## Setting the environment
 
 <!-- TODO replace by adding the executable to the path -->
-<!-- $MDX set-CMD=../target/debug/themis-tracer,set-TRACER_HOME=/tmp -->
+<!-- $MDX set-CMD=../target/debug/themis-tracer,set-TRACER_HOME=../target/test-sandbox -->
 ```sh
 $ echo CMD: $CMD
 CMD: ../target/debug/themis-tracer
 $ echo TRACER_HOME: $TRACER_HOME
-TRACER_HOME: /tmp
+TRACER_HOME: ../target/test-sandbox
 ```
 
 Where you see `$CMD` in the following you should just use the installed binary
@@ -40,8 +45,8 @@ tracer 0.1.0
 
 ```sh
 $ $CMD init
-Initialized into /tmp/.tracer
-$ ls /tmp/.tracer
+Initialized into ../target/test-sandbox/.tracer
+$ ls $TRACER_HOME/.tracer
 tracer.db
 ```
 
@@ -108,5 +113,5 @@ $ $CMD context list
 ## Cleanup
 
 ```sh
-$ rm -rf /tmp/.tracer
+$ rm -rf ../target/test-sandbox
 ```
