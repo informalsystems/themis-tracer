@@ -156,9 +156,16 @@ pub mod context {
         Ok(ctxs)
     }
 
-    pub fn get(conn: &sql::Connection, name: String) -> Result<Context> {
-        let mut stmt = conn.prepare("SELECT * FROM context WEHRE name = :name")?;
+    /// `get(&conn, name)` is:
+    ///
+    /// - `Ok(Some(context))` if there is a `context` with the given `name` in
+    ///    the db
+    /// - `Ok(None)` if there is not a context with the the given `name`
+    /// - `Err(err)` if the query fails for some reason
+    pub fn get(conn: &sql::Connection, name: String) -> Result<Option<Context>> {
+        let mut stmt = conn.prepare("SELECT * FROM context WHERE name = :name")?;
         stmt.query_row_named(&[(":name", &name)], of_row)
+            .optional()
             .map_err(|e| Error::Query(e).into())
     }
 
