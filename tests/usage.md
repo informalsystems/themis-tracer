@@ -2,11 +2,16 @@
 **Table of Contents**
 
 - [-](#-)
-    - [Show the current `version`](#show-the-current-version)
-    - [`init` a new context](#init-a-new-context)
+    - [Show the current version](#show-the-current-version)
+    - [`init`ialize the tool](#initialize-the-tool)
     - [`parse` specs](#parse-specs)
         - [Default [`--format json`]](#default---format-json)
         - [`--format csv`](#--format-csv)
+    - [Manage `context`s](#manage-contexts)
+        - [`context new`](#context-new)
+        - [`context list`](#context-list)
+        - [`context switch`](#context-switch)
+    - [Cleanup](#cleanup)
 
 <!-- markdown-toc end -->
 
