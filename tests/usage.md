@@ -83,9 +83,7 @@ Floop droop drop plop.",,
 
 ```sh
 $ $CMD context new foo
-Created the context `foo`
 $ $CMD context new bar
-Created the context `bar`
 ```
 
 ### `context list`
