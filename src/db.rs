@@ -175,11 +175,14 @@ pub mod context {
         if get(conn, &name)?.is_none() {
             Err(Error::Nonexistent(name).into())
         } else {
+            // It would be cleaner to use UPDATE-FROM here, but that requires
+            // sqlite version 3.33, which was only released in 2020-08.
+            // See https://sqlite.org/lang_update.html#update_from
+            // If we're still using sqlite on the backend after 2022,
+            // this should be updated.
             let query = r#"
                 UPDATE OR FAIL appstate
-                SET context = context.id
-                FROM context
-                WHERE context.name = :name
+                SET context = (SELECT id FROM context WHERE name = :name)
             "#;
             let mut stmt = conn.prepare(query)?;
             stmt.execute_named(&[(":name", &name)])
