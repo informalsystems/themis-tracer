@@ -187,12 +187,47 @@ units.
 #### `parse --format json` (the default format)
 
 ```sh
-$ $CMD parse parsing-spec.md
-{"id":"PARSE-SPECS.1","kind":"Requirement","source_file":"parsing-spec.md","content":"We can parse a file of logical units into different formats, preserving all\ncritical content of the logical unit content.","line":null,"column":null}
-{"id":"PARSE-SPECS.1::CONTENT.1::MULTI-PARA.1","kind":"Requirement","source_file":"parsing-spec.md","content":"The content of logical units must be preserved.\n\nEven when it spans multiple paragraphs.\n\n- Or\n- includes\n- lists","line":null,"column":null}
-{"id":"PARSE-SPECS.1::CSV.1","kind":"Requirement","source_file":"parsing-spec.md","content":"Must support parse a file of specs into CSV.","line":null,"column":null}
-{"id":"PARSE-SPECS.1::INLINE.1","kind":"Requirement","source_file":"parsing-spec.md","content":"The folowing inline styling must be preserved:\n\n- **Strong** (**both** ways)\n- *Emphasizes* (*both* ways)\n- ~~Strikethrough~~\n- `code`\n- [links](/url)\n- ![images](/url)\n- [smallcaps]{.smallcaps}","line":null,"column":null}
-{"id":"PARSE-SPECS.1::JSON.1","kind":"Requirement","source_file":"parsing-spec.md","content":"Must support parsing a file of specs into JSON.","line":null,"column":null}
+$ $CMD parse parsing-spec.md | jq
+{
+  "id": "PARSE-SPECS.1",
+  "kind": "Requirement",
+  "source_file": "parsing-spec.md",
+  "content": "We can parse a file of logical units into different formats, preserving all\ncritical content of the logical unit content.",
+  "line": null,
+  "column": null
+}
+{
+  "id": "PARSE-SPECS.1::CONTENT.1::MULTI-PARA.1",
+  "kind": "Requirement",
+  "source_file": "parsing-spec.md",
+  "content": "The content of logical units must be preserved.\n\nEven when it spans multiple paragraphs.\n\n- Or\n- includes\n- lists",
+  "line": null,
+  "column": null
+}
+{
+  "id": "PARSE-SPECS.1::CSV.1",
+  "kind": "Requirement",
+  "source_file": "parsing-spec.md",
+  "content": "Must support parse a file of specs into CSV.",
+  "line": null,
+  "column": null
+}
+{
+  "id": "PARSE-SPECS.1::INLINE.1",
+  "kind": "Requirement",
+  "source_file": "parsing-spec.md",
+  "content": "The folowing inline styling must be preserved:\n\n- **Strong** (**both** ways)\n- *Emphasizes* (*both* ways)\n- ~~Strikethrough~~\n- `code`\n- [links](/url)\n- ![images](/url)\n- [smallcaps]{.smallcaps}",
+  "line": null,
+  "column": null
+}
+{
+  "id": "PARSE-SPECS.1::JSON.1",
+  "kind": "Requirement",
+  "source_file": "parsing-spec.md",
+  "content": "Must support parsing a file of specs into JSON.",
+  "line": null,
+  "column": null
+}
 ```
 
 #### `parse --format csv`
