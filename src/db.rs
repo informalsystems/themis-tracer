@@ -12,7 +12,9 @@ enum Error {
     #[error("Error while querying database: {0}")]
     Query(#[from] sql::Error),
     #[error("Context {0} does not exists")]
-    Nonexistent(String),
+    NonexistentContext(String),
+    #[error("No context is set. Try: `context switch <context>`")]
+    NoContext,
 }
 
 fn create(conn: &sql::Connection, name: &str, statement: &str) -> Result<()> {
@@ -39,7 +41,6 @@ pub fn init(conn: &sql::Connection) -> Result<()> {
             );
             "#,
         ),
-        // TODO Need to make context name unique
         // Records all contexts and their properties
         (
             "create context table",
@@ -85,6 +86,7 @@ pub fn init(conn: &sql::Connection) -> Result<()> {
                 repo    INTEGER NOT NULL,
                 FOREIGN KEY(context) REFERENCES context(id),
                 FOREIGN KEY(repo) REFERENCES repo(id)
+                UNIQUE(context, repo)
             );
             "#,
         ),
@@ -174,7 +176,7 @@ pub mod context {
 
     pub fn set(conn: &sql::Connection, name: String) -> Result<()> {
         if get(conn, &name)?.is_none() {
-            Err(Error::Nonexistent(name).into())
+            Err(Error::NonexistentContext(name).into())
         } else {
             // It would be cleaner to use UPDATE-FROM here, but that requires
             // sqlite version 3.33, which was only released in 2020-08.
@@ -192,6 +194,12 @@ pub mod context {
         }
     }
 
+    /// `current(conn)` is
+    ///
+    /// - `Ok(Some(context))`, where `context` is the current working context,
+    ///   if a context is set and the query succeeds.
+    /// - `Ok(None)` if no context is currently set
+    /// - `Err(err)` if there is an error when looking up the context
     pub fn current(conn: &sql::Connection) -> Result<Option<Context>> {
         let query = r#"
             SELECT c.*
@@ -202,5 +210,44 @@ pub mod context {
         stmt.query_row(sql::NO_PARAMS, of_row)
             .optional()
             .map_err(|e| Error::Query(e).into())
+    }
+}
+
+pub mod repo {
+    use {super::*, crate::repo::Repo, serde_json};
+
+    fn insert_repo(conn: &sql::Connection, repo: &Repo) -> Result<()> {
+        let encoded = serde_json::to_string(repo)?;
+        let path = repo.path_as_string();
+
+        let mut stmt = conn.prepare("INSERT INTO repo (path, json) VALUES (:path, :json)")?;
+        stmt.execute_named(&[(":path", &path), (":json", &encoded)])
+            .map_err(|e| Error::Query(e).into())
+            .map(|_| ())
+    }
+
+    fn relate_repo_to_context(conn: &sql::Connection, repo: &Repo, ctx: &Context) -> Result<()> {
+        let query = r#"
+            INSERT INTO context_repo (context, repo)
+            VALUES ((SELECT id FROM context WHERE name = :context),
+                    (SELECT id FROM repo WHERE path = :repo))
+        "#;
+        let mut stmt = conn.prepare(query)?;
+        stmt.execute_named(&[(":context", &ctx.name), (":repo", &repo.path_as_string())])
+            .map_err(|e| Error::Query(e).into())
+            .map(|_| ())
+    }
+
+    pub fn add(conn: &sql::Connection, repo: &Repo) -> Result<()> {
+        // TODO Should be able to do in one query?
+        let current_ctx = context::current(&conn)?;
+
+        match current_ctx {
+            None => Err(Error::NoContext.into()),
+            Some(ctx) => {
+                insert_repo(conn, repo)?;
+                relate_repo_to_context(conn, repo, &ctx)
+            }
+        }
     }
 }

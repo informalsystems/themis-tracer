@@ -141,7 +141,7 @@ mod test {
     use serde_json;
 
     #[test]
-    fn can_serialize_id() {
+    fn serialize_id() {
         let id = Id::new("FOO.1::BAR.2::BAZ.3").unwrap();
         let actual = serde_json::to_string(&id).unwrap();
         let expected = "\"FOO.1::BAR.2::BAZ.3\"";
@@ -149,7 +149,7 @@ mod test {
     }
 
     #[test]
-    fn can_deserialize_id() {
+    fn deserialize_id() {
         let actual: Id = serde_json::from_str(&"\"FOO.1::BAR.2::BAZ.3\"").unwrap();
         let expected = Id::new("FOO.1::BAR.2::BAZ.3").unwrap();
         assert_eq!(actual, expected);

@@ -107,6 +107,12 @@ $ $CMD context list
 * foo
 ```
 
+## `add` repos to a context
+
+```sh
+$ $CMD add test-repo
+```
+
 <!-- FIXME: Remove need for this -->
 ## Cleanup
 
