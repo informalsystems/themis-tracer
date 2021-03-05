@@ -50,33 +50,6 @@ $ ls $TRACER_HOME/.tracer
 tracer.db
 ```
 
-### `parse` specs
-
-#### Default [`--format json`]
-
-```sh
-$ $CMD parse spec.md
-{"id":"BAR.1::BAZ.2","kind":"Requirement","source_file":"spec.md","content":"Bloop drop.","line":null,"column":null}
-{"id":"BIP.1::BOP.2","kind":"Requirement","source_file":"spec.md","content":"Floop droop drop plop.\nFloop droop drop plop.\nFloop droop drop plop.","line":null,"column":null}
-{"id":"FOO.1","kind":"Requirement","source_file":"spec.md","content":"Bish bosh, flip flop.","line":null,"column":null}
-{"id":"ZAP.1::ZING.2::ZOG.12","kind":"Requirement","source_file":"spec.md","content":"Floop droop drop plop.\nFloop droop drop plop.\nFloop droop drop plop.","line":null,"column":null}
-```
-
-#### `--format csv`
-
-```sh
-$ $CMD parse spec.md --format csv
-id,kind,source_file,content,line,column
-BAR.1::BAZ.2,Requirement,spec.md,Bloop drop.,,
-BIP.1::BOP.2,Requirement,spec.md,"Floop droop drop plop.
-Floop droop drop plop.
-Floop droop drop plop.",,
-FOO.1,Requirement,spec.md,"Bish bosh, flip flop.",,
-ZAP.1::ZING.2::ZOG.12,Requirement,spec.md,"Floop droop drop plop.
-Floop droop drop plop.
-Floop droop drop plop.",,
-```
-
 ## Manage `context`s
 
 ### `context new`
@@ -159,6 +132,94 @@ reflected:
 ```sh
 $ $CMD context switch bar
 $ $CMD repos
+```
+
+### `parse`ing specs
+
+You can use the tool to parse logical units out of individual files, so that you
+can do computations with the specs via your own scripts or programs.
+
+The following spec describes our current support for parsing logical units:
+
+<!-- $MDX file=parsing-spec.md -->
+```markdown
+# Parsing logical units
+
+|PARSE-SPECS.1|
+: We can parse a file of logical units into different formats, preserving all
+  critical content of the logical unit content.
+
+## Serialization Format
+
+Supported formats include:
+
+|PARSE-SPECS.1::JSON.1|
+: Must support parsing a file of specs into JSON.
+
+|PARSE-SPECS.1::CSV.1|
+: Must support parse a file of specs into CSV.
+
+## Content
+
+|PARSE-SPECS.1::CONTENT.1::MULTI-PARA.1|
+: The content of logical units must be preserved.
+: Even when it spans multiple paragraphs.
+: - Or
+ - includes
+ - lists
+
+|PARSE-SPECS.1::INLINE.1|
+: The folowing inline styling must be preserved:
+: - **Strong** (__both__ ways)
+ - *Emphasizes* (_both_ ways)
+ - ~~Strikethrough~~
+ - `code`
+ - [links](/url)
+ - ![images](/url)
+ - [smallcaps]{.smallcaps}
+```
+
+We'll use this spec as an example to illustrate the options for parsing logical
+units.
+
+<!-- TODO Annotate with verification tags, tying to the implementations -->
+
+#### `parse --format json` (the default format)
+
+```sh
+$ $CMD parse parsing-spec.md
+{"id":"PARSE-SPECS.1","kind":"Requirement","source_file":"parsing-spec.md","content":"We can parse a file of logical units into different formats, preserving all\ncritical content of the logical unit content.","line":null,"column":null}
+{"id":"PARSE-SPECS.1::CONTENT.1::MULTI-PARA.1","kind":"Requirement","source_file":"parsing-spec.md","content":"The content of logical units must be preserved.\n\nEven when it spans multiple paragraphs.\n\n- Or\n- includes\n- lists","line":null,"column":null}
+{"id":"PARSE-SPECS.1::CSV.1","kind":"Requirement","source_file":"parsing-spec.md","content":"Must support parse a file of specs into CSV.","line":null,"column":null}
+{"id":"PARSE-SPECS.1::INLINE.1","kind":"Requirement","source_file":"parsing-spec.md","content":"The folowing inline styling must be preserved:\n\n- **Strong** (**both** ways)\n- *Emphasizes* (*both* ways)\n- ~~Strikethrough~~\n- `code`\n- [links](/url)\n- ![images](/url)\n- [smallcaps]{.smallcaps}","line":null,"column":null}
+{"id":"PARSE-SPECS.1::JSON.1","kind":"Requirement","source_file":"parsing-spec.md","content":"Must support parsing a file of specs into JSON.","line":null,"column":null}
+```
+
+#### `parse --format csv`
+
+```sh
+$ $CMD parse parsing-spec.md --format csv
+id,kind,source_file,content,line,column
+PARSE-SPECS.1,Requirement,parsing-spec.md,"We can parse a file of logical units into different formats, preserving all
+critical content of the logical unit content.",,
+PARSE-SPECS.1::CONTENT.1::MULTI-PARA.1,Requirement,parsing-spec.md,"The content of logical units must be preserved.
+
+Even when it spans multiple paragraphs.
+
+- Or
+- includes
+- lists",,
+PARSE-SPECS.1::CSV.1,Requirement,parsing-spec.md,Must support parse a file of specs into CSV.,,
+PARSE-SPECS.1::INLINE.1,Requirement,parsing-spec.md,"The folowing inline styling must be preserved:
+
+- **Strong** (**both** ways)
+- *Emphasizes* (*both* ways)
+- ~~Strikethrough~~
+- `code`
+- [links](/url)
+- ![images](/url)
+- [smallcaps]{.smallcaps}",,
+PARSE-SPECS.1::JSON.1,Requirement,parsing-spec.md,Must support parsing a file of specs into JSON.,,
 ```
 
 <!-- FIXME: Remove need for this -->
