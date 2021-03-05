@@ -87,6 +87,15 @@ Viewpoints, diversity of tracing networks.
 After quite in depth consideration, I've opted to use sqlite as the backend for
 prototyping and initial development.
 
+** TODO Consider using git as backend?
+- Each context can be its own [[https://git-scm.com/docs/gitnamespaces][namespace]], and the namespaces can share the
+  repository and unit data.
+- Branches for allowing different people/orgs to maintain
+  different, potentially divergent or augmented, perspectives on a shared
+  underlying context
+    - This might obviate (or be obviated by) nested contexts.
+
+
 ** tl;dr:
 
 - it is a long-established industry standard
