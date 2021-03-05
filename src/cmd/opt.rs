@@ -35,6 +35,10 @@ pub enum Cmd {
         repo: PathBuf,
     },
 
+    /// List the repos registered for the current context
+    #[structopt(name = "repos")]
+    Repos {},
+
     /// Update the spec DB for the current project with all specs from registered sources
     #[structopt(name = "sync")]
     Sync {
@@ -87,10 +91,11 @@ pub fn run() -> Result<()> {
     let opt = Cmd::from_args();
     match opt {
         Cmd::Init {} => cmd::init::run(),
-        Cmd::Parse { path, format } => cmd::parse::run(&path, format),
-        Cmd::List { filter: _ } => unimplemented(),
-        Cmd::Add { repo } => cmd::add::run(repo),
-        Cmd::Sync { project: _ } => unimplemented(),
         Cmd::Context(opt) => cmd::context::run(opt),
+        Cmd::Add { repo } => cmd::add::run(repo),
+        Cmd::Repos {} => cmd::repos::run(),
+        Cmd::Parse { path, format } => cmd::parse::run(&path, format),
+        Cmd::Sync { project: _ } => unimplemented(),
+        Cmd::List { filter: _ } => unimplemented(),
     }
 }
