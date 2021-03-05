@@ -184,7 +184,9 @@ units.
 
 <!-- TODO Annotate with verification tags, tying to the implementations -->
 
-#### `parse --format json` (the default format)
+#### `parse --format json` (the default, if no argument is given)
+
+The default formatting for parsed files is a stream of JSON objects:
 
 ```sh
 $ $CMD parse parsing-spec.md | jq
