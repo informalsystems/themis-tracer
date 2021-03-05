@@ -250,4 +250,37 @@ pub mod repo {
             }
         }
     }
+
+    fn of_row(row: &sql::Row) -> sql::Result<Repo> {
+        let json: String = row.get(2)?;
+        serde_json::from_str(&*json)
+            // TODO I'm not sure how to get the right error type here at the moment...
+            .map_err(|_| sql::Error::InvalidParameterName("TODO returning wrong error".into()))
+    }
+
+    /// `get_all_in_context(conn)` is
+    ///
+    /// - `Ok(repos)` where `repos` are all the repos registered to the current context
+    /// - `Err(err)` in the event of a query error
+    pub fn get_all_in_context(conn: &sql::Connection) -> Result<Vec<Repo>> {
+        let query = r#"
+            SELECT *
+            FROM repo
+            INNER JOIN appstate ON appstate.id = 1
+            INNER JOIN context_repo ON context_repo.context = appstate.context
+            WHERE repo.id = context_repo.repo
+            "#;
+        let mut stmt = conn.prepare(query)?;
+        let rows = stmt
+            .query_map(sql::NO_PARAMS, of_row)
+            .map_err(Error::Query)
+            .context("fetching all contexts")?;
+
+        let mut repos = Vec::new();
+        for r in rows {
+            repos.push(r?);
+        }
+
+        Ok(repos)
+    }
 }

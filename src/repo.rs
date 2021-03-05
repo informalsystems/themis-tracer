@@ -6,10 +6,10 @@
 use {
     crate::logical_unit::LogicalUnit,
     serde::{Deserialize, Serialize},
-    std::{collections::HashSet, fmt, path::PathBuf},
+    std::{cmp::Ordering, collections::HashSet, fmt, path::PathBuf},
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Local {
     pub path: PathBuf,
     // Used to determine wehre to sync from
@@ -18,7 +18,7 @@ pub struct Local {
     pub branch: Option<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Remote {
     // TODO Use URL type: https://docs.rs/url/2.2.1/url/
     pub url: String,
@@ -26,10 +26,62 @@ pub struct Remote {
     pub branch: Option<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Location {
     Local(Local),
     Remote(Remote),
+}
+
+impl Location {
+    pub fn new_local(path: PathBuf, upstream: Option<String>, branch: Option<String>) -> Location {
+        Location::Local(Local {
+            path,
+            upstream,
+            branch,
+        })
+    }
+}
+
+#[derive(Eq, Serialize, Deserialize)]
+pub struct Repo {
+    units: HashSet<LogicalUnit>,
+    location: Location,
+}
+
+impl Repo {
+    pub fn new(location: Location) -> Repo {
+        let units: HashSet<LogicalUnit> = HashSet::new();
+        Repo { units, location }
+    }
+
+    // TODO support for default branch and upstream
+    pub fn new_local(path: PathBuf) -> Repo {
+        let location = Location::new_local(path, None, None);
+        Repo::new(location)
+    }
+    // pub fn from_local(path: &Path) -> Result<Repo<'a>, String> {}
+
+    pub fn path_as_string(&self) -> String {
+        self.location.to_string()
+    }
+}
+
+impl PartialEq for Repo {
+    fn eq(&self, other: &Self) -> bool {
+        self.location == other.location
+    }
+}
+
+impl PartialOrd for Repo {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.location.cmp(&other.location))
+    }
+}
+
+impl Ord for Repo {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.location.cmp(&other.location)
+    }
 }
 
 impl fmt::Display for Local {
@@ -53,37 +105,10 @@ impl fmt::Display for Location {
     }
 }
 
-impl Location {
-    pub fn new_local(path: PathBuf, upstream: Option<String>, branch: Option<String>) -> Location {
-        Location::Local(Local {
-            path,
-            upstream,
-            branch,
-        })
-    }
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct Repo {
-    units: HashSet<LogicalUnit>,
-    location: Location,
-}
-
-impl Repo {
-    pub fn new(location: Location) -> Repo {
-        let units: HashSet<LogicalUnit> = HashSet::new();
-        Repo { units, location }
-    }
-
-    // TODO support for default branch and upstream
-    pub fn new_local(path: PathBuf) -> Repo {
-        let location = Location::new_local(path, None, None);
-        Repo::new(location)
-    }
-    // pub fn from_local(path: &Path) -> Result<Repo<'a>, String> {}
-
-    pub fn path_as_string(&self) -> String {
-        self.location.to_string()
+impl fmt::Display for Repo {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // TODO Show other fields too?
+        write!(f, "{}", self.location)
     }
 }
 

@@ -88,6 +88,8 @@ $ $CMD context new bar
 
 ### `context list`
 
+List the existing contexts as follows:
+
 ```sh
 $ $CMD context list
   bar
@@ -96,8 +98,15 @@ $ $CMD context list
 
 ### `context switch`
 
+Switch contexts as follows:
+
 ```sh
 $ $CMD context switch bar
+```
+
+The current context is indicted by a `*` preceding its name in the context list:
+
+```sh
 $ $CMD context list
 * bar
   foo
@@ -107,10 +116,33 @@ $ $CMD context list
 * foo
 ```
 
-## `add` repos to a context
+## managing repositories
+
+### `add` repos to a context
 
 ```sh
-$ $CMD add test-repo
+$ $CMD add test-repo-a
+$ $CMD add test-repo-b
+```
+
+### `list` the repos in the current context
+
+```sh
+$ $CMD context list
+  bar
+* foo
+$ $CMD repos | sed "s:$(pwd)/::" # We trim the absolute path prefix, for testing purposes
+  test-repo-a
+  test-repo-b
+```
+
+Each context has it's own associated repos. We haven't added any repos to  the
+context `bar` yet, so if we switch contexts and list its repos, we'll see that
+reflected:
+
+```sh
+$ $CMD context switch bar
+$ $CMD repos
 ```
 
 <!-- FIXME: Remove need for this -->
