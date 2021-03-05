@@ -16,7 +16,7 @@ peg::parser! {
         { d.to_string() }
 
         pub rule logical_unit_definiendum() -> String =
-            "|" d:$((init_char() / digit() / "." / "::")+) "|"
+            "|" d:$((init_char() / "-" / digit() / "." / "::")+) "|"
         { d.to_string() }
 
         pub rule logical_unit_id() -> Vec<(String, u32)> =
@@ -55,8 +55,8 @@ mod test_parser {
     #[test]
     fn can_parse_defininiendum() {
         assert_eq!(
-            Ok("FOO.1::BAR.1::BAZ.1".to_string()),
-            parser::logical_unit_definiendum(&"|FOO.1::BAR.1::BAZ.1|")
+            Ok("FOO.1::BAR.1::BAZ-BOP.1".to_string()),
+            parser::logical_unit_definiendum(&"|FOO.1::BAR.1::BAZ-BOP.1|")
         )
     }
 }
