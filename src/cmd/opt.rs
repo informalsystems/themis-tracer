@@ -1,5 +1,6 @@
 //! CLI specification
 use crate::cmd;
+use anyhow::{anyhow, Result};
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -31,7 +32,7 @@ pub enum Cmd {
     Add {
         /// The path to load specs from (will recursce into all sudirectories)
         #[structopt(parse(from_os_str))]
-        project: Option<PathBuf>,
+        repo: PathBuf,
     },
 
     /// Update the spec DB for the current project with all specs from registered sources
@@ -75,4 +76,21 @@ pub enum ContextCmd {
         /// The name of the context to switch to
         name: String,
     },
+}
+
+// FIXME
+fn unimplemented() -> Result<()> {
+    Err(anyhow!("{}", "Not yet implemented!"))
+}
+
+pub fn run() -> Result<()> {
+    let opt = Cmd::from_args();
+    match opt {
+        Cmd::Init {} => cmd::init::run(),
+        Cmd::Parse { path, format } => cmd::parse::run(&path, format),
+        Cmd::List { filter: _ } => unimplemented(),
+        Cmd::Add { repo } => cmd::add::run(repo),
+        Cmd::Sync { project: _ } => unimplemented(),
+        Cmd::Context(opt) => cmd::context::run(opt),
+    }
 }
