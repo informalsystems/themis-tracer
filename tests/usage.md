@@ -118,11 +118,27 @@ $ $CMD context list
 
 ## managing repositories
 
+Assume we want to work with the following repositories:
+
+```sh
+$ mkdir repos
+$ git init repos/repo-a | sed "s:$(pwd)/::"
+Initialized empty Git repository in repos/repo-a/.git/
+$ git init repos/repo-b | sed "s:$(pwd)/::" # We trim the absolute path prefix, for testing purposes
+Initialized empty Git repository in repos/repo-b/.git/
+```
+
+**NOTE**: Here and following, we use the filter `| sed "s:$(pwd)/::"` to trim
+the absolute path prefix from output, so that the accuracy of this documentation
+is ensured by integration tests. However, the tool always associates
+repositories with their absolute path. This is the unique name of a repository
+(in the user's local file system or on the world wide web).
+
 ### `add` repos to a context
 
 ```sh
-$ $CMD add test-repo-a
-$ $CMD add test-repo-b
+$ $CMD add repos/repo-a
+$ $CMD add repos/repo-b
 ```
 
 ### `list` the repos in the current context
@@ -132,8 +148,8 @@ $ $CMD context list
   bar
 * foo
 $ $CMD repos | sed "s:$(pwd)/::" # We trim the absolute path prefix, for testing purposes
-  test-repo-a
-  test-repo-b
+  repos/repo-a
+  repos/repo-b
 ```
 
 Each context has it's own associated repos. We haven't added any repos to  the
@@ -150,4 +166,5 @@ $ $CMD repos
 
 ```sh
 $ rm -rf ../target/test-sandbox
+$ rm -rf ./repos
 ```
