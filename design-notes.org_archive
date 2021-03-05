@@ -1,0 +1,15 @@
+#    -*- mode: org -*-
+
+
+Archived entries from file /home/sf/Sync/informal-systems/mvd/themis-tracer/design-notes.org
+
+
+* DONE Need to store repo paths as *absolute paths*
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2021-03-05 Fri 10:19
+  :ARCHIVE_FILE: ~/Sync/informal-systems/mvd/themis-tracer/design-notes.org
+  :ARCHIVE_OLPATH: Tasks
+  :ARCHIVE_CATEGORY: design-notes
+  :ARCHIVE_TODO: DONE
+  :END:
+Otherwise we can't find them again after moving dirs! Duh!
