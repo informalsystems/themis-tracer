@@ -9,35 +9,35 @@ use {
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct Local {
+struct Info {
+    // The local path, either in the users working files or in the tools private cache
     pub path: PathBuf,
-    // Used to determine wehre to sync from
+    // Used to determine where to sync from
     pub upstream: Option<String>,
     // Used to determine wehre to sync from
     pub branch: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct Remote {
-    // TODO Use URL type: https://docs.rs/url/2.2.1/url/
-    pub url: String,
-    // Used to determine wehre to sync from
-    pub branch: Option<String>,
+enum LocationInfo {
+    Local(Info),
+    Remote(Info),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub enum Location {
-    Local(Local),
-    Remote(Remote),
+pub struct Location {
+    inner: LocationInfo,
 }
 
 impl Location {
-    pub fn new_local(path: PathBuf, upstream: Option<String>, branch: Option<String>) -> Location {
-        Location::Local(Local {
-            path,
-            upstream,
-            branch,
-        })
+    fn new_local(path: PathBuf, upstream: Option<String>, branch: Option<String>) -> Location {
+        Location {
+            inner: LocationInfo::Local(Info {
+                path,
+                upstream,
+                branch,
+            }),
+        }
     }
 }
 
@@ -47,39 +47,31 @@ pub struct Repo {
 }
 
 impl Repo {
-    pub fn new(location: Location) -> Repo {
-        Repo { location }
-    }
-
     // TODO support for default branch and upstream
     pub fn new_local(path: PathBuf) -> Repo {
         let location = Location::new_local(path, None, None);
-        Repo::new(location)
+        Repo { location }
     }
     // pub fn from_local(path: &Path) -> Result<Repo<'a>, String> {}
 
     pub fn path_as_string(&self) -> String {
         self.location.to_string()
     }
-}
 
-impl fmt::Display for Local {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.path.as_path().display())
-    }
-}
-
-impl fmt::Display for Remote {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.url)
+    /// The local path of a repo
+    pub fn path(&self) -> PathBuf {
+        match &self.location.inner {
+            LocationInfo::Local(info) | LocationInfo::Remote(info) => info.path.clone(),
+        }
     }
 }
 
 impl fmt::Display for Location {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Location::Local(l) => write!(f, "{}", l),
-            Location::Remote(r) => write!(f, "{}", r),
+        match &self.inner {
+            LocationInfo::Local(l) => write!(f, "{}", l.path.as_path().display()),
+            // It should be impossible to construct a remote remote without an upstream
+            LocationInfo::Remote(r) => write!(f, "{}", r.upstream.as_ref().unwrap()),
         }
     }
 }

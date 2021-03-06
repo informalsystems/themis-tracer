@@ -1,7 +1,12 @@
 use {
-    crate::{cmd::opt, db, repo::Repo},
+    crate::{artifact::Artifact, cmd::opt, db, repo::Repo},
     anyhow::Result,
-    std::{fs, path::PathBuf},
+    glob::glob,
+    rusqlite as sql,
+    std::{
+        env, fs,
+        path::{Path, PathBuf},
+    },
     thiserror::Error,
 };
 
@@ -16,10 +21,26 @@ fn list() -> Result<()> {
     let mut repos: Vec<Repo> = db::repo::get_all_in_context(&conn)?;
     repos.sort();
 
-    for ctx in repos {
-        println!("  {}", ctx)
+    for repo in repos {
+        println!("  {}", repo)
     }
 
+    Ok(())
+}
+
+fn load_units_from_file(conn: &sql::Connection, repo: &Repo, path: &Path) -> Result<()> {
+    Artifact::from_file(Some(repo.clone()), path)?
+        .logical_units
+        .iter()
+        .try_for_each(|unit| db::unit::add(conn, repo, unit))
+}
+
+fn load_units_from_repo(conn: &sql::Connection, repo: &Repo) -> Result<()> {
+    env::set_current_dir(repo.path())?;
+    for path in glob("**/*.md")? {
+        let path = path?;
+        load_units_from_file(conn, repo, &(path))?
+    }
     Ok(())
 }
 
@@ -31,7 +52,8 @@ fn add(path: PathBuf) -> Result<()> {
     } else {
         let conn = db::connection()?;
         let repo = Repo::new_local(path);
-        db::repo::add(&conn, &repo)
+        db::repo::add(&conn, &repo)?;
+        load_units_from_repo(&conn, &repo)
     }
 }
 

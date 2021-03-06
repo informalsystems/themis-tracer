@@ -58,22 +58,35 @@ pub fn init(conn: &sql::Connection) -> Result<()> {
             CREATE TABLE IF NOT EXISTS repo (
                 id    INTEGER PRIMARY KEY,
                 path  TEXT NOT NULL UNIQUE, -- Path to repo (remote or local)
-                json  TEXT NOT NULL         -- A JSON serialization of the rust struct
+                json  TEXT NOT NULL         -- A JSON serialization of the Repo struct
             );
+            "#,
+        ),
+        // Index repos by path, for quick lookup
+        (
+            "index repo table by path",
+            r#"
+            CREATE UNIQUE INDEX idx_repo_path
+            ON repo (path)
             "#,
         ),
         // Records all logical units and their properties
         (
             "create units table",
             r#"
-            CREATE TABLE IF NOT EXISTS units (
+            CREATE TABLE IF NOT EXISTS unit (
                 id      INTEGER PRIMARY KEY,
                 tag     TEXT NOT NULL UNIQUE,
-                kind    TEXT NOT NULL,
-                content TEXT NOT NULL,
-                refs    TEXT NOT NULL,      -- JSON encoded tag list
-                source  TEXT NOT NULL       -- JSON encoded source data
+                json    TEXT NOT NULL         -- A JSON serialization of the LogicalUnit struct
             );
+            "#,
+        ),
+        // Index units by tag, for quick lookup
+        (
+            "index unit table by tag",
+            r#"
+            CREATE UNIQUE INDEX idx_unit_tag
+            ON unit (tag)
             "#,
         ),
         // Records which repos are in which contexts
@@ -100,6 +113,7 @@ pub fn init(conn: &sql::Connection) -> Result<()> {
                 repo    INTEGER NOT NULL,
                 FOREIGN KEY(unit) REFERENCES unit(id),
                 FOREIGN KEY(repo) REFERENCES repo(id)
+                UNIQUE(unit, repo)
             );
             "#,
         ),
@@ -216,7 +230,7 @@ pub mod context {
 pub mod repo {
     use {super::*, crate::repo::Repo, serde_json};
 
-    fn insert_repo(conn: &sql::Connection, repo: &Repo) -> Result<()> {
+    fn insert(conn: &sql::Connection, repo: &Repo) -> Result<()> {
         let encoded = serde_json::to_string(repo)?;
         let path = repo.path_as_string();
 
@@ -226,7 +240,7 @@ pub mod repo {
             .map(|_| ())
     }
 
-    fn relate_repo_to_context(conn: &sql::Connection, repo: &Repo, ctx: &Context) -> Result<()> {
+    fn relate_to_context(conn: &sql::Connection, repo: &Repo, ctx: &Context) -> Result<()> {
         let query = r#"
             INSERT INTO context_repo (context, repo)
             VALUES ((SELECT id FROM context WHERE name = :context),
@@ -245,8 +259,8 @@ pub mod repo {
         match current_ctx {
             None => Err(Error::NoContext.into()),
             Some(ctx) => {
-                insert_repo(conn, repo)?;
-                relate_repo_to_context(conn, repo, &ctx)
+                insert(conn, repo)?;
+                relate_to_context(conn, repo, &ctx)
             }
         }
     }
@@ -282,5 +296,76 @@ pub mod repo {
         }
 
         Ok(repos)
+    }
+}
+
+// interfaces to logical units in db
+pub mod unit {
+    use {
+        super::*,
+        crate::{logical_unit::LogicalUnit, repo::Repo},
+    };
+
+    fn of_row(row: &sql::Row) -> sql::Result<LogicalUnit> {
+        let json: String = row.get(2)?;
+        serde_json::from_str(&*json)
+            // TODO I'm not sure how to get the right error type here at the moment...
+            .map_err(|_| sql::Error::InvalidParameterName("TODO returning wrong error".into()))
+    }
+
+    fn insert(conn: &sql::Connection, unit: &LogicalUnit) -> Result<()> {
+        // let tag: String = unit.id.into();
+        let encoded = serde_json::to_string(unit)?;
+
+        let mut stmt = conn.prepare("INSERT INTO unit (tag, json) VALUES (:tag, :json)")?;
+        stmt.execute_named(&[(":tag", &unit.id.to_string()), (":json", &encoded)])
+            .map_err(|e| Error::Query(e).into())
+            .map(|_| ())
+    }
+
+    fn relate_to_repo(conn: &sql::Connection, repo: &Repo, unit: &LogicalUnit) -> Result<()> {
+        let query = r#"
+            INSERT INTO unit_repo (unit, repo)
+            VALUES ((SELECT id FROM unit WHERE tag = :tag),
+                    (SELECT id FROM repo WHERE path = :path))
+        "#;
+        let mut stmt = conn.prepare(query)?;
+        stmt.execute_named(&[
+            (":tag", &unit.id.to_string()),
+            (":path", &repo.path_as_string()),
+        ])
+        .map_err(|e| Error::Query(e).into())
+        .map(|_| ())
+    }
+
+    // TODO Handle case of trying to add duplicate units
+    //   - Update if from same repo?
+    //   - Fail with message if in different repo
+    pub fn add(conn: &sql::Connection, repo: &Repo, unit: &LogicalUnit) -> Result<()> {
+        insert(conn, unit)?;
+        relate_to_repo(conn, repo, unit)
+    }
+
+    pub fn get_all_in_context(conn: &sql::Connection) -> Result<Vec<LogicalUnit>> {
+        let query = r#"
+            SELECT *
+            FROM unit
+            INNER JOIN appstate ON appstate.id = 1
+            INNER JOIN context_repo ON context_repo.context = appstate.context
+            INNER JOIN unit_repo ON unit_repo.repo = context_repo.repo
+            WHERE unit.id = unit_repo.unit
+            "#;
+        let mut stmt = conn.prepare(query)?;
+        let rows = stmt
+            .query_map(sql::NO_PARAMS, of_row)
+            .map_err(Error::Query)
+            .context("fetching all units in current context")?;
+
+        let mut units = Vec::new();
+        for u in rows {
+            units.push(u?);
+        }
+
+        Ok(units)
     }
 }

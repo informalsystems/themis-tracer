@@ -13,3 +13,30 @@ Archived entries from file /home/sf/Sync/informal-systems/mvd/themis-tracer/desi
   :ARCHIVE_TODO: DONE
   :END:
 Otherwise we can't find them again after moving dirs! Duh!
+
+* DONE Use a lightweight database for storing info, rather than the file system
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-03-06 Sat 15:08
+:ARCHIVE_FILE: ~/Sync/informal-systems/mvd/themis-tracer/design-notes.org
+:ARCHIVE_OLPATH: Tasks
+:ARCHIVE_CATEGORY: design-notes
+:ARCHIVE_TODO: DONE
+:END:
+
+* DONE Load units into db on repo add
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-03-06 Sat 17:25
+:ARCHIVE_FILE: ~/Sync/informal-systems/mvd/themis-tracer/design-notes.org
+:ARCHIVE_OLPATH: Tasks
+:ARCHIVE_CATEGORY: design-notes
+:ARCHIVE_TODO: DONE
+:END:
+- [X] Implement =unit= submodule in =db=
+  + [X] Add unit
+    - [X] Insert to =unit= table
+    - [X] Insert to =repo_unit= table
+- [X] Add routine to parse units from a file in the repo and load the units into
+  the db
+- [X] Add routine to run prev on every file in repo
+- [X] Add command to list logical units in context
+  + [X] Add db fn to get all units in current context
