@@ -110,8 +110,8 @@ repositories with their absolute path. This is the unique name of a repository
 ### `add` repos to a context
 
 ```sh
-$ $CMD add repos/repo-a
-$ $CMD add repos/repo-b
+$ $CMD repo add repos/repo-a
+$ $CMD repo add repos/repo-b
 ```
 
 ### `list` the repos in the current context
@@ -120,7 +120,7 @@ $ $CMD add repos/repo-b
 $ $CMD context list
   bar
 * foo
-$ $CMD repos | sed "s:$(pwd)/::" # We trim the absolute path prefix, for testing purposes
+$ $CMD repo list | sed "s:$(pwd)/::" # We trim the absolute path prefix, for testing purposes
   repos/repo-a
   repos/repo-b
 ```
@@ -131,7 +131,7 @@ reflected:
 
 ```sh
 $ $CMD context switch bar
-$ $CMD repos
+$ $CMD repo list
 ```
 
 ### `parse`ing specs

@@ -1,6 +1,6 @@
 use {
     crate::{
-        cmd::{init, opt, opt::ContextCmd as Cmd},
+        cmd::{init, opt},
         context::Context,
         db,
     },
@@ -65,8 +65,8 @@ fn switch(name: String) -> Result<()> {
 pub fn run(opt: opt::Context) -> Result<()> {
     init::ensured().context("Running `context` subcommand")?;
     match opt.cmd {
-        Cmd::New { name } => new(name),
-        Cmd::List {} => list(),
-        Cmd::Switch { name } => switch(name),
+        opt::ContextCmd::New { name } => new(name),
+        opt::ContextCmd::List {} => list(),
+        opt::ContextCmd::Switch { name } => switch(name),
     }
 }

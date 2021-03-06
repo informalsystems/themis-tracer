@@ -27,18 +27,6 @@ pub enum Cmd {
         filter: Option<String>,
     },
 
-    /// Register specs
-    #[structopt(name = "add")]
-    Add {
-        /// The path to load specs from (will recursce into all sudirectories)
-        #[structopt(parse(from_os_str))]
-        repo: PathBuf,
-    },
-
-    /// List the repos registered for the current context
-    #[structopt(name = "repos")]
-    Repos {},
-
     /// Update the spec DB for the current project with all specs from registered sources
     #[structopt(name = "sync")]
     Sync {
@@ -56,6 +44,10 @@ pub enum Cmd {
 
     /// Manage contexts
     Context(Context),
+
+    /// Manage repositories
+    #[structopt(name = "repo")]
+    Repo(Repo),
 }
 
 #[derive(Debug, StructOpt)]
@@ -82,6 +74,25 @@ pub enum ContextCmd {
     },
 }
 
+#[derive(Debug, StructOpt)]
+pub struct Repo {
+    #[structopt(subcommand)]
+    pub cmd: RepoCmd,
+}
+
+#[derive(Debug, StructOpt)]
+pub enum RepoCmd {
+    /// List all the repos registered to the current context
+    List {},
+
+    /// Add a repoistory to the current context
+    Add {
+        /// The path to the repo to be added
+        #[structopt(parse(from_os_str))]
+        path: PathBuf,
+    },
+}
+
 // FIXME
 fn unimplemented() -> Result<()> {
     Err(anyhow!("{}", "Not yet implemented!"))
@@ -92,8 +103,7 @@ pub fn run() -> Result<()> {
     match opt {
         Cmd::Init {} => cmd::init::run(),
         Cmd::Context(opt) => cmd::context::run(opt),
-        Cmd::Add { repo } => cmd::add::run(repo),
-        Cmd::Repos {} => cmd::repos::run(),
+        Cmd::Repo(opt) => cmd::repo::run(opt),
         Cmd::Parse { path, format } => cmd::parse::run(&path, format),
         Cmd::Sync { project: _ } => unimplemented(),
         Cmd::List { filter: _ } => unimplemented(),
