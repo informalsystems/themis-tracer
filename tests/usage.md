@@ -174,11 +174,11 @@ $ $CMD context switch foo
 $ $CMD context list
   bar
 * foo
-$ $CMD unit list
-  LOGICAL-UNIT{repo: /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a, file: dir/spec-2.md, id: FLIM.1, kind: Requirement, content: "A unit in a nested directory."}
-  LOGICAL-UNIT{repo: /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a, file: dir/spec-2.md, id: FLIM.1::FLAM.1, kind: Requirement, content: "Second unit in the same directory."}
-  LOGICAL-UNIT{repo: /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a, file: spec-1.md, id: FOO.1, kind: Requirement, content: "First unit."}
-  LOGICAL-UNIT{repo: /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a, file: spec-1.md, id: FOO.1::BAR.1, kind: Requirement, content: "Second unit."}
+$ $CMD unit list | sed "s:$(pwd)/::" # We trim the absolute path prefix, for testing purposes
+  LOGICAL-UNIT{repo: repos/repo-a, file: dir/spec-2.md, id: FLIM.1, kind: Requirement, content: "A unit in a nested directory."}
+  LOGICAL-UNIT{repo: repos/repo-a, file: dir/spec-2.md, id: FLIM.1::FLAM.1, kind: Requirement, content: "Second unit in the same directory."}
+  LOGICAL-UNIT{repo: repos/repo-a, file: spec-1.md, id: FOO.1, kind: Requirement, content: "First unit."}
+  LOGICAL-UNIT{repo: repos/repo-a, file: spec-1.md, id: FOO.1::BAR.1, kind: Requirement, content: "Second unit."}
 ```
 
 ## `parse`ing specs
