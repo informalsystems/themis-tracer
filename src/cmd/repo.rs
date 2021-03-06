@@ -37,6 +37,7 @@ fn load_units_from_file(conn: &sql::Connection, repo: &Repo, path: &Path) -> Res
 
 fn load_units_from_repo(conn: &sql::Connection, repo: &Repo) -> Result<()> {
     env::set_current_dir(repo.path())?;
+    // TODO Support more than just MD files
     for path in glob("**/*.md")? {
         let path = path?;
         load_units_from_file(conn, repo, &(path))?
