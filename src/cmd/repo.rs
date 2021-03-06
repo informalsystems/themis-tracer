@@ -14,6 +14,8 @@ use {
 pub enum Error {
     #[error("No repo found at path {0}")]
     RepoNotFound(PathBuf),
+    #[error("The repo {0} is already registered in the current context")]
+    RepoExists(Repo),
 }
 
 fn list() -> Result<()> {
@@ -53,7 +55,21 @@ fn add(path: PathBuf) -> Result<()> {
     } else {
         let conn = db::connection()?;
         let repo = Repo::new_local(path);
-        db::repo::add(&conn, &repo)?;
+        match db::repo::add(&conn, &repo) {
+            // You'd think I could use a `map_err` here, but I can't for a
+            // reason I don't want to burn time unraveling at the moment.
+            Ok(()) => Ok(()),
+            Err(err) => {
+                if err
+                    .to_string()
+                    .contains("UNIQUE constraint failed: repo.path")
+                {
+                    Err(Error::RepoExists(repo.clone()).into())
+                } else {
+                    Err(err)
+                }
+            }
+        }?;
         load_units_from_repo(&conn, &repo)
     }
 }
