@@ -1,7 +1,9 @@
 use {
     crate::{
         logical_unit::{Kind, LogicalUnit},
-        pandoc, util,
+        pandoc,
+        repo::Repo,
+        util,
     },
     anyhow::Result,
     pandoc_ast::{Block, Inline, Pandoc},
@@ -37,9 +39,9 @@ impl Artifact {
     }
 
     /// Parse the file `path` into an artifact
-    pub fn from_file(path: &Path) -> Result<Artifact> {
+    pub fn from_file(repo: Option<Repo>, path: &Path) -> Result<Artifact> {
         pandoc::parse_file(path)
-            .map(|ast| parse_ast(Some(path), ast))
+            .map(|ast| parse_ast(repo, Some(path), ast))
             .map(|lus| Artifact::new(Some(path.to_owned()), lus.iter().cloned().collect()))
             .map_err(|_| Error::ParsingArtifact(PathBuf::from(path)).into())
     }
@@ -47,7 +49,7 @@ impl Artifact {
     /// Parse the string `s` into an artifact with no source
     pub fn from_string(s: &str) -> Result<Artifact> {
         pandoc::parse_string(s)
-            .map(|ast| parse_ast(None, ast))
+            .map(|ast| parse_ast(None, None, ast))
             .map(|lus| Artifact::new(None, lus.iter().cloned().collect()))
             .map_err(|_| Error::ParsingString(s.into()).into())
     }
@@ -64,12 +66,12 @@ impl fmt::Display for Artifact {
 }
 
 // Parse logical units out of the pandoc AST.
-fn parse_ast(path: Option<&Path>, ast: Pandoc) -> HashSet<LogicalUnit> {
+fn parse_ast(repo: Option<Repo>, file: Option<&Path>, ast: Pandoc) -> HashSet<LogicalUnit> {
     ast.blocks
         .iter()
         .filter_map(|b| match b {
             Block::DefinitionList(dl) => {
-                let logical_units = logical_units_of_deflist(path, dl);
+                let logical_units = logical_units_of_deflist(repo.clone(), file, dl);
                 Some(logical_units)
             }
             _ => None,
@@ -81,7 +83,8 @@ fn parse_ast(path: Option<&Path>, ast: Pandoc) -> HashSet<LogicalUnit> {
 // Given the `pandoc_ast` representation of a description list,
 // this finds any items that are valid logical units.
 fn logical_units_of_deflist(
-    path: Option<&Path>,
+    repo: Option<Repo>,
+    file: Option<&Path>,
     deflist: &[(Vec<Inline>, Vec<Vec<Block>>)],
 ) -> Vec<LogicalUnit> {
     // TODO Infer from file type?
@@ -89,10 +92,11 @@ fn logical_units_of_deflist(
         .iter()
         .filter_map(|(tags, blocks)| {
             logical_unit_definiendum(tags).and_then(|id| {
+                // TODO Determine kind from file type
                 let kind = Kind::Requirement;
                 let contents = pandoc::blocks_list_to_string(blocks);
-                // TODO Handle error instead of making `ok`?
-                match LogicalUnit::new(path, kind, id, contents) {
+                // TODO Determine line
+                match LogicalUnit::new(repo.clone(), file, None, kind, id, contents) {
                     Ok(lu) => Some(lu),
                     Err(err) => {
                         // TODO Replace with logging
@@ -142,6 +146,8 @@ mod test {
         let logical_units: HashSet<LogicalUnit> = vec![
             LogicalUnit::new(
                 None,
+                None,
+                None,
                 Kind::Requirement,
                 "FOO.1::BAR.1".to_string(),
                 "Biz baz blam.".to_string(),
@@ -149,12 +155,16 @@ mod test {
             .unwrap(),
             LogicalUnit::new(
                 None,
+                None,
+                None,
                 Kind::Requirement,
                 "FOO.1::BAZ.1".to_string(),
                 "Pop crink splot.".to_string(),
             )
             .unwrap(),
             LogicalUnit::new(
+                None,
+                None,
                 None,
                 Kind::Requirement,
                 "FOO.1::BOP.1".to_string(),

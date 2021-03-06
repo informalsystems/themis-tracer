@@ -4,12 +4,11 @@
 //! case, a single flat file.
 
 use {
-    crate::logical_unit::LogicalUnit,
     serde::{Deserialize, Serialize},
-    std::{cmp::Ordering, collections::HashSet, fmt, path::PathBuf},
+    std::{fmt, path::PathBuf},
 };
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Local {
     pub path: PathBuf,
     // Used to determine wehre to sync from
@@ -18,7 +17,7 @@ pub struct Local {
     pub branch: Option<String>,
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Remote {
     // TODO Use URL type: https://docs.rs/url/2.2.1/url/
     pub url: String,
@@ -26,7 +25,7 @@ pub struct Remote {
     pub branch: Option<String>,
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum Location {
     Local(Local),
     Remote(Remote),
@@ -42,16 +41,14 @@ impl Location {
     }
 }
 
-#[derive(Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Repo {
-    units: HashSet<LogicalUnit>,
     location: Location,
 }
 
 impl Repo {
     pub fn new(location: Location) -> Repo {
-        let units: HashSet<LogicalUnit> = HashSet::new();
-        Repo { units, location }
+        Repo { location }
     }
 
     // TODO support for default branch and upstream
@@ -63,24 +60,6 @@ impl Repo {
 
     pub fn path_as_string(&self) -> String {
         self.location.to_string()
-    }
-}
-
-impl PartialEq for Repo {
-    fn eq(&self, other: &Self) -> bool {
-        self.location == other.location
-    }
-}
-
-impl PartialOrd for Repo {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.location.cmp(&other.location))
-    }
-}
-
-impl Ord for Repo {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.location.cmp(&other.location)
     }
 }
 

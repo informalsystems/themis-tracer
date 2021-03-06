@@ -1,7 +1,10 @@
 use {
-    crate::util,
+    crate::{repo::Repo, util},
     serde::{de, Deserialize, Deserializer, Serialize, Serializer},
-    std::{fmt, path::Path},
+    std::{
+        fmt,
+        path::{Path, PathBuf},
+    },
 };
 
 ///  |TRC-TAG.1::SYNTAX.1::IMPL.1|
@@ -30,30 +33,37 @@ pub enum Kind {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub struct Source {
+    repo: Option<Repo>,
+    file: Option<PathBuf>,
+    line: Option<u64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct LogicalUnit {
     pub id: Id,
     pub kind: Kind,
-    pub source_file: Option<String>,
+    pub source: Source,
     pub content: String,
-    /// Logical units that are referred to in the content of this one
-    #[serde(skip)]
-    pub references: Vec<Id>,
     pub line: Option<u32>,
-    pub column: Option<u32>,
+    /// Logical units that are referred to in the content of this one
+    pub references: Vec<Id>, // TODO
 }
 
 impl LogicalUnit {
     pub fn new(
-        path: Option<&Path>,
+        repo: Option<Repo>,
+        file: Option<&Path>,
+        line: Option<u64>,
         kind: Kind,
         id: String,
         content: String,
     ) -> Result<LogicalUnit, String> {
         let id = Id::new(&id)?;
-        let source_file = if let Some(p) = path {
-            Some(p.to_str().ok_or("logical unit source file")?.to_owned())
-        } else {
-            None
+        let source = Source {
+            repo,
+            file: file.map(|f| f.to_owned()),
+            line,
         };
         let references = references_of_content(&content);
         Ok(LogicalUnit {
@@ -61,9 +71,8 @@ impl LogicalUnit {
             kind,
             content,
             references,
-            source_file,
-            column: None, // TODO
-            line: None,   // TODO
+            source,
+            line: None, // TODO
         })
     }
 }
@@ -128,12 +137,25 @@ impl fmt::Display for Kind {
     }
 }
 
-impl fmt::Display for LogicalUnit {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let source = self.source_file.clone().unwrap_or_else(|| "".to_string());
-        write!(f, "{} {} {} <{}>", source, self.id, self.kind, self.content)
-    }
-}
+// impl fmt::Display for LogicalUnit {
+//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//         let file = self
+//             .source
+//             .file
+//             .map(|p| p.as_path().display().to_string())
+//             .unwrap_or_else(|| "None".into());
+//         let repo = self
+//             .source
+//             .repo
+//             .map(|r| r.to_string())
+//             .unwrap_or_else(|| "None".into());
+//         write!(
+//             f,
+//             "LOGICAL-UNIT{repo: {}, file: {}, id: {}, kind: {}, content: \"{}\"}",
+//             repo, file, self.id, self.kind, self.content
+//         )
+//     }
+// }
 
 #[cfg(test)]
 mod test {

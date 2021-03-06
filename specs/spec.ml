@@ -96,9 +96,29 @@ type path
 
 (** {1 Components} *)
 
-(** {3 Implements}
+(** |TRC-GITHUB-REF.1::IMPL.1::REPO.1|*)
+module Repo = struct
+  type local =
+    { name : string option
+    ; default_upstream : string option
+    ; default_branch : string option
+    }
 
-    [LOGICAL-UNIT.1::OSPEC.1] *)
+  type remote =
+    { url : string
+    ; default_branch : string option
+    }
+
+  type location =
+    | Local of local
+    | Remote of remote
+
+  type t = { location : location }
+
+  let sync : t -> t = raise TODO
+end
+
+(** [LOGICAL-UNIT.1::OSPEC.1] *)
 module Logical_unit = struct
   (**
      [TRC-TAG.1::SYNTAX.1::OSPEC.1] *)
@@ -133,7 +153,7 @@ module Logical_unit = struct
   (** |TRC-GITHUB-REF.1::IMPL.1::LOC.1|*)
   module Source = struct
     type t =
-      { repo : string option
+      { repo : Repo.t
       ; file : path option
       ; line : int option
       }
@@ -150,30 +170,6 @@ module Logical_unit = struct
   (** Gives the version of the unit itself
       E.g., [assert (version |FOO.1::BAR.1|) = 1;] *)
   let version : t -> int = raise TODO
-end
-
-(** |TRC-GITHUB-REF.1::IMPL.1::REPO.1|*)
-module Repo = struct
-  type local =
-    { name : string option
-    ; default_upstream : string option
-    ; default_branch : string option
-    }
-
-  type remote =
-    { url : string
-    ; default_branch : string option
-    }
-
-  type location =
-    | Local of local
-    | Remote of remote
-
-  type t = { location : location }
-
-  let logical_units : t -> Logical_unit.t set = raise TODO
-
-  let sync : t -> t = raise TODO
 end
 
 (** |TRC-GRAPH.1::BUILD.1::CONTEXT.1|
