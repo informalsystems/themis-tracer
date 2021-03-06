@@ -1,7 +1,6 @@
-mod add;
 mod context;
 mod init;
 mod parse;
-mod repos;
+mod repo;
 
 pub mod opt;
