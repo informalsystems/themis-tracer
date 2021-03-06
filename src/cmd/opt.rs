@@ -20,13 +20,6 @@ pub enum Cmd {
         format: cmd::parse::Format,
     },
 
-    /// List registered specs.
-    #[structopt(name = "list")]
-    List {
-        /// Search criteria to filter out listed spec results
-        filter: Option<String>,
-    },
-
     /// Update the spec DB for the current project with all specs from registered sources
     #[structopt(name = "sync")]
     Sync {
@@ -48,6 +41,9 @@ pub enum Cmd {
     /// Manage repositories
     #[structopt(name = "repo")]
     Repo(Repo),
+
+    /// Manage logical units
+    Unit(Unit),
 }
 
 #[derive(Debug, StructOpt)]
@@ -93,6 +89,22 @@ pub enum RepoCmd {
     },
 }
 
+#[derive(Debug, StructOpt)]
+pub struct Unit {
+    #[structopt(subcommand)]
+    pub cmd: UnitCmd,
+}
+
+#[derive(Debug, StructOpt)]
+pub enum UnitCmd {
+    /// List the specs registered to the current context
+    List {
+        // TODO
+    // Search criteria to filter out listed spec results
+    // filter: Option<String>,
+    },
+}
+
 // FIXME
 fn unimplemented() -> Result<()> {
     Err(anyhow!("{}", "Not yet implemented!"))
@@ -104,8 +116,8 @@ pub fn run() -> Result<()> {
         Cmd::Init {} => cmd::init::run(),
         Cmd::Context(opt) => cmd::context::run(opt),
         Cmd::Repo(opt) => cmd::repo::run(opt),
+        Cmd::Unit(opt) => cmd::unit::run(opt),
         Cmd::Parse { path, format } => cmd::parse::run(&path, format),
         Cmd::Sync { project: _ } => unimplemented(),
-        Cmd::List { filter: _ } => unimplemented(),
     }
 }

@@ -91,6 +91,12 @@ impl Serialize for Id {
     }
 }
 
+impl From<Id> for String {
+    fn from(id: Id) -> Self {
+        id.to_string()
+    }
+}
+
 struct IdVisitor;
 
 impl<'de> de::Visitor<'de> for IdVisitor {
@@ -137,25 +143,27 @@ impl fmt::Display for Kind {
     }
 }
 
-// impl fmt::Display for LogicalUnit {
-//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-//         let file = self
-//             .source
-//             .file
-//             .map(|p| p.as_path().display().to_string())
-//             .unwrap_or_else(|| "None".into());
-//         let repo = self
-//             .source
-//             .repo
-//             .map(|r| r.to_string())
-//             .unwrap_or_else(|| "None".into());
-//         write!(
-//             f,
-//             "LOGICAL-UNIT{repo: {}, file: {}, id: {}, kind: {}, content: \"{}\"}",
-//             repo, file, self.id, self.kind, self.content
-//         )
-//     }
-// }
+impl fmt::Display for LogicalUnit {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let file = self
+            .source
+            .file
+            .clone()
+            .map(|p| p.as_path().display().to_string())
+            .unwrap_or_else(|| "None".into());
+        let repo = self
+            .source
+            .repo
+            .clone()
+            .map(|r| r.to_string())
+            .unwrap_or_else(|| "None".into());
+        write!(
+            f,
+            "LOGICAL-UNIT{{repo: {}, file: {}, id: {}, kind: {}, content: \"{}\"}}",
+            repo, file, self.id, self.kind, self.content
+        )
+    }
+}
 
 #[cfg(test)]
 mod test {

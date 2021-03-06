@@ -45,7 +45,6 @@ Every disruption to the process of cogitating and synthesizing the systems
 presented increases risks of misunderstanding and failed comprehension.
 
 * Tasks
-** TODO Use a lightweight database for storing info, rather than the file system
 ** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17
 
 ** TODO Software development as a value flow

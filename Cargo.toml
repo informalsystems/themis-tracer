@@ -38,9 +38,9 @@ zerocopy = "*"
 thiserror = "*"
 anyhow = "*"
 rusqlite = "*"
+glob = "*"
 
 [dev-dependencies]
 assert_cmd = "*"
-glob = "*"
 textwrap = "*"
 tempfile = "*"

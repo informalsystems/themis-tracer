@@ -6,16 +6,21 @@ reference-friendly, documentation of the tool's usage.
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
 
-- [-](#-)
-    - [Show the current version](#show-the-current-version)
-    - [`init`ialize the tool](#initialize-the-tool)
-    - [`parse` specs](#parse-specs)
-        - [Default [`--format json`]](#default---format-json)
-        - [`--format csv`](#--format-csv)
+- [Usage](#usage)
+    - [Setting the environment](#setting-the-environment)
+        - [Show the current version](#show-the-current-version)
+        - [`init`ialize the tool](#initialize-the-tool)
     - [Manage `context`s](#manage-contexts)
         - [`context new`](#context-new)
         - [`context list`](#context-list)
         - [`context switch`](#context-switch)
+    - [managing `repo`sitories](#managing-repositories)
+        - [`add` repos to the current working context](#add-repos-to-the-current-working-context)
+        - [`list` the repos in the current context](#list-the-repos-in-the-current-context)
+    - [Viewing logical `units`](#viewing-logical-units)
+    - [`parse`ing specs](#parseing-specs)
+        - [`parse --format json` (the default, if no argument is given)](#parse---format-json-the-default-if-no-argument-is-given)
+        - [`parse --format csv`](#parse---format-csv)
     - [Cleanup](#cleanup)
 
 <!-- markdown-toc end -->
@@ -89,7 +94,7 @@ $ $CMD context list
 * foo
 ```
 
-## managing repositories
+## managing `repo`sitories
 
 Assume we want to work with the following repositories:
 
@@ -101,18 +106,44 @@ $ git init repos/repo-b | sed "s:$(pwd)/::" # We trim the absolute path prefix, 
 Initialized empty Git repository in repos/repo-b/.git/
 ```
 
+Assume also that `repo-a` contains some specs with logical units:
+
+```sh
+$ cat > repos/repo-a/spec-1.md<<EOF \
+> |FOO.1| \
+> : First unit. \
+> \
+> |FOO.1::BAR.1| \
+> : Second unit. \
+> EOF
+$ mkdir repos/repo-a/dir
+$ cat > repos/repo-a/dir/spec-2.md <<EOF \
+> |FLIM.1| \
+> : A unit in a nested directory. \
+> \
+> |FLIM.1::FLAM.1| \
+> : Second unit in the same directory. \
+> EOF
+```
+
 **NOTE**: Here and following, we use the filter `| sed "s:$(pwd)/::"` to trim
 the absolute path prefix from output, so that the accuracy of this documentation
 is ensured by integration tests. However, the tool always associates
 repositories with their absolute path. This is the unique name of a repository
 (in the user's local file system or on the world wide web).
 
-### `add` repos to a context
+### `add` repos to the current working context
+
+Add a repo to your current working context as follows:
 
 ```sh
 $ $CMD repo add repos/repo-a
 $ $CMD repo add repos/repo-b
 ```
+
+When a repository is added to a context, all of the logical units that the tool
+can find in the repository are loaded into the database. See [Viewing logical
+units](#viewing-logical-units).
 
 ### `list` the repos in the current context
 
@@ -134,7 +165,23 @@ $ $CMD context switch bar
 $ $CMD repo list
 ```
 
-### `parse`ing specs
+## Viewing logical `unit`s
+
+### `list` all the units in the current context
+
+```sh
+$ $CMD context switch foo
+$ $CMD context list
+  bar
+* foo
+$ $CMD unit list
+  LOGICAL-UNIT{repo: /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a, file: dir/spec-2.md, id: FLIM.1, kind: Requirement, content: "A unit in a nested directory."}
+  LOGICAL-UNIT{repo: /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a, file: dir/spec-2.md, id: FLIM.1::FLAM.1, kind: Requirement, content: "Second unit in the same directory."}
+  LOGICAL-UNIT{repo: /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a, file: spec-1.md, id: FOO.1, kind: Requirement, content: "First unit."}
+  LOGICAL-UNIT{repo: /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a, file: spec-1.md, id: FOO.1::BAR.1, kind: Requirement, content: "Second unit."}
+```
+
+## `parse`ing specs
 
 You can use the tool to parse logical units out of individual files, so that you
 can do computations with the specs via your own scripts or programs.
@@ -184,7 +231,7 @@ units.
 
 <!-- TODO Annotate with verification tags, tying to the implementations -->
 
-#### `parse --format json` (the default, if no argument is given)
+### `parse --format json` (the default, if no argument is given)
 
 The default formatting for parsed files is a stream of JSON objects:
 
@@ -252,7 +299,7 @@ $ $CMD parse parsing-spec.md | jq
 }
 ```
 
-#### `parse --format csv`
+### `parse --format csv`
 
 ```sh
 $ $CMD parse parsing-spec.md --format csv
