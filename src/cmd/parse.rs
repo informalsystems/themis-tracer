@@ -61,8 +61,8 @@ impl fmt::Display for ParseFormatError {
 /// Run the the parser on the file `path` rendering the data in `format`
 /// to `stdout`.
 pub fn run(path: &Path, format: Format) -> Result<()> {
-    // TODO Error handling
-    Artifact::from_file(path)
+    // TODO Get repo from context?
+    Artifact::from_file(None, path)
         .map(|a| a.logical_units.iter().cloned().collect())
         .and_then(|lus| render(format, lus))
 }
@@ -75,7 +75,19 @@ fn render(format: Format, mut lus: Vec<LogicalUnit>) -> Result<()> {
     match format {
         Format::Csv => {
             // See https://docs.rs/csv/1.1.3/csv/tutorial/index.html#writing-csv
-            let mut wtr = csv::Writer::from_writer(io::stdout());
+            let mut wtr = csv::WriterBuilder::new()
+                .has_headers(false)
+                .from_writer(io::stdout());
+            // Write the headers
+            wtr.serialize([
+                "tag",
+                "kind",
+                "repo",
+                "file",
+                "content",
+                "line",
+                "references",
+            ])?;
             lus.iter()
                 .try_for_each(|x| wtr.serialize(x).map_err(|e| e.into()))
         }
