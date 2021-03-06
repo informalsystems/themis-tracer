@@ -79,9 +79,96 @@ Error: Context nonexistent does not exists
 [1]
 ```
 
+## `repo` errors
+
+Some repos work with
+
+```sh
+$ mkdir repos
+$ git init repos/repo-a | sed "s:$(pwd)/::"
+Initialized empty Git repository in repos/repo-a/.git/
+$ git init repos/repo-b | sed "s:$(pwd)/::" # We trim the absolute path prefix, for testing purposes
+Initialized empty Git repository in repos/repo-b/.git/
+```
+
+And some specs in the repos:
+
+```sh
+$ cat > repos/repo-a/spec-1.md<<EOF \
+> |FOO.1| \
+> : First unit. \
+> \
+> |FOO.1::BAR.1| \
+> : Second unit. \
+> EOF
+$ cat > repos/repo-b/spec-2.md <<EOF \
+> |FLIM.1| \
+> : A unit in different repo. \
+> \
+> |FLIM.1::FLAM.1| \
+> : A second unit in the same repo. \
+> EOF
+```
+
+### Adding a `repo` when there's no working context
+
+```sh
+$ $CMD repo add repos/repo-a
+Error: No context is set. Try: `context switch <context>`
+[1]
+```
+
+### Adding redundant repos to the context `repo`
+
+```sh
+$ $CMD context switch foo
+$ $CMD repo add repos/repo-a
+$ $CMD repo add repos/repo-a 2>&1 | sed "s:$(pwd)/::"
+Error: The repo repos/repo-a is already registered in the current context
+```
+
+## Logical `unit`s
+
+### Ensure logical units are only reported in the respective context
+
+The preceding has left us with the current working context, with its registered
+repo and logical units:
+
+```sh
+$ $CMD context list
+* foo
+$ $CMD repo list | sed "s:$(pwd)/::"
+  repos/repo-a
+$ $CMD unit list | sed "s:$(pwd)/::"
+  LOGICAL-UNIT{repo: repos/repo-a, file: spec-1.md, id: FOO.1, kind: Requirement, content: "First unit."}
+  LOGICAL-UNIT{repo: repos/repo-a, file: spec-1.md, id: FOO.1::BAR.1, kind: Requirement, content: "Second unit."}
+```
+
+We should be able to add `repos/repo-b` to a new context, and have only those
+units belonging to that repo listed in the new context:
+
+```sh
+$ $CMD context new bar
+$ $CMD context switch bar
+$ $CMD repo add repos/repo-b
+$ $CMD unit list | sed "s:$(pwd)/::"
+  LOGICAL-UNIT{repo: repos/repo-b, file: spec-2.md, id: FLIM.1, kind: Requirement, content: "A unit in different repo."}
+  LOGICAL-UNIT{repo: repos/repo-b, file: spec-2.md, id: FLIM.1::FLAM.1, kind: Requirement, content: "A second unit in the same repo."}
+```
+
+And these newly added units should not be added to the previous context
+
+```sh
+$ $CMD context switch foo
+$ $CMD unit list | sed "s:$(pwd)/::" 
+  LOGICAL-UNIT{repo: repos/repo-a, file: spec-1.md, id: FOO.1, kind: Requirement, content: "First unit."}
+  LOGICAL-UNIT{repo: repos/repo-a, file: spec-1.md, id: FOO.1::BAR.1, kind: Requirement, content: "Second unit."}
+```
+
 <!-- FIXME: Remove need for this -->
 ## Cleanup
 
 ```sh
 $ rm -rf ../target/test-sandbox
+$ rm -rf ./repos
 ```
