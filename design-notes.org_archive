@@ -40,3 +40,16 @@ Otherwise we can't find them again after moving dirs! Duh!
 - [X] Add routine to run prev on every file in repo
 - [X] Add command to list logical units in context
   + [X] Add db fn to get all units in current context
+
+* DONE Test error conditions of repo management
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-03-06 Sat 18:47
+:ARCHIVE_FILE: ~/Sync/informal-systems/mvd/themis-tracer/design-notes.org
+:ARCHIVE_OLPATH: Tasks
+:ARCHIVE_CATEGORY: design-notes
+:ARCHIVE_TODO: DONE
+:END:
+- [X] Adding the same repo twice
+- [X] Adding repos when no context is active
+- [X] Adding units to repos in different contexts, ensure we only show the repos
+  for the current context.
