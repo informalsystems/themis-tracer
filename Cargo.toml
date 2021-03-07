@@ -39,6 +39,7 @@ thiserror = "*"
 anyhow = "*"
 rusqlite = "*"
 glob = "*"
+tabwriter = "*"
 
 [dev-dependencies]
 assert_cmd = "*"
