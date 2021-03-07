@@ -217,10 +217,10 @@ Show all recorded information associated with the particular unit identified by
 the given `TAG`:
 
 ```sh
-$ $CMD unit show FOO.1::BAR.1
+$ $CMD unit show FOO.1::BAR.1 | sed "s:$(pwd)/::"
 tag:   FOO.1::BAR.1
 kind:  Requirement
-repo:  /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a
+repo:  repos/repo-a
 file:  spec-1.md
 line:
 refs:
