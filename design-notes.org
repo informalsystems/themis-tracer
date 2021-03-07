@@ -45,16 +45,9 @@ Every disruption to the process of cogitating and synthesizing the systems
 presented increases risks of misunderstanding and failed comprehension.
 
 * Tasks
-** TODO Refine =unit list= command
-https://github.com/informalsystems/themis-tracer/issues/16
-
-- [X] Make output from =unit list= much simpler and easier to read
-  + [X] Investigate libs for terminal output
-  + [X] Implement pretty output
-- [X] Add =--format= option for =unit list=
-- [X] Add a command =unit show TAG= that gives complete info for a unit
-- [X] Add =--format= option for =unit show=
-
+** TODO Implement sync command
+- [ ] Add db function to purge all logical units from a given repo
+- [ ] Implement procedure to purge units, then reload them for a repo
 ** TODO Make =context new= also switch the context
 ** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17
 ** TODO Software development as a value flow
