@@ -8,55 +8,10 @@
 //! [`Format`]: Format
 
 use {
-    crate::{artifact::Artifact, logical_unit::LogicalUnit},
+    crate::{artifact::Artifact, cmd::format::Format, logical_unit::LogicalUnit},
     anyhow::Result,
-    std::{fmt, io, path::Path},
+    std::{io, path::Path},
 };
-
-/// Formats supported for rendering parsed requirement data
-#[derive(Debug)]
-pub enum Format {
-    Csv,
-    Json,
-}
-
-impl fmt::Display for Format {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let s = match self {
-            Format::Csv => "csv",
-            Format::Json => "json",
-        };
-        write!(f, "{}", s)
-    }
-}
-
-impl Default for Format {
-    fn default() -> Self {
-        Format::Json
-    }
-}
-
-impl std::str::FromStr for Format {
-    type Err = ParseFormatError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "csv" => Ok(Format::Csv),
-            "json" => Ok(Format::Json),
-            _ => Err(ParseFormatError(s.to_string())),
-        }
-    }
-}
-
-/// Errors arising from parsing invalid formats arguments
-#[derive(Debug, Clone)]
-pub struct ParseFormatError(String);
-
-impl fmt::Display for ParseFormatError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "unable to parse format {}", self.0)
-    }
-}
 
 /// Run the the parser on the file `path` rendering the data in `format`
 /// to `stdout`.
@@ -69,7 +24,7 @@ pub fn run(path: &Path, format: Format) -> Result<()> {
 
 /// Render the [`LogicalUnits`]s `lus` according to `format`.
 /// Prints rendered results to stdout.
-fn render(format: Format, mut lus: Vec<LogicalUnit>) -> Result<()> {
+pub fn render(format: Format, mut lus: Vec<LogicalUnit>) -> Result<()> {
     lus.sort();
 
     match format {

@@ -17,7 +17,7 @@ pub enum Cmd {
         #[structopt(parse(from_os_str))]
         path: PathBuf,
         #[structopt(short, long, default_value, parse(try_from_str))]
-        format: cmd::parse::Format,
+        format: cmd::format::Format,
     },
 
     /// Update the spec DB for the current project with all specs from registered sources
