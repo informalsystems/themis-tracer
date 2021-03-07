@@ -1,6 +1,8 @@
 use {
     crate::{cmd::opt, db, logical_unit::LogicalUnit},
     anyhow::Result,
+    std::io::{stdout, Write},
+    tabwriter::TabWriter,
 };
 
 fn list() -> Result<()> {
@@ -8,10 +10,13 @@ fn list() -> Result<()> {
     let mut units: Vec<LogicalUnit> = db::unit::get_all_in_context(&conn)?;
     units.sort();
 
-    for unit in units {
-        println!("  {}", unit)
-    }
+    let mut tw = TabWriter::new(stdout());
 
+    for unit in units {
+        let (tag, content, path) = unit.synopsis();
+        writeln!(&mut tw, "{}\t{}\t{}", tag, content, path)?;
+    }
+    let () = tw.flush()?;
     Ok(())
 }
 

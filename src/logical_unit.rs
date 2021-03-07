@@ -33,19 +33,13 @@ pub enum Kind {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct Source {
-    repo: Option<Repo>,
-    file: Option<PathBuf>,
-    line: Option<u64>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct LogicalUnit {
     pub id: Id,
     pub kind: Kind,
-    pub source: Source,
+    pub repo: Option<Repo>,
+    pub file: Option<PathBuf>,
+    pub line: Option<u64>,
     pub content: String,
-    pub line: Option<u32>,
     /// Logical units that are referred to in the content of this one
     pub references: Vec<Id>, // TODO
 }
@@ -60,20 +54,38 @@ impl LogicalUnit {
         content: String,
     ) -> Result<LogicalUnit, String> {
         let id = Id::new(&id)?;
-        let source = Source {
-            repo,
-            file: file.map(|f| f.to_owned()),
-            line,
-        };
+        let file = file.map(|f| f.to_owned());
         let references = references_of_content(&content);
         Ok(LogicalUnit {
             id,
             kind,
+            repo,
+            file,
+            line,
             content,
             references,
-            source,
-            line: None, // TODO
         })
+    }
+
+    /// `unit.synopsis()` is a tripplet `(tag, content, path)` summarizing
+    ///
+    /// - the `unit`'s `tag`
+    /// - the `unit`'s `content`, truncated to the first 100 characters
+    /// - the `path` of the `unit`'s `` repo
+    pub fn synopsis(&self) -> (String, String, String) {
+        let tag = self.id.to_string();
+
+        let content = if self.content.len() > 100 {
+            let mut to_truncate = self.content.clone();
+            to_truncate.truncate(100);
+            to_truncate.push_str("...");
+            to_truncate
+        } else {
+            self.content.clone()
+        };
+
+        let repo = self.repo.clone().map_or("".into(), |r| r.path_as_string());
+        (tag, content, repo)
     }
 }
 
@@ -146,13 +158,11 @@ impl fmt::Display for Kind {
 impl fmt::Display for LogicalUnit {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let file = self
-            .source
             .file
             .clone()
             .map(|p| p.as_path().display().to_string())
             .unwrap_or_else(|| "None".into());
         let repo = self
-            .source
             .repo
             .clone()
             .map(|r| r.to_string())
@@ -171,7 +181,7 @@ mod test {
     use serde_json;
 
     #[test]
-    fn serialize_id() {
+    fn json_serialize_id() {
         let id = Id::new("FOO.1::BAR.2::BAZ.3").unwrap();
         let actual = serde_json::to_string(&id).unwrap();
         let expected = "\"FOO.1::BAR.2::BAZ.3\"";
@@ -179,9 +189,24 @@ mod test {
     }
 
     #[test]
-    fn deserialize_id() {
+    fn json_deserialize_id() {
         let actual: Id = serde_json::from_str(&"\"FOO.1::BAR.2::BAZ.3\"").unwrap();
         let expected = Id::new("FOO.1::BAR.2::BAZ.3").unwrap();
         assert_eq!(actual, expected);
     }
+
+    // TODO Add unit tests for serde
+    // #[test]
+    // fn csv_serialize_unit() {
+    //     let actual = LogicalUnit::new(
+    //         None,
+    //         None,
+    //         None,
+    //         Kind::Requirement,
+    //         "FOO.1".into(),
+    //         "".into(),
+    //     );
+    //     let expected = ",,,Requirement,FOO1,,";
+    //     assert_eq!(actual, expected);
+    // }
 }

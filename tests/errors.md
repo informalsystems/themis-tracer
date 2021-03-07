@@ -140,8 +140,8 @@ $ $CMD context list
 $ $CMD repo list | sed "s:$(pwd)/::"
   repos/repo-a
 $ $CMD unit list | sed "s:$(pwd)/::"
-  LOGICAL-UNIT{repo: repos/repo-a, file: spec-1.md, id: FOO.1, kind: Requirement, content: "First unit."}
-  LOGICAL-UNIT{repo: repos/repo-a, file: spec-1.md, id: FOO.1::BAR.1, kind: Requirement, content: "Second unit."}
+FOO.1         First unit.   repos/repo-a
+FOO.1::BAR.1  Second unit.  repos/repo-a
 ```
 
 We should be able to add `repos/repo-b` to a new context, and have only those
@@ -152,8 +152,8 @@ $ $CMD context new bar
 $ $CMD context switch bar
 $ $CMD repo add repos/repo-b
 $ $CMD unit list | sed "s:$(pwd)/::"
-  LOGICAL-UNIT{repo: repos/repo-b, file: spec-2.md, id: FLIM.1, kind: Requirement, content: "A unit in different repo."}
-  LOGICAL-UNIT{repo: repos/repo-b, file: spec-2.md, id: FLIM.1::FLAM.1, kind: Requirement, content: "A second unit in the same repo."}
+FLIM.1          A unit in different repo.        repos/repo-b
+FLIM.1::FLAM.1  A second unit in the same repo.  repos/repo-b
 ```
 
 And these newly added units should not be added to the previous context
@@ -161,8 +161,8 @@ And these newly added units should not be added to the previous context
 ```sh
 $ $CMD context switch foo
 $ $CMD unit list | sed "s:$(pwd)/::" 
-  LOGICAL-UNIT{repo: repos/repo-a, file: spec-1.md, id: FOO.1, kind: Requirement, content: "First unit."}
-  LOGICAL-UNIT{repo: repos/repo-a, file: spec-1.md, id: FOO.1::BAR.1, kind: Requirement, content: "Second unit."}
+FOO.1         First unit.   repos/repo-a
+FOO.1::BAR.1  Second unit.  repos/repo-a
 ```
 
 <!-- FIXME: Remove need for this -->
