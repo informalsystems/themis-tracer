@@ -78,16 +78,17 @@ fn render(format: Format, mut lus: Vec<LogicalUnit>) -> Result<()> {
             let mut wtr = csv::WriterBuilder::new()
                 .has_headers(false)
                 .from_writer(io::stdout());
+            // TODO include headers?
             // Write the headers
-            wtr.serialize([
-                "tag",
-                "kind",
-                "repo",
-                "file",
-                "content",
-                "line",
-                "references",
-            ])?;
+            // wtr.serialize([
+            //     "tag",
+            //     "kind",
+            //     "repo",
+            //     "file",
+            //     "line",
+            //     "content",
+            //     "references",
+            // ])?;
             lus.iter()
                 .try_for_each(|x| wtr.serialize(x).map_err(|e| e.into()))
         }

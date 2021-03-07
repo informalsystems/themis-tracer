@@ -114,7 +114,7 @@ $ cat > repos/repo-a/spec-1.md<<EOF \
 > : First unit. \
 > \
 > |FOO.1::BAR.1| \
-> : Second unit. \
+> : A unit with a long description: "Proofs, from the formal standpoint, are likewise nothing but finit series of formulae (with certain specifiable characteristics)." \
 > EOF
 $ mkdir repos/repo-a/dir
 $ cat > repos/repo-a/dir/spec-2.md <<EOF \
@@ -175,10 +175,10 @@ $ $CMD context list
   bar
 * foo
 $ $CMD unit list | sed "s:$(pwd)/::" # We trim the absolute path prefix, for testing purposes
-  LOGICAL-UNIT{repo: repos/repo-a, file: dir/spec-2.md, id: FLIM.1, kind: Requirement, content: "A unit in a nested directory."}
-  LOGICAL-UNIT{repo: repos/repo-a, file: dir/spec-2.md, id: FLIM.1::FLAM.1, kind: Requirement, content: "Second unit in the same directory."}
-  LOGICAL-UNIT{repo: repos/repo-a, file: spec-1.md, id: FOO.1, kind: Requirement, content: "First unit."}
-  LOGICAL-UNIT{repo: repos/repo-a, file: spec-1.md, id: FOO.1::BAR.1, kind: Requirement, content: "Second unit."}
+FLIM.1          A unit in a nested directory.                                                                            repos/repo-a
+FLIM.1::FLAM.1  Second unit in the same directory.                                                                       repos/repo-a
+FOO.1           First unit.                                                                                              repos/repo-a
+FOO.1::BAR.1    A unit with a long description: "Proofs, from the formal standpoint, are likewise nothing but finit ...  repos/repo-a
 ```
 
 ## `parse`ing specs
@@ -240,61 +240,46 @@ $ $CMD parse parsing-spec.md | jq
 {
   "id": "PARSE-SPECS.1",
   "kind": "Requirement",
-  "source": {
-    "repo": null,
-    "file": "parsing-spec.md",
-    "line": null
-  },
-  "content": "We can parse a file of logical units into different formats, preserving all\ncritical content of the logical unit content.",
+  "repo": null,
+  "file": "parsing-spec.md",
   "line": null,
+  "content": "We can parse a file of logical units into different formats, preserving all\ncritical content of the logical unit content.",
   "references": []
 }
 {
   "id": "PARSE-SPECS.1::CONTENT.1::MULTI-PARA.1",
   "kind": "Requirement",
-  "source": {
-    "repo": null,
-    "file": "parsing-spec.md",
-    "line": null
-  },
-  "content": "The content of logical units must be preserved.\n\nEven when it spans multiple paragraphs.\n\n- Or\n- includes\n- lists",
+  "repo": null,
+  "file": "parsing-spec.md",
   "line": null,
+  "content": "The content of logical units must be preserved.\n\nEven when it spans multiple paragraphs.\n\n- Or\n- includes\n- lists",
   "references": []
 }
 {
   "id": "PARSE-SPECS.1::CSV.1",
   "kind": "Requirement",
-  "source": {
-    "repo": null,
-    "file": "parsing-spec.md",
-    "line": null
-  },
-  "content": "Must support parse a file of specs into CSV.",
+  "repo": null,
+  "file": "parsing-spec.md",
   "line": null,
+  "content": "Must support parse a file of specs into CSV.",
   "references": []
 }
 {
   "id": "PARSE-SPECS.1::INLINE.1",
   "kind": "Requirement",
-  "source": {
-    "repo": null,
-    "file": "parsing-spec.md",
-    "line": null
-  },
-  "content": "The folowing inline styling must be preserved:\n\n- **Strong** (**both** ways)\n- *Emphasizes* (*both* ways)\n- ~~Strikethrough~~\n- `code`\n- [links](/url)\n- ![images](/url)\n- [smallcaps]{.smallcaps}",
+  "repo": null,
+  "file": "parsing-spec.md",
   "line": null,
+  "content": "The folowing inline styling must be preserved:\n\n- **Strong** (**both** ways)\n- *Emphasizes* (*both* ways)\n- ~~Strikethrough~~\n- `code`\n- [links](/url)\n- ![images](/url)\n- [smallcaps]{.smallcaps}",
   "references": []
 }
 {
   "id": "PARSE-SPECS.1::JSON.1",
   "kind": "Requirement",
-  "source": {
-    "repo": null,
-    "file": "parsing-spec.md",
-    "line": null
-  },
-  "content": "Must support parsing a file of specs into JSON.",
+  "repo": null,
+  "file": "parsing-spec.md",
   "line": null,
+  "content": "Must support parsing a file of specs into JSON.",
   "references": []
 }
 ```
@@ -303,17 +288,16 @@ $ $CMD parse parsing-spec.md | jq
 
 ```sh
 $ $CMD parse parsing-spec.md --format csv
-tag,kind,repo,file,content,line,references
 PARSE-SPECS.1,Requirement,,parsing-spec.md,,"We can parse a file of logical units into different formats, preserving all
-critical content of the logical unit content.",
+critical content of the logical unit content."
 PARSE-SPECS.1::CONTENT.1::MULTI-PARA.1,Requirement,,parsing-spec.md,,"The content of logical units must be preserved.
 
 Even when it spans multiple paragraphs.
 
 - Or
 - includes
-- lists",
-PARSE-SPECS.1::CSV.1,Requirement,,parsing-spec.md,,Must support parse a file of specs into CSV.,
+- lists"
+PARSE-SPECS.1::CSV.1,Requirement,,parsing-spec.md,,Must support parse a file of specs into CSV.
 PARSE-SPECS.1::INLINE.1,Requirement,,parsing-spec.md,,"The folowing inline styling must be preserved:
 
 - **Strong** (**both** ways)
@@ -322,8 +306,8 @@ PARSE-SPECS.1::INLINE.1,Requirement,,parsing-spec.md,,"The folowing inline styli
 - `code`
 - [links](/url)
 - ![images](/url)
-- [smallcaps]{.smallcaps}",
-PARSE-SPECS.1::JSON.1,Requirement,,parsing-spec.md,,Must support parsing a file of specs into JSON.,
+- [smallcaps]{.smallcaps}"
+PARSE-SPECS.1::JSON.1,Requirement,,parsing-spec.md,,Must support parsing a file of specs into JSON.
 ```
 
 <!-- FIXME: Remove need for this -->

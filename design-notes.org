@@ -48,7 +48,9 @@ presented increases risks of misunderstanding and failed comprehension.
 ** TODO Refine =unit list= command
 https://github.com/informalsystems/themis-tracer/issues/16
 
-- [ ] Make output from =unit list= much simpler and easier to read
+- [X] Make output from =unit list= much simpler and easier to read
+  + [X] Investigate libs for terminal output
+  + [X] Implement pretty output
 - [ ] Add a command =unit show TAG= that gives complete info for a unit
 
 ** TODO Make =context new= also switch the context
