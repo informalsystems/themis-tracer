@@ -1,6 +1,6 @@
 use {
     crate::{
-        cmd::{format::Format, opt, parse},
+        cmd::{format::Format, opt},
         db,
         logical_unit::LogicalUnit,
     },
@@ -27,7 +27,7 @@ fn list(format: Option<Format>) -> Result<()> {
 
     match format {
         None => list_human(units),
-        Some(fmt) => parse::render(fmt, units),
+        Some(fmt) => fmt.units(units),
     }
 }
 
