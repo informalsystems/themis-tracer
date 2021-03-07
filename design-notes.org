@@ -51,9 +51,9 @@ https://github.com/informalsystems/themis-tracer/issues/16
 - [X] Make output from =unit list= much simpler and easier to read
   + [X] Investigate libs for terminal output
   + [X] Implement pretty output
-- [ ] Add =--fmt= option for =unit list=
+- [X] Add =--format= option for =unit list=
 - [ ] Add a command =unit show TAG= that gives complete info for a unit
-- [ ] Add =--fmt= option for =unit show=
+- [ ] Add =--format= option for =unit show=
 
 ** TODO Make =context new= also switch the context
 ** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17
