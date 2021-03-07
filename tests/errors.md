@@ -140,8 +140,8 @@ $ $CMD context list
 $ $CMD repo list | sed "s:$(pwd)/::"
   repos/repo-a
 $ $CMD unit list | sed "s:$(pwd)/::"
-FOO.1         First unit.   repos/repo-a
-FOO.1::BAR.1  Second unit.  repos/repo-a
+FOO.1         repos/repo-a  First unit.
+FOO.1::BAR.1  repos/repo-a  Second unit.
 ```
 
 We should be able to add `repos/repo-b` to a new context, and have only those
@@ -152,8 +152,8 @@ $ $CMD context new bar
 $ $CMD context switch bar
 $ $CMD repo add repos/repo-b
 $ $CMD unit list | sed "s:$(pwd)/::"
-FLIM.1          A unit in different repo.        repos/repo-b
-FLIM.1::FLAM.1  A second unit in the same repo.  repos/repo-b
+FLIM.1          repos/repo-b  A unit in different repo.
+FLIM.1::FLAM.1  repos/repo-b  A second unit in the same repo.
 ```
 
 And these newly added units should not be added to the previous context
@@ -161,8 +161,8 @@ And these newly added units should not be added to the previous context
 ```sh
 $ $CMD context switch foo
 $ $CMD unit list | sed "s:$(pwd)/::" 
-FOO.1         First unit.   repos/repo-a
-FOO.1::BAR.1  Second unit.  repos/repo-a
+FOO.1         repos/repo-a  First unit.
+FOO.1::BAR.1  repos/repo-a  Second unit.
 ```
 
 <!-- FIXME: Remove need for this -->

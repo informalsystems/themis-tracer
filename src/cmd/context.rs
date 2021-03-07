@@ -19,6 +19,7 @@ pub enum Error {
 #[allow(clippy::unnecessary_wraps)]
 fn new(name: String) -> Result<()> {
     let conn = db::connection()?;
+    // TODO Clean up to remove pointless match?
     match db::context::add(&conn, Context::new(name.clone())) {
         Ok(()) => Ok(()),
         Err(err) => {

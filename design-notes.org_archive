@@ -53,3 +53,21 @@ Otherwise we can't find them again after moving dirs! Duh!
 - [X] Adding repos when no context is active
 - [X] Adding units to repos in different contexts, ensure we only show the repos
   for the current context.
+
+* DONE Refine =unit list= command
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-03-07 Sun 14:48
+:ARCHIVE_FILE: ~/Sync/informal-systems/mvd/themis-tracer/design-notes.org
+:ARCHIVE_OLPATH: Tasks
+:ARCHIVE_CATEGORY: design-notes
+:ARCHIVE_TODO: DONE
+:END:
+https://github.com/informalsystems/themis-tracer/issues/16
+
+- [X] Make output from =unit list= much simpler and easier to read
+  + [X] Investigate libs for terminal output
+  + [X] Implement pretty output
+- [X] Add =--format= option for =unit list=
+- [X] Add a command =unit show TAG= that gives complete info for a unit
+- [X] Add =--format= option for =unit show=
+

@@ -67,25 +67,16 @@ impl LogicalUnit {
         })
     }
 
-    /// `unit.synopsis()` is a tripplet `(tag, content, path)` summarizing
+    /// `unit.synopsis()` is a tripplet `(tag, content, path)` with
     ///
     /// - the `unit`'s `tag`
-    /// - the `unit`'s `content`, truncated to the first 100 characters
     /// - the `path` of the `unit`'s `` repo
+    /// - the `unit`'s `content`
     pub fn synopsis(&self) -> (String, String, String) {
         let tag = self.id.to_string();
-
-        let content = if self.content.len() > 100 {
-            let mut to_truncate = self.content.clone();
-            to_truncate.truncate(100);
-            to_truncate.push_str("...");
-            to_truncate
-        } else {
-            self.content.clone()
-        };
-
+        let content = self.content.replace("\n", " ");
         let repo = self.repo.clone().map_or("".into(), |r| r.path_as_string());
-        (tag, content, repo)
+        (tag, repo, content)
     }
 }
 

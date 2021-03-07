@@ -102,6 +102,22 @@ pub enum UnitCmd {
         // TODO
         // Search criteria to filter out listed spec results
         // filter: Option<String>,
+        /// Serialization to use when listing the units.
+        ///
+        /// When absent, the output is a tab delimited readible with a synopsis
+        /// of each unit, optimized for human readability.
+        #[structopt(short, long, parse(try_from_str))]
+        format: Option<cmd::format::Format>,
+    },
+
+    Show {
+        /// The tag of the unit to display
+        tag: String,
+
+        /// Serialization to use when showing the unit units.
+        ///
+        /// When absent, the output is a tab delimited view of the unit,
+        /// optimized for human readability.
         #[structopt(short, long, parse(try_from_str))]
         format: Option<cmd::format::Format>,
     },
