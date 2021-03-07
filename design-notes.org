@@ -52,8 +52,8 @@ https://github.com/informalsystems/themis-tracer/issues/16
   + [X] Investigate libs for terminal output
   + [X] Implement pretty output
 - [X] Add =--format= option for =unit list=
-- [ ] Add a command =unit show TAG= that gives complete info for a unit
-- [ ] Add =--format= option for =unit show=
+- [X] Add a command =unit show TAG= that gives complete info for a unit
+- [X] Add =--format= option for =unit show=
 
 ** TODO Make =context new= also switch the context
 ** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17

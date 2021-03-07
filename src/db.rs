@@ -304,6 +304,7 @@ pub mod unit {
     use {
         super::*,
         crate::{logical_unit::LogicalUnit, repo::Repo},
+        sql::OptionalExtension,
     };
 
     fn of_row(row: &sql::Row) -> sql::Result<LogicalUnit> {
@@ -311,6 +312,19 @@ pub mod unit {
         serde_json::from_str(&*json)
             // TODO I'm not sure how to get the right error type here at the moment...
             .map_err(|_| sql::Error::InvalidParameterName("TODO returning wrong error".into()))
+    }
+
+    /// `get(&conn, tag)` is:
+    ///
+    /// - `Ok(Some(unit))` if there is a `unit` with the given `tag` in
+    ///    the db
+    /// - `Ok(None)` if there is not a unit with the the given `tag`
+    /// - `Err(err)` if the query fails for some reason
+    pub fn get(conn: &sql::Connection, tag: &str) -> Result<Option<LogicalUnit>> {
+        let mut stmt = conn.prepare("SELECT * FROM unit WHERE tag = :tag")?;
+        stmt.query_row_named(&[(":tag", &tag)], of_row)
+            .optional()
+            .map_err(|e| Error::Query(e).into())
     }
 
     fn insert(conn: &sql::Connection, unit: &LogicalUnit) -> Result<()> {
