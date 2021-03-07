@@ -114,7 +114,7 @@ $ cat > repos/repo-a/spec-1.md<<EOF \
 > : First unit. \
 > \
 > |FOO.1::BAR.1| \
-> : A unit with a long description: "Proofs, from the formal standpoint, are likewise nothing but finit series of formulae (with certain specifiable characteristics)." \
+> : A unit with a long description: "Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics)." \
 > EOF
 $ mkdir repos/repo-a/dir
 $ cat > repos/repo-a/dir/spec-2.md <<EOF \
@@ -169,6 +169,8 @@ $ $CMD repo list
 
 ### `list` all the units in the current context
 
+`unit list` outputs a human readable synopsis of all units in the current context:
+
 ```sh
 $ $CMD context switch foo
 $ $CMD context list
@@ -178,7 +180,33 @@ $ $CMD unit list | sed "s:$(pwd)/::" # We trim the absolute path prefix, for tes
 FLIM.1          A unit in a nested directory.                                                                            repos/repo-a
 FLIM.1::FLAM.1  Second unit in the same directory.                                                                       repos/repo-a
 FOO.1           First unit.                                                                                              repos/repo-a
-FOO.1::BAR.1    A unit with a long description: "Proofs, from the formal standpoint, are likewise nothing but finit ...  repos/repo-a
+FOO.1::BAR.1    A unit with a long description: "Proofs, from the formal standpoint, are likewise nothing but finite...  repos/repo-a
+```
+
+#### `unit list --fmt json`
+
+Using the `--fmt json` option you can output the complete data of all logical
+units in the context, serialized into json:
+
+```sh
+$ $CMD unit list --format json | sed "s:$(pwd)/::"
+{"id":"FLIM.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"dir/spec-2.md","line":null,"content":"A unit in a nested directory.","references":[]}
+{"id":"FLIM.1::FLAM.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"dir/spec-2.md","line":null,"content":"Second unit in the same directory.","references":[]}
+{"id":"FOO.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"spec-1.md","line":null,"content":"First unit.","references":[]}
+{"id":"FOO.1::BAR.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"spec-1.md","line":null,"content":"A unit with a long description: \"Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).\"","references":[]}
+```
+
+#### `unit list --fmt json`
+
+Using the `--fmt csv` option you can output the complete data of all logical
+units in the context, serialized into csv:
+
+```sh
+$ $CMD unit list --format csv | sed "s:$(pwd)/::"
+FLIM.1,Requirement,repos/repo-a,,,dir/spec-2.md,,A unit in a nested directory.
+FLIM.1::FLAM.1,Requirement,repos/repo-a,,,dir/spec-2.md,,Second unit in the same directory.
+FOO.1,Requirement,repos/repo-a,,,spec-1.md,,First unit.
+FOO.1::BAR.1,Requirement,repos/repo-a,,,spec-1.md,,"A unit with a long description: ""Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics)."""
 ```
 
 ## `parse`ing specs

@@ -100,8 +100,10 @@ pub enum UnitCmd {
     /// List the specs registered to the current context
     List {
         // TODO
-    // Search criteria to filter out listed spec results
-    // filter: Option<String>,
+        // Search criteria to filter out listed spec results
+        // filter: Option<String>,
+        #[structopt(short, long, parse(try_from_str))]
+        format: Option<cmd::format::Format>,
     },
 }
 
