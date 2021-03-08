@@ -32,9 +32,6 @@ the correctness and continuity of communication, implementation, and operation.
   - [X] Currently facilitated viz =fzf=
   - [ ] Native support
 * Tasks
-** TODO Implement sync command
-- [ ] Add db function to purge all logical units from a given repo
-- [ ] Implement procedure to purge units, then reload them for a repo
 ** TODO Make =context new= also switch the context
 ** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17
 ** TODO Software development as a value flow

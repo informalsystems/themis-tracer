@@ -71,3 +71,14 @@ https://github.com/informalsystems/themis-tracer/issues/16
 - [X] Add a command =unit show TAG= that gives complete info for a unit
 - [X] Add =--format= option for =unit show=
 
+
+* DONE Implement sync command
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-03-07 Sun 19:30
+:ARCHIVE_FILE: ~/Sync/informal-systems/mvd/themis-tracer/design-notes.org
+:ARCHIVE_OLPATH: Tasks
+:ARCHIVE_CATEGORY: design-notes
+:ARCHIVE_TODO: DONE
+:END:
+- [X] Add db function to purge all logical units from a given repo
+- [X] Implement procedure to purge units, then reload them for a repo
