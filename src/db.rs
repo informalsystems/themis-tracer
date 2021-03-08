@@ -396,22 +396,9 @@ pub mod unit {
             )
             "#,
         )?;
-        // let mut delete_relation = tx.prepare(
-        //     r#"
-        // DELETE FROM unit_repo
-        // WHERE repo IN (
-        //     SELECT id FROM repo
-        //     WHERE repo.path = :path
-        // )
-        // "#,
-        // )?;
 
         stmt.execute_named(&[(":path", &repo.path_as_string())])
             .map_err(|e| Error::Query(e).into())
             .map(|_| ())
-        // delete_relation.execute_named(&[(":path", &repo.path_as_string())])?;
-
-        // let () = tx.commit()?;
-        // Ok(())
     }
 }
