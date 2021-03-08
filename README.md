@@ -1,39 +1,121 @@
 # Themis Tracer
 
-Themis Tracer is a tool to help provide requirements traceability for [Informal
-Systems'][informal] verification-driven development (VDD) process. We intend on
-tracing *logical units* (chunks of functionality) through:
+Themis Tracer is a tool to help provide development contexts.
 
-* Human-language specifications (written in a slightly extended flavor of
-  Markdown)
-* Formal specifications (e.g. in TLA+)
-* Code (initially only in Rust)
+It is developed by [Informal Systems'][informal] to support Development
+and Operations that are Verifiable and Explicitly Specified (DOVES🕊).
+
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+
+**Table of Contents**
+
+- [Themis Tracer](#themis-tracer)
+  - [(Planned) Features](#planned-features)
+    - [**WIP** Context management](#wip-context-management)
+    - [**WIP** Tracing](#wip-tracing)
+    - [**TODO** Tracking](#todo-tracking)
+    - [**TODO** Monitoring](#todo-monitoring)
+  - [Installation](#installation)
+    - [Prerequisites](#prerequisites)
+    - [From git using cargo](#from-git-using-cargo)
+    - [From source](#from-source)
+  - [Documentation](#documentation)
+    - [Tutorial](#tutorial)
+      - [Logical units in markdown](#logical-units-in-markdown)
+      - [TODO](#todo)
+  - [License](#license)
+
+<!-- markdown-toc end -->
+
+## (Planned) Features
+
+### **WIP** Context management
+
+Manage multiple parallel contexts, spread across any number of repositories.
+
+- [x] Enable switching between contexts.
+- [ ] Support nested contexts, providing different perspectives to empower
+      different kinds of work on the same domain.
+- [ ] An integrated HUD to show key terminology, specifications, and diagrams,
+      to support focused work and effective communication without noisy
+      backchannels.
+
+### **WIP** Tracing
+
+Trace _logical units_ (chunks of functionality) through:
+
+- [x] Human-language specifications (written in a slightly extended flavor of
+      Markdown)
+- [ ] Formal specifications (e.g. in TLA+)
+- [ ] Code (initially only in Rust)
+
+### **TODO** Tracking
+
+Automate the `specify -> formalize -> implement -> verify -> deploy -> revise`
+life cycle, by tracking the flow of system properties from conception to
+delivery and back again.
+
+- [ ] Track the progress of logical units, getting a quick overview of
+      units yet to be formalized/implemented/verified/deployed, and the level of
+      progress towards implementation.
+
+### **TODO** Monitoring
+
+Verify coherence and consistency of your development with its context in CI
+
+- [ ] Rationalize change management by catching unplanned changes to
+      implementations, and flagging them for review by those responsible for
+      implementation.
+- [ ] Ensure implementations are kept up to date with changing specifications,
+      by catching implementation units that get out of date with update
+      specifications.
 
 ## Installation
 
-Themis Tracer is written in [Rust][rust]. To install it, make sure you have the
-latest version of the **stable** Rust toolchain installed and run the following:
+The tool is currently in early development, so expect snags.
 
-```bash
-# Clone this repository
-> git clone https://github.com/informalsystems/themis-tracer/
-> cd themis-tracer
-# Install using Cargo
-> cargo install
+### Prerequisites
+
+- [cargo](https://doc.rust-lang.org/book/ch01-01-installation.html#installation)
+- [pandoc](https://pandoc.org/installing.html) (tested on pandoc >= 2.9)
+- [sqlite3](https://www.sqlite.org/index.html) (tested on sqlite >= 3.33): You
+  probably already have this on your system. Check with `sqlite3 --version`. If
+  you need to install it, check you OS's package manager.
+
+### From git using cargo
+
+```sh
+cargo install --git ssh://git@github.com/informalsystems/themis-tracer.git
 ```
 
-## Tutorial
+If this fails for any reason, please [open a
+ticket](https://github.com/informalsystems/themis-tracer/issues/new) and try
+installing from source, as documented in the next section.
 
-### Step 1: Write your human-language specification
+### From source
+
+```sh
+git clone git@github.com:informalsystems/themis-tracer.git
+cd themis-tracer
+cargo install
+```
+
+## Documentation
+
+See the [CLI usage documentation](./tests/usage.md).
+
+### Tutorial
+
+#### Logical units in markdown
 
 We make use of a variant of [PHP Markdown Extra's definition
-lists][phpme-deflist] to define *logical units* (i.e. requirements) in Markdown.
+lists][phpme-deflist] to define _logical units_ (i.e. requirements) in Markdown.
 
 ```markdown
 # Specification
 
 |SPEC-HELLO.1|
-:   When executed, the program must print out the text "Hello world!"
+: When executed, the program must print out the text "Hello world!"
 ```
 
 Logical units have unique identifiers associated with them. In this overly
@@ -46,164 +128,7 @@ this case, unit `SPEC-HELLO` has a version of `1` at present. This helps us
 ensure that, when specifications change, we can automatically see which parts of
 the code need to change too.
 
-### Step 2: Implement your specification
-
-Here we have a very basic Rust application that implements our specification.
-
-```rust
-//!
-//! Our main application.
-//! 
-//! The "Implements" heading and list below is really important. It indicates
-//! that this entire file is responsible for the implementation of all of the
-//! logical units listed.
-//!
-//! # Implements
-//!
-//! * [SPEC-HELLO.1]
-//!
-
-fn main() {
-    println!("Hello world!");
-}
-```
-
-### Step 3: Tell Themis Tracer where all your repositories are
-
-To tell Themis Tracer where to find all of your specifications and code, create
-a file `.tracer.dhall` or `.tracer/package.dhall` (we use [Dhall][dhall] for
-configuration) wherever you consider to be the **entrypoint** for your
-collection of repositories:
-
-```dhall
-{- .tracer.dhall
-
-   This particular configuration file shows an example of how to define the
-   **entrypoint** for your collection of repositories.
--}
-
--- Import the Themis Tracer types
-let Tracer = https://raw.githubusercontent.com/informalsystems/themis-tracer/master/config/package.dhall
-
-let project: Tracer.Project =
-    {
-        {- A human-readable, descriptive, short name for the project -}
-        name = "Hello World",
-        {- The components that make up the project -}
-        components = [
-            {
-                {- A human-readable, descriptive, short name for this component -}
-                name = "Specifications",
-                {- Here we can specify a "git://" (SSH) URL or an HTTPS URL as a source -}
-                source = "git://github.com:informalsystems/themis-tracer#31352cc9977cc6e85444de6a1609b8315cab393d",
-                {- If we only want to process specific files in the source -}
-                path = "/examples/helloworld/**/*.md"
-            },
-            {
-                name = "Rust implementation",
-                source = "git://github.com/informalsystems/themis-tracer#31352cc9977cc6e85444de6a1609b8315cab393d",
-                path = "/examples/helloworld/**/*.rs",
-            }
-        ]
-    }
-
--- Expose the project object
-in project
-```
-
-This is great for configuring remote repositories associated with your project,
-but what about locally sourced versions of the repositories? For that you need
-**local configuration**. Create a file `~/.themis/tracer/repos.dhall`:
-
-```dhall
-{- repos.dhall
-
-   Configuration mapping remote repositories to local ones.
--}
-
-let Tracer = https://raw.githubusercontent.com/informalsystems/themis-tracer/master/config/package.dhall
-
-let repoMappings: List Tracer.RepositoryMapping =
-    [
-        {
-            {- A globally unique ID to associate with this repository to allow
-               for quick and easy reference -}
-            id = "themis-tracer",
-            remote = "git://github.com:informalsystems/themis-tracer",
-            local = "/Users/manderson/work/themis-tracer"
-        }
-    ]
-
--- Expose the mappings
-in repoMappings
-```
-
-If the source repository for a component **is** the repository in which the
-`.tracer.dhall` configuration file is located (automatically detected by Themis
-Tracer), then no mapping is needed.
-
-TODO: Define CLI for managing repository mappings.
-
-### Step 4: Run Themis Tracer to check that your spec is implemented
-
-Once you've installed Themis Tracer, you can simply run it from the same folder
-where you've created your `.tracer.dhall` configuration file:
-
-```bash
-> themis-tracer
-✅ Specification is fully implemented and up-to-date!
-```
-
-### Step 5: Update your specification
-
-To test how Themis Tracer reports differences between your specifications and
-code, modify your specification as follows:
-
-```markdown
-# Specification
-
-|SPEC-INPUT.1|
-:   When executed, the program must print the text: "Hello! What's your name?",
-    and allow the user to input their name.
-
-|SPEC-HELLO.2|
-:   Once the user's name has been obtained, the program must print out the text
-    "Hello {name}!", where `{name}` must be replaced by the name obtained in
-    [SPEC-INPUT.1].
-```
-
-In the above specification, we've introduced a new requirement (`SPEC-INPUT.1`),
-and we've updated the version of an existing requirement (`SPEC-HELLO.1` became
-`SPEC-HELLO.2`). If we run Themis Tracer again we'll get:
-
-```bash
-> themis-tracer
-⚠️ SPEC-INPUT has not yet been implemented.
-⚠️ SPEC-HELLO is out of date (version 1 has been implemented, but version 2 has been specified).
-```
-
-### Step 6: Incorporating defects
-
-Themis Tracer also supports defect detection (GitHub only at present). It
-connects to the publicly accessible API for your project's repositories and
-scans for issues with the label `defect`. It then parses the subject and body of
-the issue to see which logical units are currently defective.
-
-If you have specified your `code` repositories' sources as GitHub, Themis Tracer
-will automatically pick this up and try to connect to GitHub to detect any open
-defects:
-
-```bash
-> themis-tracer
-Specification is fully implemented and up-to-date, but the following logical
-units have defects at present:
-
-💔 SPEC-INPUT.1:
-   - https://github.com/informalsystems/themis-tracer/issues/1
-
-💔 SPEC-HELLO.2:
-   - https://github.com/informalsystems/themis-tracer/issues/2
-```
+#### TODO
 
 ## License
 
