@@ -97,8 +97,8 @@ pub fn init(conn: &sql::Connection) -> Result<()> {
                 id      INTEGER PRIMARY KEY,
                 context INTEGER NOT NULL,
                 repo    INTEGER NOT NULL,
-                FOREIGN KEY(context) REFERENCES context(id),
-                FOREIGN KEY(repo) REFERENCES repo(id)
+                FOREIGN KEY(context) REFERENCES context(id) ON DELETE CASCADE,
+                FOREIGN KEY(repo) REFERENCES repo(id) ON DELETE CASCADE,
                 UNIQUE(context, repo)
             );
             "#,
@@ -111,8 +111,8 @@ pub fn init(conn: &sql::Connection) -> Result<()> {
                 id      INTEGER PRIMARY KEY,
                 unit    INTEGER NOT NULL,
                 repo    INTEGER NOT NULL,
-                FOREIGN KEY(unit) REFERENCES unit(id),
-                FOREIGN KEY(repo) REFERENCES repo(id)
+                FOREIGN KEY(unit) REFERENCES unit(id) ON DELETE CASCADE,
+                FOREIGN KEY(repo) REFERENCES repo(id) ON DELETE CASCADE,
                 UNIQUE(unit, repo)
             );
             "#,
@@ -252,6 +252,7 @@ pub mod repo {
             .map(|_| ())
     }
 
+    /// `add(&conn, &repo)` adds the
     pub fn add(conn: &sql::Connection, repo: &Repo) -> Result<()> {
         // TODO Should be able to do in one query?
         let current_ctx = context::current(&conn)?;
@@ -381,5 +382,36 @@ pub mod unit {
         }
 
         Ok(units)
+    }
+
+    /// `purge(&conn, &repo)` purges all units registered to the `repo`
+    pub fn purge(conn: &sql::Connection, repo: &Repo) -> Result<()> {
+        let mut stmt = conn.prepare(
+            r#"
+            DELETE FROM unit
+            WHERE id IN (
+                SELECT unit_repo.unit FROM unit_repo
+                INNER JOIN repo ON repo.path = :path
+                WHERE unit_repo.repo = repo.id
+            )
+            "#,
+        )?;
+        // let mut delete_relation = tx.prepare(
+        //     r#"
+        // DELETE FROM unit_repo
+        // WHERE repo IN (
+        //     SELECT id FROM repo
+        //     WHERE repo.path = :path
+        // )
+        // "#,
+        // )?;
+
+        stmt.execute_named(&[(":path", &repo.path_as_string())])
+            .map_err(|e| Error::Query(e).into())
+            .map(|_| ())
+        // delete_relation.execute_named(&[(":path", &repo.path_as_string())])?;
+
+        // let () = tx.commit()?;
+        // Ok(())
     }
 }

@@ -37,7 +37,7 @@ fn load_units_from_file(conn: &sql::Connection, repo: &Repo, path: &Path) -> Res
         .try_for_each(|unit| db::unit::add(conn, repo, unit))
 }
 
-fn load_units_from_repo(conn: &sql::Connection, repo: &Repo) -> Result<()> {
+pub fn load_units_from_repo(conn: &sql::Connection, repo: &Repo) -> Result<()> {
     env::set_current_dir(repo.path())?;
     // TODO Support more than just MD files
     for path in glob("**/*.md")? {

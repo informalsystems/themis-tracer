@@ -11,7 +11,6 @@ use structopt::StructOpt;
 )]
 pub enum Cmd {
     /// Parse logical units out of a spec
-    #[structopt(name = "parse")]
     Parse {
         /// The file or directory to parse
         #[structopt(parse(from_os_str))]
@@ -20,26 +19,19 @@ pub enum Cmd {
         format: cmd::format::Format,
     },
 
-    /// Update the spec DB for the current project with all specs from registered sources
-    #[structopt(name = "sync")]
-    Sync {
-        /// The project whose db should be updated
-        #[structopt(parse(from_os_str))]
-        project: Option<PathBuf>,
-    },
+    /// Update the units for the current context from all assocaited repositories
+    Sync {},
 
     /// Initialize tracer
     ///
     /// Defaults to initializing in your home directory. Set `TRACER_HOME` to
     /// override.
-    #[structopt(name = "init")]
     Init {},
 
     /// Manage contexts
     Context(Context),
 
     /// Manage repositories
-    #[structopt(name = "repo")]
     Repo(Repo),
 
     /// Manage logical units
@@ -136,6 +128,6 @@ pub fn run() -> Result<()> {
         Cmd::Repo(opt) => cmd::repo::run(opt),
         Cmd::Unit(opt) => cmd::unit::run(opt),
         Cmd::Parse { path, format } => cmd::parse::run(&path, format),
-        Cmd::Sync { project: _ } => unimplemented(),
+        Cmd::Sync {} => cmd::sync::run(),
     }
 }

@@ -230,8 +230,8 @@ A unit with a long description: "Proofs, from the formal standpoint, are likewis
 
 #### `unit show --format json`
 
-Using the `--fmt json` option you can output the complete data of a logical unit
-serialized into json:
+Using the `--format json` option outputs the complete data of a logical unit
+serialized into JSON:
 
 ```sh
 $ $CMD unit show FOO.1::BAR.1 --format json | sed "s:$(pwd)/::" | jq
@@ -258,13 +258,42 @@ $ $CMD unit show FOO.1::BAR.1 --format json | sed "s:$(pwd)/::" | jq
 
 #### `unit show --format csv`
 
-Using the `--fmt csv` option you can output the complete data of a logical unit
-serialized into csv:
+Using the `--format csv` option outputs the complete data of a logical unit,
+serialized into CSV:
 
 ```sh
 $ $CMD unit show FOO.1::BAR.1 --format csv | sed "s:$(pwd)/::"
 FOO.1::BAR.1,Requirement,repos/repo-a,,,spec-1.md,,"A unit with a long description: ""Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics)."""
 ```
+
+## `sync`ing repos in the context
+
+When the artifacts in a repository have been changed, the database of logical
+units is updated using the `sync` subcommand.
+
+Let's make some changes to `spec-1.md` in `repo-a`:
+
+```sh
+$ cat > repos/repo-a/spec-1.md<<EOF \
+> |FOO.2| \
+> : We've updated the first unit. \
+> \
+> |FOO.1::BAZ.1| \
+> : And we replaced [FOO.1::BAR.1] with this unit. \
+> EOF
+```
+
+After syncing, the units in the context will be updated accordingly:
+
+```sh
+$ $CMD sync
+$ $CMD unit list
+FLIM.1          /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a  A unit in a nested directory.
+FLIM.1::FLAM.1  /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a  Second unit in the same directory. This one has a newline.
+FOO.1::BAZ.1    /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a  And we replaced [FOO.1::BAR.1] with this unit.
+FOO.2           /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a  We've updated the first unit.
+```
+
 
 ## `parse`ing specs
 
