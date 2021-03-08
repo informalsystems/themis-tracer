@@ -287,11 +287,11 @@ After syncing, the units in the context will be updated accordingly:
 
 ```sh
 $ $CMD sync
-$ $CMD unit list
-FLIM.1          /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a  A unit in a nested directory.
-FLIM.1::FLAM.1  /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a  Second unit in the same directory. This one has a newline.
-FOO.1::BAZ.1    /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a  And we replaced [FOO.1::BAR.1] with this unit.
-FOO.2           /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a  We've updated the first unit.
+$ $CMD unit list | sed "s:$(pwd)/::"
+FLIM.1          repos/repo-a  A unit in a nested directory.
+FLIM.1::FLAM.1  repos/repo-a  Second unit in the same directory. This one has a newline.
+FOO.1::BAZ.1    repos/repo-a  And we replaced [FOO.1::BAR.1] with this unit.
+FOO.2           repos/repo-a  We've updated the first unit.
 ```
 
 
