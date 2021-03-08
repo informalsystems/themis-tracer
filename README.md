@@ -1,9 +1,25 @@
 # Themis Tracer
 
-Themis Tracer is a tool to help provide development contexts.
+Tracer is a prosthetic device for cultivating, and connecting within, the
+[context](./specs/terminology.md#CONTEXT.1) of software development for
+critical systems.
 
-It is developed by [Informal Systems'][informal] to support Development
-and Operations that are Verifiable and Explicitly Specified (DOVES🕊).
+Tracer is designed to support _DOVES:dove:_: Development and Operations that are
+Verifiable and Explicitly Specified 😉.
+
+Tracer seeks to improve the productivity of distributed teams of developers by
+supporting them throughout the development process and providing means to ensure
+the correctness and continuity of communication, implementation, and operation.
+
+Tracer aims...
+
+- Maximally :: To enable formally specified and verified development of proven
+  correct programs shaped through distributed and modular development.
+- Minimally :: To provide the automated convenience of relevant information
+  ready to hand while doing the work of specification, implementation,
+  verification, and operation.
+
+Tracer is developed by [Informal Systems'][informal].
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 
