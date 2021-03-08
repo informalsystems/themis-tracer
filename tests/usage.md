@@ -8,8 +8,8 @@ reference-friendly, documentation of the tool's usage.
 
 - [Usage](#usage)
     - [Setting the environment](#setting-the-environment)
-        - [Show the current version](#show-the-current-version)
-        - [`init`ialize the tool](#initialize-the-tool)
+    - [Show the current version](#show-the-current-version)
+    - [`init`ialize the tool](#initialize-the-tool)
     - [Manage `context`s](#manage-contexts)
         - [`context new`](#context-new)
         - [`context list`](#context-list)
@@ -34,6 +34,12 @@ reference-friendly, documentation of the tool's usage.
 
 ## Setting the environment
 
+These variables are used in the environment of the following tests. You can
+ignore these when consulting this document for usage.
+
+Where you see `$CMD` in the following you should just use the installed binary:
+`themis-tracer`.
+
 <!-- TODO replace by adding the executable to the path -->
 <!-- $MDX set-CMD=../target/debug/themis-tracer,set-TRACER_HOME=../target/test-sandbox -->
 ```sh
@@ -43,17 +49,14 @@ $ echo TRACER_HOME: $TRACER_HOME
 TRACER_HOME: ../target/test-sandbox
 ```
 
-Where you see `$CMD` in the following you should just use the installed binary
-`themis-tracer`.
-
-### Show the current version
+## Show the current version
 
 ```sh
 $ $CMD --version
 tracer 0.1.0
 ```
 
-### `init`ialize the tool
+## `init`ialize the tool
 
 ```sh
 $ $CMD init
