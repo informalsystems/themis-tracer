@@ -5,7 +5,7 @@ use {
         repo::Repo,
         util,
     },
-    anyhow::Result,
+    anyhow::{Context, Result},
     pandoc_ast::{Block, Inline, Pandoc},
     std::{
         collections::HashSet,
@@ -23,8 +23,8 @@ pub struct Artifact {
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("parsing artifact {0}")]
-    ParsingArtifact(PathBuf),
+    #[error("parsing artifact {0}: {1}")]
+    ParsingArtifact(PathBuf, serde_json::Error),
 
     #[error("parsing artifact from string {0}")]
     ParsingString(String),
@@ -43,7 +43,12 @@ impl Artifact {
         pandoc::parse_file(path)
             .map(|ast| parse_ast(repo, Some(path), ast))
             .map(|lus| Artifact::new(Some(path.to_owned()), lus.iter().cloned().collect()))
-            .map_err(|_| Error::ParsingArtifact(PathBuf::from(path)).into())
+            .with_context(|| {
+                format!(
+                    "while parsing artifact {}",
+                    path.as_os_str().to_str().unwrap_or("<cannot render path>")
+                )
+            })
     }
 
     /// Parse the string `s` into an artifact with no source

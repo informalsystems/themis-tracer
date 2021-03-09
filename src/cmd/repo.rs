@@ -62,7 +62,7 @@ fn add(path: PathBuf) -> Result<()> {
             Err(err) => {
                 if err
                     .to_string()
-                    .contains("UNIQUE constraint failed: repo.path")
+                    .contains("UNIQUE constraint failed: context_repo.context, context_repo.repo")
                 {
                     Err(Error::RepoExists(repo.clone()).into())
                 } else {

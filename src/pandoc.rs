@@ -2,56 +2,79 @@
 //! Interface to the pandoc CLI
 //!
 
-use pandoc_ast::{Block, Inline, Pandoc, QuoteType};
-use std::path::Path;
-use std::process::{Command, Stdio};
-use std::{
-    convert::TryInto,
-    io::{Read, Write},
+use {
+    anyhow::{Context, Result},
+    pandoc_ast::{Block, Inline, Pandoc, QuoteType},
+    std::{
+        convert::TryInto,
+        io,
+        io::{Read, Write},
+        path::Path,
+        process::{Command, ExitStatus, Stdio},
+    },
+    thiserror::Error,
 };
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("Deserialization error: {0}")]
+    Serialization(#[from] serde_json::Error),
+
+    #[error("Error invoking pandoc: {0}")]
+    PandocInvocation(#[from] io::Error),
+
+    #[error("Pandoc failed with status {0} and stderr: {1}")]
+    PandocFailure(ExitStatus, String),
+
+    #[error("Error processing data from pandoc: {0}")]
+    PandocData(String),
+
+    #[error("Could not convert given path to string")]
+    Path,
+}
 
 static PANDOC: &str = "pandoc";
 static ARGS: &[&str] = &["--standalone", "--from", "markdown-smart", "--to", "json"];
 
 /// # Running the pandoc executable
 
-// TODO: Better error types
-type Result = std::result::Result<Pandoc, String>;
-
-fn pandoc_from_bytes(b: &[u8]) -> Result {
+fn pandoc_from_bytes(b: &[u8]) -> Result<Pandoc> {
     match b[..] {
-        [] => Err("no data read from file".to_string()),
+        [] => Err(Error::PandocData("no data received from pandoc".into()).into()),
         _ => serde_json::from_str(String::from_utf8_lossy(b).as_ref())
-            .map_err(|_| "json error".to_string()),
+            .map_err(|e: serde_json::Error| -> Error { Error::Serialization(e) })
+            .with_context(|| {
+                format!(
+                    "deserializing pandoc JSON output: {}",
+                    String::from_utf8_lossy(b)
+                )
+            }),
     }
 }
 
 /// Returns an [`Ok`] [`Pandoc`] value if the string can be parsed into the
 /// pandoc AST, otherwise returns an [`Err`] with a string explaining the
 /// failure.
-pub fn parse_string(s: &str) -> Result {
+pub fn parse_string(s: &str) -> Result<Pandoc> {
     let process = Command::new(PANDOC)
         .args(ARGS)
         .stdout(Stdio::piped())
         .stdin(Stdio::piped())
         .spawn()
-        .map_err(|_| "spawning panodc process".to_string())?;
+        .map_err(Error::PandocInvocation)?;
 
     // TODO
     process
         .stdin
         .unwrap()
         .write_all(s.as_bytes())
-        .map_err(|_| "writing to pandoc process")?;
+        .map_err(Error::PandocInvocation)?;
 
     let mut bytes = Vec::new();
     process
         .stdout
-        .ok_or("receiving pandoc process output")
-        .and_then(|mut c| {
-            c.read_to_end(&mut bytes)
-                .or(Err("reading from pandoc process"))
-        })?;
+        .ok_or_else(|| Error::PandocData("trying to read from stdout".into()))
+        .and_then(|mut c| c.read_to_end(&mut bytes).map_err(Error::PandocInvocation))?;
 
     pandoc_from_bytes(&bytes)
 }
@@ -87,23 +110,23 @@ pub fn parse_string(s: &str) -> Result {
 //         .map(str::to_string)
 // }
 
-pub fn parse_file(path: &Path) -> Result {
-    let source = path.to_str().ok_or("Failed to convert path to string")?;
+pub fn parse_file(path: &Path) -> Result<Pandoc> {
+    let source = path.to_str().ok_or(Error::Path)?;
 
     let output = Command::new(PANDOC)
         .args(ARGS)
         .arg(source)
         .output()
-        .map_err(|_| "pandoc cli".to_string())?;
+        .map_err(Error::PandocInvocation)?;
 
     if output.status.success() {
         pandoc_from_bytes(&output.stdout)
     } else {
-        Err(format!(
-            "call to pandoc failed with {:?}. stderr: {:?}",
+        Err(Error::PandocFailure(
             output.status,
-            String::from_utf8_lossy(&output.stderr).as_ref()
-        ))
+            String::from_utf8_lossy(&output.stderr).into(),
+        )
+        .into())
     }
 }
 
