@@ -101,7 +101,7 @@ The tool is currently in early development, so expect snags.
 ### From git using cargo
 
 ```sh
-cargo install --git ssh://git@github.com/informalsystems/themis-tracer.git
+cargo +nightly-2021-02-20 install --git ssh://git@github.com/informalsystems/themis-tracer.git
 ```
 
 If this fails for any reason, please [open a
