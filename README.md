@@ -21,6 +21,12 @@ Tracer aims...
 
 Tracer is developed by [Informal Systems'][informal].
 
+**WARNING:** This project is still pre-alpha and nothing is stabilized,
+from the tech stack and functionality to the project name. That said, early
+adopters willing to [contribute](./CONTRIBUTING.md) or [give
+feedback](https://github.com/informalsystems/themis-tracer/issues/new) are most
+welcome 🙂.
+
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 
 **Table of Contents**
