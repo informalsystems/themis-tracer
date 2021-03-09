@@ -234,7 +234,8 @@ pub mod repo {
         let encoded = serde_json::to_string(repo)?;
         let path = repo.path_as_string();
 
-        let mut stmt = conn.prepare("INSERT INTO repo (path, json) VALUES (:path, :json)")?;
+        let mut stmt =
+            conn.prepare("INSERT OR IGNORE INTO repo (path, json) VALUES (:path, :json)")?;
         stmt.execute_named(&[(":path", &path), (":json", &encoded)])
             .map_err(|e| Error::Query(e).into())
             .map(|_| ())
