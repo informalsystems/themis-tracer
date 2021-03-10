@@ -9,7 +9,7 @@ use {
 enum Error {
     #[error("Cannot read database path")]
     DbPath,
-    #[error("Error while querying database: {0}")]
+    #[error("Querying database: {0}")]
     Query(#[from] sql::Error),
     #[error("Context {0} does not exists")]
     NonexistentContext(String),
