@@ -43,12 +43,7 @@ fn pandoc_from_bytes(b: &[u8]) -> Result<Pandoc> {
         [] => Err(Error::PandocData("no data received from pandoc".into()).into()),
         _ => serde_json::from_str(String::from_utf8_lossy(b).as_ref())
             .map_err(|e: serde_json::Error| -> Error { Error::Serialization(e) })
-            .with_context(|| {
-                format!(
-                    "deserializing pandoc JSON output: {}",
-                    String::from_utf8_lossy(b)
-                )
-            }),
+            .context("deserializing pandoc JSON output"),
     }
 }
 
