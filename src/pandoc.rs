@@ -106,26 +106,6 @@ fn is_dd(element: &scraper::ElementRef) -> bool {
     element.value().name() == "dd"
 }
 
-// fn get_content(
-//     term: scraper::ElementRef,
-//     items: &mut scraper::element_ref::Select,
-// ) -> (String, String) {
-//     println!(
-//         "{:?}",
-//         items
-//             .clone()
-//             .map(|e| e.clone().html())
-//             .collect::<Vec<String>>()
-//     );
-//     let tag = term.inner_html();
-//     let content = items
-//         .take_while(is_dd)
-//         .map(|dt| html2md::parse_html(&dt.inner_html()))
-//         .collect::<Vec<String>>()
-//         .join("\n\n");
-//     (tag, content)
-// }
-
 fn def_parsing_err(msg: &str, element: scraper::ElementRef) -> anyhow::Error {
     Error::DefinitionListParsing(msg.to_string(), element.html()).into()
 }
