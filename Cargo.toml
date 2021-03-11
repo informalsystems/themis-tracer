@@ -25,7 +25,6 @@ doc = false
 [dependencies]
 csv = "*"
 failure = "*"
-pandoc_ast = "*"
 log = "*"
 peg = "*"
 simple_logger = "*"
@@ -40,6 +39,9 @@ anyhow = "*"
 rusqlite = "*"
 glob = "*"
 tabwriter = "*"
+scraper = "*"
+html2md = "*"
+itertools = "*"
 
 [dev-dependencies]
 assert_cmd = "*"

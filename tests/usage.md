@@ -191,7 +191,7 @@ $ $CMD unit list | sed "s:$(pwd)/::" # We trim the absolute path prefix, for tes
 FLIM.1          repos/repo-a  A unit in a nested directory.
 FLIM.1::FLAM.1  repos/repo-a  Second unit in the same directory. This one has a newline.
 FOO.1           repos/repo-a  First unit.
-FOO.1::BAR.1    repos/repo-a  A unit with a long description: "Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics)."
+FOO.1::BAR.1    repos/repo-a  A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”
 ```
 
 #### `unit list --fmt json`
@@ -202,9 +202,9 @@ units in the context, serialized into json:
 ```sh
 $ $CMD unit list --format json | sed "s:$(pwd)/::"
 {"id":"FLIM.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"dir/spec-2.md","line":null,"content":"A unit in a nested directory.","references":[]}
-{"id":"FLIM.1::FLAM.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"dir/spec-2.md","line":null,"content":"Second unit in the same directory.\nThis one has a newline.","references":[]}
+{"id":"FLIM.1::FLAM.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"dir/spec-2.md","line":null,"content":"Second unit in the same directory. This one has a newline.","references":[]}
 {"id":"FOO.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"spec-1.md","line":null,"content":"First unit.","references":[]}
-{"id":"FOO.1::BAR.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"spec-1.md","line":null,"content":"A unit with a long description: \"Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).\"","references":[]}
+{"id":"FOO.1::BAR.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"spec-1.md","line":null,"content":"A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”","references":[]}
 ```
 
 #### `unit list --fmt json`
@@ -215,10 +215,9 @@ units in the context, serialized into csv:
 ```sh
 $ $CMD unit list --format csv | sed "s:$(pwd)/::"
 FLIM.1,Requirement,repos/repo-a,,,dir/spec-2.md,,A unit in a nested directory.
-FLIM.1::FLAM.1,Requirement,repos/repo-a,,,dir/spec-2.md,,"Second unit in the same directory.
-This one has a newline."
+FLIM.1::FLAM.1,Requirement,repos/repo-a,,,dir/spec-2.md,,Second unit in the same directory. This one has a newline.
 FOO.1,Requirement,repos/repo-a,,,spec-1.md,,First unit.
-FOO.1::BAR.1,Requirement,repos/repo-a,,,spec-1.md,,"A unit with a long description: ""Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics)."""
+FOO.1::BAR.1,Requirement,repos/repo-a,,,spec-1.md,,"A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”"
 ```
 
 ### `show` all information about a particular unit
@@ -235,7 +234,7 @@ file:  spec-1.md
 line:
 refs:
 
-A unit with a long description: "Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics)."
+A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”
 ```
 
 #### `unit show --format json`
@@ -261,7 +260,7 @@ $ $CMD unit show FOO.1::BAR.1 --format json | sed "s:$(pwd)/::" | jq
   },
   "file": "spec-1.md",
   "line": null,
-  "content": "A unit with a long description: \"Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).\"",
+  "content": "A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”",
   "references": []
 }
 ```
@@ -273,7 +272,7 @@ serialized into CSV:
 
 ```sh
 $ $CMD unit show FOO.1::BAR.1 --format csv | sed "s:$(pwd)/::"
-FOO.1::BAR.1,Requirement,repos/repo-a,,,spec-1.md,,"A unit with a long description: ""Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics)."""
+FOO.1::BAR.1,Requirement,repos/repo-a,,,spec-1.md,,"A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”"
 ```
 
 ## `sync`ing repos in the context
@@ -301,7 +300,7 @@ $ $CMD unit list | sed "s:$(pwd)/::"
 FLIM.1          repos/repo-a  A unit in a nested directory.
 FLIM.1::FLAM.1  repos/repo-a  Second unit in the same directory. This one has a newline.
 FOO.1::BAZ.1    repos/repo-a  And we replaced [FOO.1::BAR.1] with this unit.
-FOO.2           repos/repo-a  We've updated the first unit.
+FOO.2           repos/repo-a  We’ve updated the first unit.
 ```
 
 
@@ -367,7 +366,7 @@ $ $CMD parse parsing-spec.md | jq
   "repo": null,
   "file": "parsing-spec.md",
   "line": null,
-  "content": "We can parse a file of logical units into different formats, preserving all\ncritical content of the logical unit content.",
+  "content": "We can parse a file of logical units into different formats, preserving all critical content of the logical unit content.",
   "references": []
 }
 {
@@ -376,7 +375,7 @@ $ $CMD parse parsing-spec.md | jq
   "repo": null,
   "file": "parsing-spec.md",
   "line": null,
-  "content": "The content of logical units must be preserved.\n\nEven when it spans multiple paragraphs.\n\n- Or\n- includes\n- lists",
+  "content": "The content of logical units must be preserved.\n\nEven when it spans multiple paragraphs.\n\n* Or\n* includes\n* lists",
   "references": []
 }
 {
@@ -394,7 +393,7 @@ $ $CMD parse parsing-spec.md | jq
   "repo": null,
   "file": "parsing-spec.md",
   "line": null,
-  "content": "The folowing inline styling must be preserved:\n\n- **Strong** (**both** ways)\n- *Emphasizes* (*both* ways)\n- ~~Strikethrough~~\n- `code`\n- [links](/url)\n- ![images](/url)\n- [smallcaps]{.smallcaps}",
+  "content": "The folowing inline styling must be preserved:\n\n* **Strong** (**both** ways)\n* *Emphasizes* (*both* ways)\n* ~~Strikethrough~~\n* `code`\n* [links](/url)\n* ![images](/url \"fig:\")\n* smallcaps",
   "references": []
 }
 {
@@ -412,25 +411,24 @@ $ $CMD parse parsing-spec.md | jq
 
 ```sh
 $ $CMD parse parsing-spec.md --format csv
-PARSE-SPECS.1,Requirement,,parsing-spec.md,,"We can parse a file of logical units into different formats, preserving all
-critical content of the logical unit content."
+PARSE-SPECS.1,Requirement,,parsing-spec.md,,"We can parse a file of logical units into different formats, preserving all critical content of the logical unit content."
 PARSE-SPECS.1::CONTENT.1::MULTI-PARA.1,Requirement,,parsing-spec.md,,"The content of logical units must be preserved.
 
 Even when it spans multiple paragraphs.
 
-- Or
-- includes
-- lists"
+* Or
+* includes
+* lists"
 PARSE-SPECS.1::CSV.1,Requirement,,parsing-spec.md,,Must support parse a file of specs into CSV.
 PARSE-SPECS.1::INLINE.1,Requirement,,parsing-spec.md,,"The folowing inline styling must be preserved:
 
-- **Strong** (**both** ways)
-- *Emphasizes* (*both* ways)
-- ~~Strikethrough~~
-- `code`
-- [links](/url)
-- ![images](/url)
-- [smallcaps]{.smallcaps}"
+* **Strong** (**both** ways)
+* *Emphasizes* (*both* ways)
+* ~~Strikethrough~~
+* `code`
+* [links](/url)
+* ![images](/url ""fig:"")
+* smallcaps"
 PARSE-SPECS.1::JSON.1,Requirement,,parsing-spec.md,,Must support parsing a file of specs into JSON.
 ```
 

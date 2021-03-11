@@ -3,10 +3,11 @@
 //!
 
 use {
-    anyhow::{Context, Result},
-    pandoc_ast::{Block, Inline, Pandoc, QuoteType},
+    anyhow::Result,
+    html2md,
+    itertools::Itertools,
+    scraper,
     std::{
-        convert::TryInto,
         io,
         io::{Read, Write},
         path::Path,
@@ -26,31 +27,34 @@ pub enum Error {
     #[error("Pandoc failed with status {0} and stderr: {1}")]
     PandocFailure(ExitStatus, String),
 
-    #[error("Error processing data from pandoc: {0}")]
+    #[error("Processing data from pandoc: {0}")]
     PandocData(String),
 
     #[error("Could not convert given path to string")]
     Path,
+
+    #[error("Parsing definition list. Encountered {0} while parsing `{1}`")]
+    DefinitionListParsing(String, String),
 }
 
 static PANDOC: &str = "pandoc";
-static ARGS: &[&str] = &["--standalone", "--from", "markdown-smart", "--to", "json"];
+static ARGS: &[&str] = &["--from", "markdown", "--to", "html"];
 
 /// # Running the pandoc executable
 
-fn pandoc_from_bytes(b: &[u8]) -> Result<Pandoc> {
+fn html_from_md_bytes(b: &[u8]) -> Result<scraper::Html> {
     match b[..] {
         [] => Err(Error::PandocData("no data received from pandoc".into()).into()),
-        _ => serde_json::from_str(String::from_utf8_lossy(b).as_ref())
-            .map_err(|e: serde_json::Error| -> Error { Error::Serialization(e) })
-            .context("deserializing pandoc JSON output"),
+        _ => Ok(scraper::Html::parse_fragment(
+            String::from_utf8_lossy(b).as_ref(),
+        )),
     }
 }
 
 /// Returns an [`Ok`] [`Pandoc`] value if the string can be parsed into the
 /// pandoc AST, otherwise returns an [`Err`] with a string explaining the
 /// failure.
-pub fn parse_string(s: &str) -> Result<Pandoc> {
+fn parse_string(s: &str) -> Result<scraper::Html> {
     let process = Command::new(PANDOC)
         .args(ARGS)
         .stdout(Stdio::piped())
@@ -71,41 +75,10 @@ pub fn parse_string(s: &str) -> Result<Pandoc> {
         .ok_or_else(|| Error::PandocData("trying to read from stdout".into()))
         .and_then(|mut c| c.read_to_end(&mut bytes).map_err(Error::PandocInvocation))?;
 
-    pandoc_from_bytes(&bytes)
+    html_from_md_bytes(&bytes)
 }
 
-// TODO Use this to support more integrated recovery of nested markdown
-/// Renders a pandoc AST into a markdown string
-// pub fn render_ast(p: &Pandoc) -> std::result::Result<String, String> {
-//     let process = Command::new(PANDOC)
-//         .args(&["--from", "native", "--to", "markdown"])
-//         .stdout(Stdio::piped())
-//         .spawn()
-//         .map_err(|_| "spawning panodc process".to_string())?;
-
-//     let s = serde_json::to_string(p).map_err(|_| "serializing to json")?;
-
-//     process
-//         .stdin
-//         .unwrap()
-//         .write_all(s.as_bytes())
-//         .map_err(|_| "writing to pandoc process")?;
-
-//     let mut bytes = Vec::new();
-//     process
-//         .stdout
-//         .ok_or("receiving pandoc process output")
-//         .and_then(|mut c| {
-//             c.read_to_end(&mut bytes)
-//                 .or(Err("reading from pandoc process"))
-//         })?;
-
-//     std::str::from_utf8(&bytes)
-//         .map_err(|_| "decoding markdown string".to_string())
-//         .map(str::to_string)
-// }
-
-pub fn parse_file(path: &Path) -> Result<Pandoc> {
+fn parse_file(path: &Path) -> Result<scraper::Html> {
     let source = path.to_str().ok_or(Error::Path)?;
 
     let output = Command::new(PANDOC)
@@ -115,7 +88,7 @@ pub fn parse_file(path: &Path) -> Result<Pandoc> {
         .map_err(Error::PandocInvocation)?;
 
     if output.status.success() {
-        pandoc_from_bytes(&output.stdout)
+        html_from_md_bytes(&output.stdout)
     } else {
         Err(Error::PandocFailure(
             output.status,
@@ -125,114 +98,94 @@ pub fn parse_file(path: &Path) -> Result<Pandoc> {
     }
 }
 
-/// # Parsing the pandoc AST
-#[allow(clippy::ptr_arg)]
-pub fn inlines_to_string(inlines: &Vec<Inline>) -> String {
-    inlines
-        .iter()
-        .map(inline_to_string)
-        .collect::<Vec<String>>()
-        .join("")
+fn is_dt(element: &scraper::ElementRef) -> bool {
+    element.value().name() == "dt"
 }
 
-pub fn inline_to_string(i: &pandoc_ast::Inline) -> String {
-    match i {
-        Inline::Str(s) => s.clone(),
-        Inline::Emph(v) => format!("*{}*", inlines_to_string(v),),
-        Inline::Strong(v) => format!("**{}**", inlines_to_string(v),),
-        Inline::Space => " ".to_string(),
-        Inline::SoftBreak => "\n".to_string(),
-        Inline::LineBreak => "\\n".to_string(),
-        Inline::Quoted(t, v) => match t {
-            QuoteType::SingleQuote => format!("'{}'", inlines_to_string(v)),
-            QuoteType::DoubleQuote => format!("\"{}\"", inlines_to_string(v)),
-        },
-        Inline::Link(_, v, (url, _)) => format!("[{}]({})", inlines_to_string(v), url,),
-        Inline::Image(_, v, (url, _)) => format!("![{}]({})", inlines_to_string(v), url,),
-        Inline::Code(_, s) => format!("`{}`", s),
-        Inline::Underline(il) => inlines_to_string(il),
-        Inline::Strikeout(il) => format!("~~{}~~", inlines_to_string(il)),
-        Inline::Superscript(il) => format!("^{}^", inlines_to_string(il)),
-        Inline::Subscript(il) => format!("~{}~", inlines_to_string(il)),
-        Inline::SmallCaps(il) => format!("[{}]{{.smallcaps}}", inlines_to_string(il)),
-        Inline::Cite(_, il) => inlines_to_string(il),
-        Inline::Math(_, s) => s.clone(),
-        Inline::RawInline(_, s) => s.clone(),
-        Inline::Note(bl) => blocks_to_string(bl),
-        Inline::Span(_, il) => inlines_to_string(il),
+fn is_dd(element: &scraper::ElementRef) -> bool {
+    element.value().name() == "dd"
+}
+
+// fn get_content(
+//     term: scraper::ElementRef,
+//     items: &mut scraper::element_ref::Select,
+// ) -> (String, String) {
+//     println!(
+//         "{:?}",
+//         items
+//             .clone()
+//             .map(|e| e.clone().html())
+//             .collect::<Vec<String>>()
+//     );
+//     let tag = term.inner_html();
+//     let content = items
+//         .take_while(is_dd)
+//         .map(|dt| html2md::parse_html(&dt.inner_html()))
+//         .collect::<Vec<String>>()
+//         .join("\n\n");
+//     (tag, content)
+// }
+
+fn def_parsing_err(msg: &str, element: scraper::ElementRef) -> anyhow::Error {
+    Error::DefinitionListParsing(msg.to_string(), element.html()).into()
+}
+
+fn definitions_from_html(html: scraper::Html) -> Result<Vec<(String, String)>> {
+    // Beware, yucky imperative programming ahead :(
+    let mut defs = Vec::new();
+
+    // These unwraps should only fail if invalid selectors are constructed,
+    // but this is effectively a constant we know at build time and exercise in
+    // our tests
+    let def_lists = scraper::Selector::parse("dl").unwrap();
+    // Either a def term or a definition
+    let def_item = scraper::Selector::parse("dt, dd").unwrap();
+
+    for def_list in html.select(&def_lists) {
+        // Group dt and dd elems together
+        let grouped_elements = def_list
+            .select(&def_item)
+            .into_iter()
+            .group_by(|el| el.value().name());
+        // Arrange
+        let definitions = grouped_elements.into_iter().tuples();
+        for ((term_tag, terms_group), (defs_tag, defs_group)) in definitions {
+            if !(term_tag == "dt" && defs_tag == "dd") {
+                // This generally shouldn't occur, since a definition list without a
+                // leading dt can't appear in markdown. But it could arise from
+                // HTML embedded in a markdown doc.
+                return Err(def_parsing_err("invalid tags on def list groups", def_list));
+            }
+
+            let terms: Vec<scraper::ElementRef> = terms_group.collect();
+
+            let tag = match terms[..] {
+                [term] => term.inner_html(),
+                [] => return Err(def_parsing_err("no definition terms", def_list)),
+                _ => {
+                    return Err(def_parsing_err(
+                        "multiple definition terms (not yet supported)",
+                        def_list,
+                    ))
+                }
+            };
+
+            let content = defs_group
+                .map(|el| html2md::parse_html(&el.html()))
+                .join("\n\n");
+
+            defs.push((tag, content));
+        }
     }
+    Ok(defs)
 }
 
-pub fn blocks_list_to_string(blocks_list: &[Vec<Block>]) -> String {
-    blocks_list
-        .iter()
-        .map(blocks_to_string)
-        .collect::<Vec<String>>()
-        .join("\n\n")
+pub fn definitions_from_file(path: &Path) -> Result<Vec<(String, String)>> {
+    let html = parse_file(path)?;
+    definitions_from_html(html)
 }
 
-#[allow(clippy::ptr_arg)]
-pub fn blocks_to_string(blocks: &Vec<Block>) -> String {
-    blocks
-        .iter()
-        .map(block_to_string)
-        .collect::<Vec<String>>()
-        .join("\n\n")
-}
-
-#[allow(clippy::ptr_arg)]
-fn line_blocks_to_string(lines: &Vec<Vec<Inline>>) -> String {
-    lines
-        .iter()
-        .map(inlines_to_string)
-        .collect::<Vec<String>>()
-        .join("\n\n")
-}
-
-#[allow(clippy::ptr_arg)]
-fn block_quote_to_string(blocks: &Vec<Block>) -> String {
-    blocks
-        .iter()
-        .map(block_to_string)
-        .map(|b| format!("> {}", b))
-        .collect::<Vec<String>>()
-        .join("\n")
-}
-
-#[allow(clippy::ptr_arg)]
-fn list_to_string(prefix: &str, blocks: &Vec<Vec<Block>>) -> String {
-    blocks
-        .iter()
-        .map(blocks_to_string)
-        .map(|b| format!("{} {}", prefix, b))
-        .collect::<Vec<String>>()
-        .join("\n")
-}
-
-#[allow(clippy::ptr_arg)]
-fn header_to_string(level: &i64, content: &Vec<Inline>) -> String {
-    // Pandoc would violate its own spec if it allowed more than 6 heading levels
-    // so we should be safe to unwrap here.
-    let hashes = "#".repeat((*level).try_into().unwrap());
-    format!("{} {}", hashes, inlines_to_string(content))
-}
-
-pub fn block_to_string(b: &Block) -> String {
-    match b {
-        Block::Plain(v) => inlines_to_string(v),
-        Block::Para(v) => inlines_to_string(v),
-        Block::LineBlock(v) => line_blocks_to_string(v),
-        Block::CodeBlock(_, s) => format!("```\n{}\n```", s),
-        Block::RawBlock(_, s) => s.into(),
-        Block::BlockQuote(v) => block_quote_to_string(v),
-        Block::OrderedList(_, v) => list_to_string("1.", v),
-        Block::BulletList(v) => list_to_string("-", v),
-        Block::Header(level, _, v) => header_to_string(level, v),
-        Block::HorizontalRule => "---".into(),
-        Block::Null => "".into(),
-        // Currently unspported values
-        Block::Div(_, _) => "<!-- WARNING: nested div omitted -->".into(),
-        Block::DefinitionList(_) => "<!-- WARNING: nested definition lists omitted -->".into(),
-        Block::Table(_, _, _, _, _, _) => "<!-- WARNING: nested table omitted -->".into(),
-    }
+pub fn definitions_from_string(s: &str) -> Result<Vec<(String, String)>> {
+    let html = parse_string(s)?;
+    definitions_from_html(html)
 }

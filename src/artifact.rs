@@ -6,7 +6,6 @@ use {
         util,
     },
     anyhow::{Context, Result},
-    pandoc_ast::{Block, Inline, Pandoc},
     std::{
         collections::HashSet,
         fmt,
@@ -25,9 +24,6 @@ pub struct Artifact {
 pub enum Error {
     #[error("parsing artifact {0}: {1}")]
     ParsingArtifact(PathBuf, serde_json::Error),
-
-    #[error("parsing artifact from string {0}")]
-    ParsingString(String),
 }
 
 impl Artifact {
@@ -40,8 +36,8 @@ impl Artifact {
 
     /// Parse the file `path` into an artifact
     pub fn from_file(repo: Option<Repo>, path: &Path) -> Result<Artifact> {
-        pandoc::parse_file(path)
-            .map(|ast| parse_ast(repo, Some(path), ast))
+        pandoc::definitions_from_file(path)
+            .map(|defs| logical_units_of_defs(repo, Some(path), &defs))
             .map(|lus| Artifact::new(Some(path.to_owned()), lus.iter().cloned().collect()))
             .with_context(|| {
                 format!(
@@ -53,10 +49,10 @@ impl Artifact {
 
     /// Parse the string `s` into an artifact with no source
     pub fn from_string(s: &str) -> Result<Artifact> {
-        pandoc::parse_string(s)
-            .map(|ast| parse_ast(None, None, ast))
+        pandoc::definitions_from_string(s)
+            .map(|defs| logical_units_of_defs(None, None, &defs))
             .map(|lus| Artifact::new(None, lus.iter().cloned().collect()))
-            .map_err(|_| Error::ParsingString(s.into()).into())
+            .with_context(|| format!("parsing artifact from string {}", s))
     }
 }
 
@@ -70,65 +66,33 @@ impl fmt::Display for Artifact {
     }
 }
 
-// Parse logical units out of the pandoc AST.
-fn parse_ast(repo: Option<Repo>, file: Option<&Path>, ast: Pandoc) -> HashSet<LogicalUnit> {
-    ast.blocks
-        .iter()
-        .filter_map(|b| match b {
-            Block::DefinitionList(dl) => {
-                let logical_units = logical_units_of_deflist(repo.clone(), file, dl);
-                Some(logical_units)
-            }
-            _ => None,
-        })
-        .flatten()
-        .collect()
-}
-
 // Given the `pandoc_ast` representation of a description list,
 // this finds any items that are valid logical units.
-fn logical_units_of_deflist(
+fn logical_units_of_defs(
     repo: Option<Repo>,
     file: Option<&Path>,
-    deflist: &[(Vec<Inline>, Vec<Vec<Block>>)],
+    defs: &[(String, String)],
 ) -> Vec<LogicalUnit> {
     // TODO Infer from file type?
-    deflist
-        .iter()
-        .filter_map(|(tags, blocks)| {
-            logical_unit_definiendum(tags).and_then(|id| {
-                // TODO Determine kind from file type
-                let kind = Kind::Requirement;
-                let contents = pandoc::blocks_list_to_string(blocks);
-                // TODO Determine line
-                match LogicalUnit::new(repo.clone(), file, None, kind, id, contents) {
-                    Ok(lu) => Some(lu),
-                    Err(err) => {
-                        // TODO Replace with logging
-                        println!("Error: {:?}", err);
-                        None
+    defs.iter()
+        .filter_map(|(tags, content)| {
+            util::parser::logical_unit_definiendum(tags)
+                .ok()
+                .and_then(|id| {
+                    // TODO Determine kind from file type
+                    let kind = Kind::Requirement;
+                    // TODO Determine line
+                    match LogicalUnit::new(repo.clone(), file, None, kind, id, content.clone()) {
+                        Ok(lu) => Some(lu),
+                        Err(err) => {
+                            // TODO Replace with logging
+                            println!("Error: {:?}", err);
+                            None
+                        }
                     }
-                }
-            })
+                })
         })
         .collect()
-}
-
-// Is `Some(s)` if `s` can be a logical unit ID enclosed in pipes.
-fn logical_unit_definiendum(tags: &[Inline]) -> Option<String> {
-    match tags {
-        // Only defininiendum's with a single inline element are taken to be
-        // logical unit defs
-        [lu] => match lu {
-            Inline::Str(s) => util::parser::logical_unit_definiendum(&s).ok(),
-            Inline::Emph(v) => logical_unit_definiendum(&v),
-            Inline::Strong(v) => logical_unit_definiendum(&v),
-            Inline::Link(_, v, _) => logical_unit_definiendum(&v),
-            // TODO Are we sure we don't want support any other variants?
-            _ => None,
-        },
-        _ => None,
-    }
 }
 
 #[cfg(test)]
@@ -144,7 +108,7 @@ mod test {
 |FOO.1::BAZ.1|
 :  Pop crink splot.
 
-[|FOO.1::BOP.1|](./url)
+|FOO.1::BOP.1|
 :  Can parse URLs
 ";
 
@@ -182,7 +146,8 @@ mod test {
         .collect();
 
         let expected: Artifact = Artifact::new(None, logical_units);
-        let result = Artifact::from_string(&spec).unwrap();
-        assert_eq!(expected, result)
+        let result = Artifact::from_string(&spec);
+        println!("{:?}", result);
+        assert_eq!(expected, result.unwrap())
     }
 }
