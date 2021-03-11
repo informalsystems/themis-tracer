@@ -32,19 +32,6 @@ the correctness and continuity of communication, implementation, and operation.
   - [X] Currently facilitated viz =fzf=
   - [ ] Native support
 * Tasks
-** TODO Replace =pandoc_ast= with =scraper=
-- [X] Change ~ARGS~ to *not* be standalone and go ~--to html~ file:./src/pandoc.rs::37
-- [X] rework ~pandoc_from_bytes~ to html_from_bytes file:./src/pandoc.rs::41
-  - Should become a function ~&[u8] -> Result<scraper::Html~
-  - Use
-    https://docs.rs/scraper/0.12.0/scraper/html/struct.Html.html#method.parse_fragment
-    to read the html fragment (we don't care about full HTML document structure).
-- [X] Rework ~parse_string~ file:./src/pandoc.rs::53
-- [X] Rework ~parse_file~ file:./src/pandoc.rs::108
-- [ ] Move ~parse_ast~ and ~logical_units_of_deflist~ from
-  file:src/artifact.rs::74  into the ~pandoc~ module, have it return a tuple of
-  definition and markdown contents.
-
 ** TODO Make =context new= also switch the context
 ** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17
 ** TODO Software development as a value flow

@@ -82,3 +82,24 @@ https://github.com/informalsystems/themis-tracer/issues/16
 :END:
 - [X] Add db function to purge all logical units from a given repo
 - [X] Implement procedure to purge units, then reload them for a repo
+
+* DONE Replace =pandoc_ast= with =scraper=
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-03-11 Thu 17:15
+:ARCHIVE_FILE: ~/Sync/informal-systems/mvd/themis-tracer/design-notes.org
+:ARCHIVE_OLPATH: Tasks
+:ARCHIVE_CATEGORY: design-notes
+:ARCHIVE_TODO: DONE
+:END:
+- [X] Change ~ARGS~ to *not* be standalone and go ~--to html~ file:./src/pandoc.rs::37
+- [X] rework ~pandoc_from_bytes~ to html_from_bytes file:./src/pandoc.rs::41
+  - Should become a function ~&[u8] -> Result<scraper::Html~
+  - Use
+    https://docs.rs/scraper/0.12.0/scraper/html/struct.Html.html#method.parse_fragment
+    to read the html fragment (we don't care about full HTML document structure).
+- [X] Rework ~parse_string~ file:./src/pandoc.rs::53
+- [X] Rework ~parse_file~ file:./src/pandoc.rs::108
+- [X] Move ~parse_ast~ and ~logical_units_of_deflist~ from
+  file:src/artifact.rs::74  into the ~pandoc~ module, have it return a tuple of
+  definition and markdown contents.
+
