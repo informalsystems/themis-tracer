@@ -32,6 +32,14 @@ the correctness and continuity of communication, implementation, and operation.
   - [X] Currently facilitated viz =fzf=
   - [ ] Native support
 * Tasks
+** TODO Add linkification of md files
+- [ ] Add tests to ensure anchored (and other styled tags) are parsed correctly
+- [ ] Write regex to identify unanchored tags
+- [ ] Write function to rewrite tags into anchors
+- [ ] Write regex to identify tag references
+- [ ] Write function to collect all unlinked tag references, and generate their
+  links, based on the database.
+- [ ] Add CLI to call command
 ** TODO Make =context new= also switch the context
 ** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17
 ** TODO Software development as a value flow
