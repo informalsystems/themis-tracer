@@ -146,8 +146,31 @@ mod test {
         .collect();
 
         let expected: Artifact = Artifact::new(None, logical_units);
-        let result = Artifact::from_string(&spec);
-        println!("{:?}", result);
-        assert_eq!(expected, result.unwrap())
+        let actual = Artifact::from_string(&spec);
+        assert_eq!(actual.unwrap(), expected)
+    }
+
+    #[test]
+    fn can_parse_logical_unit_with_() {
+        let spec = r#"
+<a id="TAG.1::IN-TARGET.1">|TAG.1::IN-ANCHOR-TAG.1|</a>
+: We can parse tags in an anchor html element.
+"#;
+        let logical_units: HashSet<LogicalUnit> = vec![LogicalUnit::new(
+            None,
+            None,
+            None,
+            Kind::Requirement,
+            "TAG.1::IN-ANCHOR-TAG.1".into(),
+            "We can parse tags in an anchor html element.".into(),
+        )
+        .unwrap()]
+        .iter()
+        .cloned()
+        .collect();
+
+        let expected = Artifact::new(None, logical_units);
+        let actual = Artifact::from_string(&spec);
+        assert_eq!(actual.unwrap(), expected)
     }
 }

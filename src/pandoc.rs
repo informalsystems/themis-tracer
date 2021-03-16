@@ -110,6 +110,25 @@ fn def_parsing_err(msg: &str, element: scraper::ElementRef) -> anyhow::Error {
     Error::DefinitionListParsing(msg.to_string(), element.html()).into()
 }
 
+// Get the first child and wrap it back up into an ElementRef (if it exists)
+fn get_child_element(el: scraper::ElementRef) -> Option<scraper::ElementRef> {
+    el.first_child().and_then(scraper::ElementRef::wrap)
+}
+
+// Get the inner html after applying the selection
+fn select_inner_html(el: scraper::ElementRef, selector: &scraper::Selector) -> Option<String> {
+    el.select(selector).next().map(|e| e.inner_html())
+}
+
+// Finds a logical unit tag from a def list term, even if it's wrapped in
+// (possibly nested) inline HTML tags.
+fn tag_of_term(term: scraper::ElementRef) -> Option<String> {
+    match get_child_element(term) {
+        None => Some(term.inner_html()),
+        Some(child) => tag_of_term(child),
+    }
+}
+
 fn definitions_from_html(html: scraper::Html) -> Result<Vec<(String, String)>> {
     // Beware, yucky imperative programming ahead :(
     let mut defs = Vec::new();
@@ -139,8 +158,19 @@ fn definitions_from_html(html: scraper::Html) -> Result<Vec<(String, String)>> {
 
             let terms: Vec<scraper::ElementRef> = terms_group.collect();
 
+            // TODO Can we dispense with tese imperative returns?
             let tag = match terms[..] {
-                [term] => term.inner_html(),
+                [term] => {
+                    if let Some(tag) = tag_of_term(term) {
+                        tag
+                    } else {
+                        return Err(def_parsing_err(
+                            "could not parse html of definition term",
+                            def_list,
+                        ));
+                    }
+                }
+                // This should be impossbile
                 [] => return Err(def_parsing_err("no definition terms", def_list)),
                 _ => {
                     return Err(def_parsing_err(
@@ -168,4 +198,40 @@ pub fn definitions_from_file(path: &Path) -> Result<Vec<(String, String)>> {
 pub fn definitions_from_string(s: &str) -> Result<Vec<(String, String)>> {
     let html = parse_string(s)?;
     definitions_from_html(html)
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn find_def_list_with_naked_term() {
+        let input = r#"
+|FOO.1::BAR.1|
+:  Biz baz blam.
+"#;
+        let actual = definitions_from_string(input).unwrap();
+        let expected = vec![("|FOO.1::BAR.1|".into(), "Biz baz blam.".into())];
+        assert_eq!(actual, expected)
+    }
+
+    fn find_def_list_with_wrapped_term() {
+        let input = r#"
+<a id="FOO.1::BAR.1">|FOO.1::BAR.1|</a>
+:  Biz baz blam.
+"#;
+        let actual = definitions_from_string(input).unwrap();
+        let expected = vec![("|FOO.1::BAR.1|".into(), "Biz baz blam.".into())];
+        assert_eq!(actual, expected)
+    }
+
+    fn find_def_list_with_nestd_wrapped_term() {
+        let input = r#"
+<a id="FOO.1::BAR.1"><em>|FOO.1::BAR.1|</em></a>
+:  Biz baz blam.
+"#;
+        let actual = definitions_from_string(input).unwrap();
+        let expected = vec![("|FOO.1::BAR.1|".into(), "Biz baz blam.".into())];
+        assert_eq!(actual, expected)
+    }
 }
