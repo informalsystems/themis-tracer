@@ -31,56 +31,6 @@ TRACER_HOME: ../target/test-sandbox
 Where you see `$CMD` in the following you should just use the installed binary
 `themis-tracer`.
 
-## User CLI errors
-
-```sh
-$ $CMD unsupported-arg
-error: Found argument 'unsupported-arg' which wasn't expected, or isn't valid in this context
-
-USAGE:
-    themis-tracer <SUBCOMMAND>
-
-For more information try --help
-[1]
-```
-
-## `init`ialization errors
-
-### Redundant `init`ialization
-
-```sh
-$ $CMD init
-Initialized into ../target/test-sandbox/.tracer
-$ $CMD init
-Error: Already initialized in ../target/test-sandbox/.tracer
-[1]
-```
-
-## `context` errors
-
-### Creating redundant `context`s
-
-```sh
-$ $CMD context new foo
-$ $CMD context list
-  foo
-$ $CMD context new foo
-Error: A context named foo already exists
-[1]
-$ $CMD context list
-  foo
-```
-
-### `switch` to a non-existent context
-
-```sh
-$ $CMD context switch nonexistent
-Error: Context nonexistent does not exists
-[1]
-```
-
-## `repo` errors
-
 Some repos work with
 
 ```sh
@@ -110,6 +60,33 @@ $ cat > repos/repo-b/spec-2.md <<EOF \
 > EOF
 ```
 
+## User CLI errors
+
+```sh
+$ $CMD unsupported-arg
+error: Found argument 'unsupported-arg' which wasn't expected, or isn't valid in this context
+
+USAGE:
+    themis-tracer <SUBCOMMAND>
+
+For more information try --help
+[1]
+```
+
+## `init`ialization errors
+
+### Redundant `init`ialization
+
+```sh
+$ $CMD init
+Initialized into ../target/test-sandbox/.tracer
+$ $CMD init
+Error: Already initialized in ../target/test-sandbox/.tracer
+[1]
+```
+
+## `context` errors
+
 ### Adding a `repo` when there's no working context
 
 ```sh
@@ -117,6 +94,29 @@ $ $CMD repo add repos/repo-a
 Error: No context is set. Try: `context switch <context>`
 [1]
 ```
+
+### Creating redundant `context`s
+
+```sh
+$ $CMD context new foo
+$ $CMD context list
+* foo
+$ $CMD context new foo
+Error: A context named foo already exists
+[1]
+$ $CMD context list
+* foo
+```
+
+### `switch` to a non-existent context
+
+```sh
+$ $CMD context switch nonexistent
+Error: Context nonexistent does not exists
+[1]
+```
+
+## `repo` errors
 
 ### Adding redundant repos to the context `repo`
 
