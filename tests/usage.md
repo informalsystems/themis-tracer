@@ -80,9 +80,12 @@ List the existing contexts as follows:
 
 ```sh
 $ $CMD context list
-  bar
+* bar
   foo
 ```
+
+Note that creating a new context also activates it. Thus the last created
+context, `bar` is now active.
 
 ### `context switch`
 
