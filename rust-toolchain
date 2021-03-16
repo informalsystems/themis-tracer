@@ -1,10 +1,11 @@
+# -*- mode: conf-toml -*-
 [toolchain]
-channel = "nightly-2021-02-20"
+channel = "stable"
 components = [
-           "rustfmt",
-           "clippy",
-           "rust-src",
-           "rust-analysis",
-           "rls"
-           ]
+"rustfmt",
+"clippy",
+"rust-src",
+"rust-analysis",
+"rls"
+]
 # targets = [ "wasm32-unknown-unknown", "thumbv2-none-eabi" ]

@@ -33,7 +33,6 @@ serde = { version = "*", features = ["derive"] }
 home = "*"
 # serde_dhall = "*"
 serde_json = "*"
-zerocopy = "*"
 thiserror = "*"
 anyhow = "*"
 rusqlite = "*"
