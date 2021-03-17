@@ -33,7 +33,7 @@ the correctness and continuity of communication, implementation, and operation.
   - [ ] Native support
 * Tasks
 ** TODO Add linkification of md files
-- [ ] Add tests to ensure anchored (and other styled tags) are parsed correctly
+- [X] Add tests to ensure anchored (and other styled tags) are parsed correctly
 - [ ] Write regex to identify unanchored tags
 - [ ] Write function to rewrite tags into anchors
 - [ ] Write regex to identify tag references
