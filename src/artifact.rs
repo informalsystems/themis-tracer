@@ -2,8 +2,8 @@ use {
     crate::{
         logical_unit::{Kind, LogicalUnit},
         pandoc,
+        parser::parser,
         repo::Repo,
-        util,
     },
     anyhow::{Context, Result},
     std::{
@@ -76,21 +76,19 @@ fn logical_units_of_defs(
     // TODO Infer from file type?
     defs.iter()
         .filter_map(|(tags, content)| {
-            util::parser::logical_unit_definiendum(tags)
-                .ok()
-                .and_then(|id| {
-                    // TODO Determine kind from file type
-                    let kind = Kind::Requirement;
-                    // TODO Determine line
-                    match LogicalUnit::new(repo.clone(), file, None, kind, id, content.clone()) {
-                        Ok(lu) => Some(lu),
-                        Err(err) => {
-                            // TODO Replace with logging
-                            println!("Error: {:?}", err);
-                            None
-                        }
+            parser::logical_unit_definiendum(tags).ok().and_then(|id| {
+                // TODO Determine kind from file type
+                let kind = Kind::Requirement;
+                // TODO Determine line
+                match LogicalUnit::new(repo.clone(), file, None, kind, id, content.clone()) {
+                    Ok(lu) => Some(lu),
+                    Err(err) => {
+                        // TODO Replace with logging
+                        println!("Error: {:?}", err);
+                        None
                     }
-                })
+                }
+            })
         })
         .collect()
 }

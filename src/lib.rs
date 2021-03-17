@@ -15,4 +15,4 @@ pub mod repo;
 mod envvar;
 mod locations;
 mod pandoc;
-mod util;
+mod parser;

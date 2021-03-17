@@ -1,5 +1,5 @@
 use {
-    crate::{repo::Repo, util},
+    crate::{parser::parser, repo::Repo},
     serde::{de, Deserialize, Deserializer, Serialize, Serializer},
     std::{
         fmt,
@@ -15,7 +15,7 @@ pub struct Id {
 
 impl Id {
     pub fn new(s: &str) -> Result<Id, String> {
-        let parts = util::parser::logical_unit_id(s).map_err(|_| "parsing id")?;
+        let parts = parser::logical_unit_id(s).map_err(|_| "parsing id")?;
         Ok(Id { parts })
     }
 
