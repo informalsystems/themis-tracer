@@ -23,24 +23,25 @@ name = "themis-tracer"
 doc = false
 
 [dependencies]
+anyhow = "*"
 csv = "*"
 failure = "*"
-log = "*"
-peg = "*"
-simple_logger = "*"
-structopt = "*"
-serde = { version = "*", features = ["derive"] }
-home = "*"
-# serde_dhall = "*"
-serde_json = "*"
-thiserror = "*"
-anyhow = "*"
-rusqlite = "*"
 glob = "*"
-tabwriter = "*"
-scraper = "*"
+home = "*"
 html2md = "*"
 itertools = "*"
+log = "*"
+lol_html = "*"
+peg = "*"
+regex = "*"
+rusqlite = "*"
+scraper = "*" # TODO Replace with lol_html?
+serde = { version = "*", features = ["derive"] }
+serde_json = "*"
+simple_logger = "*"
+structopt = "*"
+tabwriter = "*"
+thiserror = "*"
 
 [dev-dependencies]
 assert_cmd = "*"
