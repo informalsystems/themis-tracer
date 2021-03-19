@@ -34,11 +34,11 @@ the correctness and continuity of communication, implementation, and operation.
 * Tasks
 ** TODO Add linkification of md files
 - [X] Add tests to ensure anchored (and other styled tags) are parsed correctly
-- [ ] Write regex to identify unanchored tags
-- [ ] Write function to rewrite tags into anchors
-- [ ] Write regex to identify tag references
-- [ ] Write function to collect all unlinked tag references, and generate their
-  links, based on the database.
+- [ ] Use lol_html to rewrite naked tags in definition terms to IDed anchors
+- [ ] Use lol_html to rewrite unlinked tag refs to links
+  + [ ] By querying the db for locations of logical units.
+- [ ] Use pandoc to convert HTML back to markdown, using the =--reference-links=
+  flag.
 - [ ] Add CLI to call command
 ** TODO Make =context new= also switch the context
 ** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17
