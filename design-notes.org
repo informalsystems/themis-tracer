@@ -34,9 +34,22 @@ the correctness and continuity of communication, implementation, and operation.
 * Tasks
 ** TODO Add linkification of md files
 - [X] Add tests to ensure anchored (and other styled tags) are parsed correctly
-- [ ] Use lol_html to rewrite naked tags in definition terms to IDed anchors
-- [ ] Use lol_html to rewrite unlinked tag refs to links
-  + [ ] By querying the db for locations of logical units.
+- [X] Use kuchiki to rewrite naked tags in definition terms to IDed anchors
+- [ ] Use kuchiki to rewrite unlinked tag refs to links
+  + [ ] Select text nodes
+  + [ ] Check if a =text node= contains a tag-ref
+    - [ ] If so, check if it's parent is a tag, and ignore if so
+    - [ ] If not, split the text chunk into 3 parts:
+      + =Before ref=
+      + =Ref=
+      + =After ref=
+    - [ ] Generate a =Ref link=
+      + [ ] Get location by querying the db for locations of logical units.
+      + [ ] Create a link element
+    - [ ] Add =Before ref= after text node
+    - [ ] Add =Ref link= after text node
+    - [ ] Add =After ref=
+    - [ ] Remove =text node=
 - [ ] Use pandoc to convert HTML back to markdown, using the =--reference-links=
   flag.
 - [ ] Add CLI to call command
