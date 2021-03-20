@@ -19,82 +19,6 @@ pub enum Error {
     ParsingHtml(String),
 }
 
-fn is_anchor_element(node: &kuchiki::Node) -> bool {
-    match node.as_element() {
-        None => false,
-        Some(el) => {
-            let attrs = el.attributes.borrow();
-            attrs.contains("id")
-        }
-    }
-}
-
-fn as_naked_unit_tag(node: &kuchiki::Node) -> Option<String> {
-    match node.first_child() {
-        None => None,
-        Some(child) => {
-            if is_anchor_element(&child) {
-                None
-            } else {
-                match child.as_text() {
-                    None => as_naked_unit_tag(&child),
-                    Some(t) => {
-                        let text = t.borrow();
-                        parser::logical_unit_definiendum(&text)
-                            .ok()
-                            .map(|tag| tag.trim_matches('|').into())
-                    }
-                }
-            }
-        }
-    }
-}
-
-/// `linkify_spec_html(reader, writer)` transfers the seralized html data from
-/// `reader` into `writer`, transforming logical unit tag definitions and
-/// references as follows:
-///
-/// - Tag definitions `<dt>|FOO.1::BAR.1|</dt>` are transformed into
-///   `<dt>|FOO.1::BAR.1|<a id="FOO.1::BAR.1"></a></dt>`
-/// - Tag references `[FOO.1::BAR.1]` are transformed into
-///   `<a href="path/to/file#FOO.1::BAR.1">FOO.1::BAR.1</a>`
-// TODO Add conn so we can lookup logical unit references
-pub fn linkify_spec_html<R: Read, W: Write + Seek>(reader: &mut R, writer: &mut W) -> Result<()> {
-    let doc = kuchiki::parse_html().from_utf8().read_from(reader)?;
-    let terms = doc
-        .select("dt")
-        .map_err(|()| Error::ParsingHtml("could not select dt elements".into()))?;
-    for term in terms {
-        if let Some(tag) = as_naked_unit_tag(term.as_node()) {
-            // TODO Extract to self-documenting helper function
-            // Create a new span element to anchor the tag
-            let anchor = kuchiki::NodeRef::new_element(
-                QualName::new(None, ns!(html), local_name!("span")),
-                Some((
-                    ExpandedName::new("", "id"),
-                    Attribute {
-                        prefix: None,
-                        // Give it the tag's ID as its id attribute
-                        value: tag,
-                    },
-                )),
-            );
-            // Retreive the child of the dt element
-            let child = term
-                .as_node()
-                .first_child()
-                .ok_or_else(|| Error::ParsingHtml("could not get child of dt element".into()))?;
-            // Move the child into the anchor
-            anchor.append(child);
-            // Put the anchor into the dt element
-            term.as_node().append(anchor);
-        }
-    }
-    let res = doc.serialize(writer)?;
-    writer.flush()?;
-    Ok(res)
-}
-
 /// As [linkify_spec_html], but with a `String` as input and output.
 pub fn linkify_spec_string(html: &String) -> Result<String> {
     let mut buff = Cursor::new(Vec::new());
@@ -117,6 +41,93 @@ pub fn linkify_spec_file(path: &path::Path) -> Result<()> {
         file_out.write_all(&mut buff.into_inner())?;
     };
     Ok(res)
+}
+
+/// `linkify_spec_html(reader, writer)` transfers the seralized html data from
+/// `reader` into `writer`, transforming logical unit tag definitions and
+/// references as follows:
+///
+/// - Tag definitions `<dt>|FOO.1::BAR.1|</dt>` are transformed into
+///   `<dt>|FOO.1::BAR.1|<a id="FOO.1::BAR.1"></a></dt>`
+/// - Tag references `[FOO.1::BAR.1]` are transformed into
+///   `<a href="path/to/file#FOO.1::BAR.1">FOO.1::BAR.1</a>`
+// TODO Add conn so we can lookup logical unit references
+pub fn linkify_spec_html<R: Read, W: Write + Seek>(reader: &mut R, writer: &mut W) -> Result<()> {
+    let doc = kuchiki::parse_html().from_utf8().read_from(reader)?;
+    let terms = doc
+        .select("dt")
+        .map_err(|()| Error::ParsingHtml("selecting dt elements".into()))?;
+    for term in terms {
+        anchorify_dt(term)?;
+    }
+    let res = doc.serialize(writer)?;
+    writer.flush()?;
+    Ok(res)
+}
+
+fn anchorify_dt(term: kuchiki::NodeDataRef<kuchiki::ElementData>) -> Result<()> {
+    if let Some(tag) = as_naked_unit_tag(term.as_node()) {
+        // Create a new span element to anchor the tag
+        let anchor = new_anchor_span(tag);
+        // Retreive the child of the dt element
+        let child = term
+            .as_node()
+            .first_child()
+            .ok_or_else(|| Error::ParsingHtml("could not get child of dt element".into()))?;
+        // Move the child into the anchor
+        anchor.append(child);
+        // Put the anchor into the dt element
+        term.as_node().append(anchor);
+    };
+    Ok(())
+}
+
+// A unit tag is "naked" if it is not wrapped in an anchoring element
+// This returns just the textual tag that is thus exposed.
+fn as_naked_unit_tag(node: &kuchiki::Node) -> Option<String> {
+    match node.first_child() {
+        None => None,
+        Some(child) => {
+            if is_anchor_element(&child) {
+                None
+            } else {
+                match child.as_text() {
+                    None => as_naked_unit_tag(&child),
+                    Some(t) => {
+                        let text = t.borrow();
+                        parser::logical_unit_definiendum(&text)
+                            .ok()
+                            .map(|tag| tag.trim_matches('|').into())
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn is_anchor_element(node: &kuchiki::Node) -> bool {
+    match node.as_element() {
+        None => false,
+        Some(el) => {
+            let attrs = el.attributes.borrow();
+            attrs.contains("id")
+        }
+    }
+}
+
+// Create a a <span> element with the id attribute set to `tag`
+fn new_anchor_span(tag: String) -> kuchiki::NodeRef {
+    kuchiki::NodeRef::new_element(
+        QualName::new(None, ns!(html), local_name!("span")),
+        Some((
+            ExpandedName::new("", "id"),
+            Attribute {
+                prefix: None,
+                // Give it the tag's ID as its id attribute
+                value: tag,
+            },
+        )),
+    )
 }
 
 #[cfg(test)]
