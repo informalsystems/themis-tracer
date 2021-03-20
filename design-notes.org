@@ -35,17 +35,16 @@ the correctness and continuity of communication, implementation, and operation.
 ** TODO Add linkification of md files
 - [X] Add tests to ensure anchored (and other styled tags) are parsed correctly
 - [X] Use kuchiki to rewrite naked tags in definition terms to IDed anchors
-- [-] Use kuchiki to rewrite unlinked tag refs to links
+- [X] Use kuchiki to rewrite unlinked tag refs to links
   + [X] Select text nodes
-  + [ ] Check if a =text node= contains a tag-ref
-    - [ ] Parse text into a vec of enums ~Text(String) | UnitRef(String)~
-    - [ ] Generate a =Ref link= for each ~UnitRef~
-      + [ ] Get location by querying the db for locations of logical units.
-      + [ ] Create a link element
-    - [ ] Add =Before ref= after text node
-    - [ ] Add =Ref link= after text node
-    - [ ] Add =After ref=
-    - [ ] Remove =text node=
+  + [X] Check if a =text node= contains a tag-ref
+    - [X] Parse text into a vec of enums ~Text(String) | UnitRef(String)~
+    - [X] Generate a =Ref link= for each ~UnitRef~
+      + [X] Get location by querying the db for locations of logical units.
+      + [X] Create a link element
+    - [X] Add =Text= after text node
+    - [X] Add =Ref= after text node
+    - [X] Remove =text node= (after all parts text and refs parts are added)
 - [ ] Use pandoc to convert HTML back to markdown, using the =--reference-links=
   flag.
 - [ ] Add CLI to call command

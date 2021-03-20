@@ -230,6 +230,13 @@ pub mod context {
 pub mod repo {
     use {super::*, crate::repo::Repo, serde_json};
 
+    pub(super) fn of_row(row: &sql::Row) -> sql::Result<Repo> {
+        let json: String = row.get(2)?;
+        serde_json::from_str(&*json)
+            // TODO I'm not sure how to get the right error type here at the moment...
+            .map_err(|_| sql::Error::InvalidParameterName("TODO returning wrong error".into()))
+    }
+
     fn insert(conn: &sql::Connection, repo: &Repo) -> Result<()> {
         let encoded = serde_json::to_string(repo)?;
         let path = repo.path_as_string();
@@ -265,13 +272,6 @@ pub mod repo {
                 relate_to_context(conn, repo, &ctx)
             }
         }
-    }
-
-    fn of_row(row: &sql::Row) -> sql::Result<Repo> {
-        let json: String = row.get(2)?;
-        serde_json::from_str(&*json)
-            // TODO I'm not sure how to get the right error type here at the moment...
-            .map_err(|_| sql::Error::InvalidParameterName("TODO returning wrong error".into()))
     }
 
     /// `get_all_in_context(conn)` is
@@ -326,6 +326,19 @@ pub mod unit {
         let mut stmt = conn.prepare("SELECT * FROM unit WHERE tag = :tag")?;
         stmt.query_row_named(&[(":tag", &tag)], of_row)
             .optional()
+            .map_err(|e| Error::Query(e).into())
+    }
+
+    pub fn get_repo(conn: &sql::Connection, tag: String) -> Result<Repo> {
+        let q = r#"
+            SELECT repo.id, repo.path, repo.json
+            FROM repo
+            INNER JOIN unit ON unit.tag = :tag
+            INNER JOIN unit_repo ON unit_repo.unit = unit.id
+            WHERE repo.id = unit_repo.repo
+            "#;
+        let mut stmt = conn.prepare(q)?;
+        stmt.query_row_named(&[(":tag", &tag)], repo::of_row)
             .map_err(|e| Error::Query(e).into())
     }
 
