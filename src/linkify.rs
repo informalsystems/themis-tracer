@@ -113,32 +113,44 @@ fn linkify_tag_refs(
 ) -> Result<()> {
     if let Some(text_node) = node.as_node().as_text() {
         let ref text = text_node.borrow();
+        // We want to extract unlinked logical unit references from a chunk of
+        // text. To do that we parse the chunk of text into an array of items
+        // that differentiate plain text from unit references.
         match parser::find_logical_unit_refs(text)? {
-            None => (),
+            None => (), // Chunk contains no unit refs, so leave it unchanged
             Some(parts) => {
                 for part in parts.iter() {
                     let new_node = match part {
+                        // Chunks of plain text are added back as new text nodes
                         UnitRefSearch::Text(t) => NodeRef::new_text(t),
+                        // Tag refs are converted into link element nodes
                         UnitRefSearch::Ref(tag) => {
                             let url = match conn {
                                 // Only intended for testing purposes
                                 Some(c) => db::unit::get_path(c, &tag)?,
-                                None => {
-                                    let mut id_ref = "#".to_string();
-                                    id_ref.push_str(&tag);
-                                    id_ref
-                                }
+                                None => tag_to_id_ref(tag),
                             };
                             new_link(url, tag.into())
                         }
                     };
+                    // Each piece of the text chunk is inserted before the
+                    // original text node. As we do this repeatedly, it stacks
+                    // the new nodes on top of the original text node.
                     node.as_node().insert_before(new_node);
                 }
+                // After all the new nodes have been stacked on top of the
+                // original one, we remove the original.
                 node.as_node().detach()
             }
         }
     };
     Ok(())
+}
+
+fn tag_to_id_ref(tag: &str) -> String {
+    let mut id_ref = "#".to_string();
+    id_ref.push_str(&tag);
+    id_ref
 }
 
 // Wrap a unit tag def term in an anchor, if it is "naked" (see [as_naked_unit_tag])
