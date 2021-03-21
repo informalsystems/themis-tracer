@@ -1,6 +1,6 @@
 use {
     crate::{
-        db,
+        db, pandoc,
         parser::{parser, UnitRefSearch},
     },
     anyhow::Result,
@@ -22,6 +22,30 @@ use {
 pub enum Error {
     #[error("Error parsing html during linkification: {0}")]
     ParsingHtml(String),
+}
+
+pub fn file_via_pandoc(conn: &sql::Connection, path: &path::Path) -> Result<()> {
+    let html = pandoc::parse_file(path)?;
+    let new_html = linkify_spec_string(Some(conn), &html)?;
+    pandoc::write_file(&new_html, path)?;
+
+    // FIXME
+    // We unescape the pipes for aesthetic reasons.
+    // This won't be needed once we're using pulldown-cmark.
+    let escaped = {
+        let mut f = fs::File::open(&path)?;
+        let mut data = String::new();
+        f.read_to_string(&mut data)?;
+        data
+    };
+
+    let unescaped = escaped.replace("[\\|", "[|").replace("\\|]", "|]");
+
+    {
+        let mut f = fs::File::create(&path)?;
+        let _ = f.write_all(unescaped.as_bytes())?;
+    }
+    Ok(())
 }
 
 /// As [linkify_spec_html], but with a `String` as input and output.
@@ -96,12 +120,15 @@ fn linkify_tag_refs(
                     let new_node = match part {
                         UnitRefSearch::Text(t) => NodeRef::new_text(t),
                         UnitRefSearch::Ref(tag) => {
-                            let mut url = match conn {
-                                None => String::new(),
-                                Some(c) => db::unit::get_repo(c, tag.into())?.get_url(),
+                            let url = match conn {
+                                // Only intended for testing purposes
+                                Some(c) => db::unit::get_path(c, &tag)?,
+                                None => {
+                                    let mut id_ref = "#".to_string();
+                                    id_ref.push_str(&tag);
+                                    id_ref
+                                }
                             };
-                            url.push_str("#");
-                            url.push_str(tag);
                             new_link(url, tag.into())
                         }
                     };

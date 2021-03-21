@@ -9,12 +9,22 @@ use {
 enum Error {
     #[error("Cannot read database path")]
     DbPath,
+
+    // TODO Record the query that failed?
     #[error("Querying database: {0}")]
     Query(#[from] sql::Error),
+
     #[error("Context {0} does not exists")]
     NonexistentContext(String),
+
     #[error("No context is set. Try: `context switch <context>`")]
     NoContext,
+
+    #[error("No unit found corresponding to tag {0}")]
+    UnitNotFound(String),
+
+    #[error("No repo found related to unit with tag {0}")]
+    RelatedRepoNotFound(String),
 }
 
 fn create(conn: &sql::Connection, name: &str, statement: &str) -> Result<()> {
@@ -329,7 +339,11 @@ pub mod unit {
             .map_err(|e| Error::Query(e).into())
     }
 
-    pub fn get_repo(conn: &sql::Connection, tag: String) -> Result<Repo> {
+    /// `get_uri(&conn, &tag)` is the uri to the unit indicated by `tag`.
+    /// If a remote URL can be onbtained for the source repo, that is is used
+    /// as the base, otherwise it falls back to the local path of the repo.
+    pub fn get_path(conn: &sql::Connection, tag: &str) -> Result<String> {
+        let unit = get(conn, &tag)?.ok_or_else(|| Error::UnitNotFound(tag.into()))?;
         let q = r#"
             SELECT repo.id, repo.path, repo.json
             FROM repo
@@ -338,8 +352,20 @@ pub mod unit {
             WHERE repo.id = unit_repo.repo
             "#;
         let mut stmt = conn.prepare(q)?;
-        stmt.query_row_named(&[(":tag", &tag)], repo::of_row)
-            .map_err(|e| Error::Query(e).into())
+        let repo = stmt
+            .query_row_named(&[(":tag", &tag)], repo::of_row)
+            .optional()
+            .map_err(|e: sql::Error| -> anyhow::Error { Error::Query(e).into() })?
+            .ok_or_else(|| Error::RelatedRepoNotFound(tag.into()))?;
+
+        // TODO Use URL lib?
+        // Would this conflict with being able to use local paths?
+        let mut url = (&repo).get_url();
+        url.push_str("/");
+        url.push_str(&unit.file_path_as_str().unwrap_or("".to_string()));
+        url.push_str("#");
+        url.push_str(tag);
+        Ok(url.clone())
     }
 
     fn insert(conn: &sql::Connection, unit: &LogicalUnit) -> Result<()> {

@@ -45,9 +45,13 @@ the correctness and continuity of communication, implementation, and operation.
     - [X] Add =Text= after text node
     - [X] Add =Ref= after text node
     - [X] Remove =text node= (after all parts text and refs parts are added)
-- [ ] Use pandoc to convert HTML back to markdown, using the =--reference-links=
+- [X] Use pandoc to convert HTML back to markdown, using the =--reference-links=
   flag.
-- [ ] Add CLI to call command
+- [X] Add CLI to call command
+- [X] Add artifact to path
+- [X] Add test cases
+- [ ] Compute the url to browse from the remote git URL (specific to github to start)
+- [ ] Add test case for error condition (when reference link is invalid)
 ** TODO Make =context new= also switch the context
 ** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17
 ** TODO Software development as a value flow

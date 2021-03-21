@@ -42,12 +42,10 @@ static ARGS: &[&str] = &["--from", "markdown", "--to", "html"];
 
 /// # Running the pandoc executable
 
-fn html_from_md_bytes(b: &[u8]) -> Result<scraper::Html> {
+fn html_from_md_bytes(b: &[u8]) -> Result<String> {
     match b[..] {
         [] => Err(Error::PandocData("no data received from pandoc".into()).into()),
-        _ => Ok(scraper::Html::parse_fragment(
-            String::from_utf8_lossy(b).as_ref(),
-        )),
+        _ => Ok(String::from_utf8_lossy(b).into()),
     }
 }
 
@@ -75,10 +73,11 @@ fn parse_string(s: &str) -> Result<scraper::Html> {
         .ok_or_else(|| Error::PandocData("trying to read from stdout".into()))
         .and_then(|mut c| c.read_to_end(&mut bytes).map_err(Error::PandocInvocation))?;
 
-    html_from_md_bytes(&bytes)
+    html_from_md_bytes(&bytes).map(|s| scraper::Html::parse_fragment(&s))
 }
 
-fn parse_file(path: &Path) -> Result<scraper::Html> {
+/// `parse_file(path)` parses the markdown file at `path` into an html string
+pub fn parse_file(path: &Path) -> Result<String> {
     let source = path.to_str().ok_or(Error::Path)?;
 
     let output = Command::new(PANDOC)
@@ -96,6 +95,45 @@ fn parse_file(path: &Path) -> Result<scraper::Html> {
         )
         .into())
     }
+}
+
+/// `write_file(html, path)` write the `html` to the file at `path`
+/// as markdown.
+pub fn write_file(html: &String, path: &Path) -> Result<()> {
+    let target = path.to_str().ok_or(Error::Path)?;
+
+    let process = Command::new(PANDOC)
+        .args(&[
+            "--from",
+            "html",
+            "--to",
+            "markdown",
+            "--reference-links",
+            "-o",
+            target,
+        ])
+        .stdout(Stdio::piped())
+        .stdin(Stdio::piped())
+        .spawn()
+        .map_err(Error::PandocInvocation)?;
+
+    process
+        .stdin
+        .unwrap()
+        .write_all(html.as_bytes())
+        .map_err(Error::PandocInvocation)?;
+
+    let mut bytes = Vec::new();
+    process
+        .stdout
+        .ok_or_else(|| Error::PandocData("trying to read from stdout".into()))
+        .and_then(|mut c| c.read_to_end(&mut bytes).map_err(Error::PandocInvocation))?;
+
+    Ok(())
+}
+
+fn parse_file_to_scraper(path: &Path) -> Result<scraper::Html> {
+    parse_file(path).map(|s| scraper::Html::parse_fragment(&s))
 }
 
 fn is_dt(element: &scraper::ElementRef) -> bool {
@@ -191,7 +229,7 @@ fn definitions_from_html(html: scraper::Html) -> Result<Vec<(String, String)>> {
 }
 
 pub fn definitions_from_file(path: &Path) -> Result<Vec<(String, String)>> {
-    let html = parse_file(path)?;
+    let html = parse_file_to_scraper(path)?;
     definitions_from_html(html)
 }
 

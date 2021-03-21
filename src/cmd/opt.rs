@@ -19,6 +19,12 @@ pub enum Cmd {
         format: cmd::format::Format,
     },
 
+    /// Linkify a markdown file: anchor logical unit definitions and link logical unit references
+    Linkify {
+        /// The path to the file to linkify
+        path: PathBuf,
+    },
+
     /// Update the units for the current context from all assocaited repositories
     Sync {},
 
@@ -123,11 +129,12 @@ fn unimplemented() -> Result<()> {
 pub fn run() -> Result<()> {
     let opt = Cmd::from_args();
     match opt {
-        Cmd::Init {} => cmd::init::run(),
         Cmd::Context(opt) => cmd::context::run(opt),
-        Cmd::Repo(opt) => cmd::repo::run(opt),
-        Cmd::Unit(opt) => cmd::unit::run(opt),
+        Cmd::Init {} => cmd::init::run(),
+        Cmd::Linkify { path } => cmd::linkify::run(&path),
         Cmd::Parse { path, format } => cmd::parse::run(&path, format),
+        Cmd::Repo(opt) => cmd::repo::run(opt),
         Cmd::Sync {} => cmd::sync::run(),
+        Cmd::Unit(opt) => cmd::unit::run(opt),
     }
 }

@@ -15,6 +15,7 @@ mod format;
 /// purpose.
 mod context;
 mod init;
+mod linkify;
 mod parse;
 mod repo;
 mod sync;

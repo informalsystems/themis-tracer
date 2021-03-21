@@ -78,6 +78,13 @@ impl LogicalUnit {
         let repo = self.repo.clone().map_or("".into(), |r| r.path_as_string());
         (tag, repo, content)
     }
+
+    /// `unit.file_path_as_str()` is the file path (relative to the `unit`'s
+    /// repo) as a string
+    pub fn file_path_as_str(&self) -> Option<String> {
+        let path = self.file.as_ref()?.clone();
+        path.into_os_string().into_string().ok()
+    }
 }
 
 // TODO
