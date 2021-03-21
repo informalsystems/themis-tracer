@@ -361,11 +361,11 @@ pub mod unit {
         // TODO Use URL lib?
         // Would this conflict with being able to use local paths?
         let mut url = (&repo).get_url();
-        url.push_str("/");
-        url.push_str(&unit.file_path_as_str().unwrap_or("".to_string()));
-        url.push_str("#");
+        url.push('/');
+        url.push_str(&unit.file_path_as_str().unwrap_or_else(|| "".to_string()));
+        url.push('#');
         url.push_str(tag);
-        Ok(url.clone())
+        Ok(url)
     }
 
     fn insert(conn: &sql::Connection, unit: &LogicalUnit) -> Result<()> {

@@ -99,7 +99,7 @@ pub fn parse_file(path: &Path) -> Result<String> {
 
 /// `write_file(html, path)` write the `html` to the file at `path`
 /// as markdown.
-pub fn write_file(html: &String, path: &Path) -> Result<()> {
+pub fn write_file(html: &str, path: &Path) -> Result<()> {
     let target = path.to_str().ok_or(Error::Path)?;
 
     let process = Command::new(PANDOC)

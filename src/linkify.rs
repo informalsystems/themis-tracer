@@ -49,7 +49,7 @@ pub fn file_via_pandoc(conn: &sql::Connection, path: &path::Path) -> Result<()> 
 }
 
 /// As [linkify_spec_html], but with a `String` as input and output.
-pub fn linkify_spec_string(conn: Option<&sql::Connection>, html: &String) -> Result<String> {
+pub fn linkify_spec_string(conn: Option<&sql::Connection>, html: &str) -> Result<String> {
     let mut buff = Cursor::new(Vec::new());
     linkify_spec_html(conn, &mut html.as_bytes(), &mut buff)?;
     let res = buff.into_inner();
@@ -65,11 +65,11 @@ pub fn linkify_spec_file(conn: Option<&sql::Connection>, path: &path::Path) -> R
         let mut file_in = fs::File::open(path)?;
         linkify_spec_html(conn, &mut file_in, &mut buff)?;
     }
-    let res = {
+    {
         let mut file_out = fs::File::create(path)?;
-        file_out.write_all(&mut buff.into_inner())?;
+        file_out.write_all(&buff.into_inner())?;
     };
-    Ok(res)
+    Ok(())
 }
 
 /// `linkify_spec_html(reader, writer)` transfers the seralized html data from
@@ -102,9 +102,9 @@ pub fn linkify_spec_html<R: Read, W: Write + Seek>(
         linkify_tag_refs(conn, text)?;
     }
 
-    let res = doc.serialize(writer)?;
+    doc.serialize(writer)?;
     writer.flush()?;
-    Ok(res)
+    Ok(())
 }
 
 fn linkify_tag_refs(
@@ -112,7 +112,7 @@ fn linkify_tag_refs(
     node: kuchiki::NodeDataRef<RefCell<String>>,
 ) -> Result<()> {
     if let Some(text_node) = node.as_node().as_text() {
-        let ref text = text_node.borrow();
+        let text = &text_node.borrow();
         // We want to extract unlinked logical unit references from a chunk of
         // text. To do that we parse the chunk of text into an array of items
         // that differentiate plain text from unit references.
