@@ -469,18 +469,18 @@ $ for f in repos/repo-a/*.md repos/repo-a/dir/*.md; do printf "\nin $f...\n\n"; 
 
 in repos/repo-a/spec-1.md...
 
-[|FOO.2|]{#FOO.2}
+<a id="FOO.2">|FOO.2|</a>
 :   We've updated the first unit.
 
-[|FOO.2::BAZ.1|]{#FOO.2::BAZ.1}
+<a id="FOO.2::BAZ.1">|FOO.2::BAZ.1|</a>
 :   And we replaced FOO.1::BAR.1 with this unit.
 
 in repos/repo-a/dir/spec-2.md...
 
-[|FLIM.1|]{#FLIM.1}
+<a id="FLIM.1">|FLIM.1|</a>
 :   A unit in a nested directory.
 
-[|FLIM.1::FLAM.1|]{#FLIM.1::FLAM.1}
+<a id="FLIM.1::FLAM.1">|FLIM.1::FLAM.1|</a>
 :   Second unit in the same directory. This one has a newline. And
     refers to [FLIM.1]
 

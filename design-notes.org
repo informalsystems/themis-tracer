@@ -52,11 +52,11 @@ the correctness and continuity of communication, implementation, and operation.
 - [X] Add test cases
 - [X] Add test case for error condition (when reference link is invalid)
 - [X] Make linkify command take a list of files
-- [ ] Rework anchoring to support gfm
-  + [ ] Turn pandoc::write_file to pandoc::html_to_pandoc: String -> String
-  + [ ] Use flag to trigger gfm compat
-  + [ ] On linkification, don't anchor in html when gfm is true
-  + [ ] Implement simple regex rule to anchor tags
+- [X] Rework anchoring to support gfm
+  + [X] Turn pandoc::write_file to pandoc::html_to_pandoc: String -> String
+  + [X] Use flag to trigger gfm compat
+  + [X] On linkification, don't anchor in html when gfm is true
+  + [X] Implement simple regex rule to anchor tags
 ** TODO Actually fetch upstream git data
 - [ ] Compute the url for linkification from the remote git URL (specific to github to start)
 ** TODO Make =context new= also switch the context

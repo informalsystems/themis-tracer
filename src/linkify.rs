@@ -8,6 +8,7 @@ use {
     // lol_html::{element, rewrite_str, RewriteStrSettings},
     kuchiki,
     kuchiki::{iter::NodeIterator, traits::TendrilSink, Attribute, ExpandedName, NodeRef},
+    regex::Regex,
     rusqlite as sql,
     std::{
         cell::RefCell,
@@ -24,27 +25,49 @@ pub enum Error {
     ParsingHtml(String),
 }
 
-// gfm determines wheter we are targeting GitHub Flavored markdown compability
-// and inherent the resulting limitations
-// TODO gfm flag: gfm: bool
-pub fn file_via_pandoc(conn: &sql::Connection, path: &path::Path) -> Result<()> {
+/// `file_via_pandoc(&conn, &path, true)` will linkify the content of the file
+/// at `path` as per [linkify_spec_html].
+///
+/// `gfm` determines wheter we are targeting GitHub Flavored markdown
+/// compability and inherent the resulting limitations
+pub fn file_via_pandoc(conn: &sql::Connection, path: &path::Path, gfm: bool) -> Result<()> {
     let html = pandoc::parse_file(path)?;
-    let new_html = linkify_spec_string(Some(conn), &html)
+    let new_html = linkify_spec_string(Some(conn), &html, gfm)
         .with_context(|| format!("linkifying file {}", path.display()))?;
     let pandoc_md = pandoc::html_to_markdown(&new_html)?;
-    let unescaped = pandoc_md.replace("[\\|", "[|").replace("\\|]", "|]");
+
+    // Adjustments to the pandoc generated markdown
+    let adjusted = {
+        if gfm {
+            gfm_anchorify(&pandoc_md)?
+        } else {
+            pandoc_md.replace("[\\|", "[|").replace("\\|]", "|]")
+        }
+    };
 
     {
         let mut f = fs::File::create(&path)?;
-        let _ = f.write_all(unescaped.as_bytes())?;
+        let _ = f.write_all(adjusted.as_bytes())?;
     }
     Ok(())
 }
 
+fn gfm_anchorify(md: &str) -> Result<String> {
+    // TODO Use lazy static for regex compilation
+    let re = Regex::new(r"(?m)^\\\|(?P<tag>([-A-Z.:0-9])+)\\\|")?;
+    Ok(re
+        .replace_all(&md, r#"<a id="$tag">|$tag|</a>"#)
+        .to_string())
+}
+
 /// As [linkify_spec_html], but with a `String` as input and output.
-pub fn linkify_spec_string(conn: Option<&sql::Connection>, html: &str) -> Result<String> {
+pub fn linkify_spec_string(
+    conn: Option<&sql::Connection>,
+    html: &str,
+    gfm: bool,
+) -> Result<String> {
     let mut buff = Cursor::new(Vec::new());
-    linkify_spec_html(conn, &mut html.as_bytes(), &mut buff)?;
+    linkify_spec_html(conn, &mut html.as_bytes(), &mut buff, gfm)?;
     let res = buff.into_inner();
     let new_html = std::str::from_utf8(&res)?;
     Ok(new_html.into())
@@ -56,7 +79,7 @@ pub fn linkify_spec_file(conn: Option<&sql::Connection>, path: &path::Path) -> R
     let mut buff = Cursor::new(Vec::new());
     {
         let mut file_in = fs::File::open(path)?;
-        linkify_spec_html(conn, &mut file_in, &mut buff)?;
+        linkify_spec_html(conn, &mut file_in, &mut buff, false)?;
     }
     {
         let mut file_out = fs::File::create(path)?;
@@ -74,19 +97,23 @@ pub fn linkify_spec_file(conn: Option<&sql::Connection>, path: &path::Path) -> R
 /// - Tag references `[FOO.1::BAR.1]` are transformed into
 ///   `<a href="path/to/file#FOO.1::BAR.1">FOO.1::BAR.1</a>`
 // TODO Add conn so we can lookup logical unit references
+// TODO Use lazy static for css selector generation
 pub fn linkify_spec_html<R: Read, W: Write + Seek>(
     conn: Option<&sql::Connection>,
     reader: &mut R,
     writer: &mut W,
+    gfm: bool,
 ) -> Result<()> {
     let doc = kuchiki::parse_html().from_utf8().read_from(reader)?;
 
-    // Anchorification
-    let terms = doc
-        .select("dt")
-        .map_err(|()| Error::ParsingHtml("selecting dt elements".into()))?;
-    for term in terms {
-        anchorify_tag_def_term(term)?;
+    if !gfm {
+        // Anchorification
+        let terms = doc
+            .select("dt")
+            .map_err(|()| Error::ParsingHtml("selecting dt elements".into()))?;
+        for term in terms {
+            anchorify_tag_def_term(term)?;
+        }
     }
 
     // Linkification
@@ -242,7 +269,7 @@ mod test {
     fn assert_html_transformation(input: &str, expected_output: &str) {
         let input = wrap_as_doc(input);
         let expected = wrap_as_doc(expected_output);
-        let actual = linkify_spec_string(None, &input.to_string()).unwrap();
+        let actual = linkify_spec_string(None, &input.to_string(), false).unwrap();
         println!("Expected:\n{}", expected);
         println!("Actual:\n{}", actual);
         assert_eq!(actual, expected);
@@ -337,5 +364,32 @@ text and then another ref <a href="#FOO.1">FOO.1</a>.
 </dl>
 "##;
         assert_html_transformation(html, expected)
+    }
+
+    #[test]
+    fn gfm_md_compatible_anchoring() {
+        // This is testing the ad-hoc post-processing we do on the pandoc
+        // generated markdown (that's where the escaped `|`s come from)
+        let actual = gfm_anchorify(
+            r#"
+\|FOO.1\|
+: Some stuff
+
+\|FOO.1::BAR.1\|
+: Some other stuff
+"#,
+        )
+        .unwrap();
+
+        let expected = r#"
+<a id="FOO.1">|FOO.1|</a>
+: Some stuff
+
+<a id="FOO.1::BAR.1">|FOO.1::BAR.1|</a>
+: Some other stuff
+"#
+        .to_string();
+
+        assert_eq!(actual, expected)
     }
 }
