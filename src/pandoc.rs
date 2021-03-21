@@ -97,21 +97,11 @@ pub fn parse_file(path: &Path) -> Result<String> {
     }
 }
 
-/// `write_file(html, path)` write the `html` to the file at `path`
+/// `html_to_markdown(html, path)` write the `html` to the file at `path`
 /// as markdown.
-pub fn write_file(html: &str, path: &Path) -> Result<()> {
-    let target = path.to_str().ok_or(Error::Path)?;
-
+pub fn html_to_markdown(html: &str) -> Result<String> {
     let process = Command::new(PANDOC)
-        .args(&[
-            "--from",
-            "html",
-            "--to",
-            "markdown",
-            "--reference-links",
-            "-o",
-            target,
-        ])
+        .args(&["--from", "html", "--to", "markdown", "--reference-links"])
         .stdout(Stdio::piped())
         .stdin(Stdio::piped())
         .spawn()
@@ -129,7 +119,7 @@ pub fn write_file(html: &str, path: &Path) -> Result<()> {
         .ok_or_else(|| Error::PandocData("trying to read from stdout".into()))
         .and_then(|mut c| c.read_to_end(&mut bytes).map_err(Error::PandocInvocation))?;
 
-    Ok(())
+    Ok(String::from_utf8_lossy(&bytes).to_string())
 }
 
 fn parse_file_to_scraper(path: &Path) -> Result<scraper::Html> {

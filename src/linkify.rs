@@ -24,23 +24,15 @@ pub enum Error {
     ParsingHtml(String),
 }
 
+// gfm determines wheter we are targeting GitHub Flavored markdown compability
+// and inherent the resulting limitations
+// TODO gfm flag: gfm: bool
 pub fn file_via_pandoc(conn: &sql::Connection, path: &path::Path) -> Result<()> {
     let html = pandoc::parse_file(path)?;
     let new_html = linkify_spec_string(Some(conn), &html)
         .with_context(|| format!("linkifying file {}", path.display()))?;
-    pandoc::write_file(&new_html, path)?;
-
-    // FIXME
-    // We unescape the pipes for aesthetic reasons.
-    // This won't be needed once we're using pulldown-cmark.
-    let escaped = {
-        let mut f = fs::File::open(&path)?;
-        let mut data = String::new();
-        f.read_to_string(&mut data)?;
-        data
-    };
-
-    let unescaped = escaped.replace("[\\|", "[|").replace("\\|]", "|]");
+    let pandoc_md = pandoc::html_to_markdown(&new_html)?;
+    let unescaped = pandoc_md.replace("[\\|", "[|").replace("\\|]", "|]");
 
     {
         let mut f = fs::File::create(&path)?;
