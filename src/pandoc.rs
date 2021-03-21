@@ -101,7 +101,13 @@ pub fn parse_file(path: &Path) -> Result<String> {
 /// as markdown.
 pub fn html_to_markdown(html: &str) -> Result<String> {
     let process = Command::new(PANDOC)
-        .args(&["--from", "html", "--to", "markdown", "--reference-links"])
+        .args(&[
+            "--from",
+            "html-native_divs-native_spans",
+            "--to",
+            "markdown",
+            "--reference-links",
+        ])
         .stdout(Stdio::piped())
         .stdin(Stdio::piped())
         .spawn()

@@ -57,6 +57,7 @@ the correctness and continuity of communication, implementation, and operation.
   + [X] Use flag to trigger gfm compat
   + [X] On linkification, don't anchor in html when gfm is true
   + [X] Implement simple regex rule to anchor tags
+- [X] Check whether linkification is idempotent
 ** TODO Actually fetch upstream git data
 - [ ] Compute the url for linkification from the remote git URL (specific to github to start)
 ** TODO Make =context new= also switch the context

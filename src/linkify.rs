@@ -56,7 +56,7 @@ fn gfm_anchorify(md: &str) -> Result<String> {
     // TODO Use lazy static for regex compilation
     let re = Regex::new(r"(?m)^\\\|(?P<tag>([-A-Z.:0-9])+)\\\|")?;
     Ok(re
-        .replace_all(&md, r#"<a id="$tag">|$tag|</a>"#)
+        .replace_all(&md, r#"<span id="$tag">|$tag|</span>"#)
         .to_string())
 }
 
@@ -382,10 +382,10 @@ text and then another ref <a href="#FOO.1">FOO.1</a>.
         .unwrap();
 
         let expected = r#"
-<a id="FOO.1">|FOO.1|</a>
+<span id="FOO.1">|FOO.1|</span>
 : Some stuff
 
-<a id="FOO.1::BAR.1">|FOO.1::BAR.1|</a>
+<span id="FOO.1::BAR.1">|FOO.1::BAR.1|</span>
 : Some other stuff
 "#
         .to_string();

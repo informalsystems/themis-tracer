@@ -183,6 +183,21 @@ Caused by:
 [1]
 ```
 
+### linkification is idempotent
+
+```sh
+$ $CMD linkify repos/repo-a/spec-1.md
+$ cp repos/repo-a/spec-1.md repos/repo-a/spec-1.md.copy
+$ $CMD linkify repos/repo-a/spec-1.md
+$ cat repos/repo-a/spec-1.md
+<span id="FOO.1">|FOO.1|</span>
+:   First unit.
+
+<span id="FOO.1::BAR.1">|FOO.1::BAR.1|</span>
+:   Second unit.
+$ diff repos/repo-a/spec-1.md repos/repo-a/spec-1.md.copy
+```
+
 <!-- FIXME: Remove need for this -->
 ## Cleanup
 
