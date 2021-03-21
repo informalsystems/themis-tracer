@@ -39,6 +39,16 @@ impl Location {
             }),
         }
     }
+
+    fn get_info(&self) -> Info {
+        match &self.inner {
+            LocationInfo::Local(info) | LocationInfo::Remote(info) => info.clone(),
+        }
+    }
+
+    fn get_upstream_url(&self) -> Option<String> {
+        self.get_info().upstream
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -63,6 +73,12 @@ impl Repo {
         match &self.location.inner {
             LocationInfo::Local(info) | LocationInfo::Remote(info) => info.path.clone(),
         }
+    }
+
+    pub fn get_url(&self) -> String {
+        self.location
+            .get_upstream_url()
+            .unwrap_or_else(|| self.path_as_string())
     }
 }
 

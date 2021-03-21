@@ -2,8 +2,8 @@ use {
     crate::{
         logical_unit::{Kind, LogicalUnit},
         pandoc,
+        parser::parser,
         repo::Repo,
-        util,
     },
     anyhow::{Context, Result},
     std::{
@@ -76,21 +76,19 @@ fn logical_units_of_defs(
     // TODO Infer from file type?
     defs.iter()
         .filter_map(|(tags, content)| {
-            util::parser::logical_unit_definiendum(tags)
-                .ok()
-                .and_then(|id| {
-                    // TODO Determine kind from file type
-                    let kind = Kind::Requirement;
-                    // TODO Determine line
-                    match LogicalUnit::new(repo.clone(), file, None, kind, id, content.clone()) {
-                        Ok(lu) => Some(lu),
-                        Err(err) => {
-                            // TODO Replace with logging
-                            println!("Error: {:?}", err);
-                            None
-                        }
+            parser::logical_unit_definiendum(tags).ok().and_then(|id| {
+                // TODO Determine kind from file type
+                let kind = Kind::Requirement;
+                // TODO Determine line
+                match LogicalUnit::new(repo.clone(), file, None, kind, id, content.clone()) {
+                    Ok(lu) => Some(lu),
+                    Err(err) => {
+                        // TODO Replace with logging
+                        println!("Error: {:?}", err);
+                        None
                     }
-                })
+                }
+            })
         })
         .collect()
 }
@@ -146,8 +144,54 @@ mod test {
         .collect();
 
         let expected: Artifact = Artifact::new(None, logical_units);
-        let result = Artifact::from_string(&spec);
-        println!("{:?}", result);
-        assert_eq!(expected, result.unwrap())
+        let actual = Artifact::from_string(&spec);
+        assert_eq!(actual.unwrap(), expected)
+    }
+
+    #[test]
+    fn can_parse_logical_unit_within_anchor() {
+        let spec = r#"
+<a id="TAG.1::IN-TARGET.1">|TAG.1::IN-ANCHOR-TAG.1|</a>
+: We can parse tags in an anchor html element.
+"#;
+        let logical_units: HashSet<LogicalUnit> = vec![LogicalUnit::new(
+            None,
+            None,
+            None,
+            Kind::Requirement,
+            "TAG.1::IN-ANCHOR-TAG.1".into(),
+            "We can parse tags in an anchor html element.".into(),
+        )
+        .unwrap()]
+        .iter()
+        .cloned()
+        .collect();
+
+        let expected = Artifact::new(None, logical_units);
+        let actual = Artifact::from_string(&spec);
+        assert_eq!(actual.unwrap(), expected)
+    }
+
+    fn can_parse_logical_unit_preceding_anchor() {
+        let spec = r#"
+|TAG.1::IN-ANCHOR-TAG.1|<a id="TAG.1::IN-TARGET.1"></a>
+: We can parse tags in an anchor html element.
+"#;
+        let logical_units: HashSet<LogicalUnit> = vec![LogicalUnit::new(
+            None,
+            None,
+            None,
+            Kind::Requirement,
+            "TAG.1::IN-ANCHOR-TAG.1".into(),
+            "We can parse tags in an anchor html element.".into(),
+        )
+        .unwrap()]
+        .iter()
+        .cloned()
+        .collect();
+
+        let expected = Artifact::new(None, logical_units);
+        let actual = Artifact::from_string(&spec);
+        assert_eq!(actual.unwrap(), expected)
     }
 }

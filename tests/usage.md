@@ -28,6 +28,7 @@ reference-friendly, documentation of the tool's usage.
     - [`parse`ing specs](#parseing-specs)
         - [`parse --format json` (the default, if no argument is given)](#parse---format-json-the-default-if-no-argument-is-given)
         - [`parse --format csv`](#parse---format-csv)
+    - [`linkify`ing spec files](#linkifying-spec-files)
     - [Cleanup](#cleanup)
 
 <!-- markdown-toc end -->
@@ -132,11 +133,11 @@ $ cat > repos/repo-a/spec-1.md<<EOF \
 $ mkdir repos/repo-a/dir
 $ cat > repos/repo-a/dir/spec-2.md <<EOF \
 > |FLIM.1| \
-> : A unit in a nested directory. \
+> : A unit in a nested directory.\
 > \
 > |FLIM.1::FLAM.1| \
 > : Second unit in the same directory. \
->   This one has a newline. \
+>   This one has a newline.  And refers to [FLIM.1]\
 > EOF
 ```
 
@@ -192,7 +193,7 @@ $ $CMD context list
 * foo
 $ $CMD unit list | sed "s:$(pwd)/::" # We trim the absolute path prefix, for testing purposes
 FLIM.1          repos/repo-a  A unit in a nested directory.
-FLIM.1::FLAM.1  repos/repo-a  Second unit in the same directory. This one has a newline.
+FLIM.1::FLAM.1  repos/repo-a  Second unit in the same directory. This one has a newline. And refers to [FLIM.1]
 FOO.1           repos/repo-a  First unit.
 FOO.1::BAR.1    repos/repo-a  A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”
 ```
@@ -205,7 +206,7 @@ units in the context, serialized into json:
 ```sh
 $ $CMD unit list --format json | sed "s:$(pwd)/::"
 {"id":"FLIM.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"dir/spec-2.md","line":null,"content":"A unit in a nested directory.","references":[]}
-{"id":"FLIM.1::FLAM.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"dir/spec-2.md","line":null,"content":"Second unit in the same directory. This one has a newline.","references":[]}
+{"id":"FLIM.1::FLAM.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"dir/spec-2.md","line":null,"content":"Second unit in the same directory. This one has a newline. And refers to [FLIM.1]","references":[]}
 {"id":"FOO.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"spec-1.md","line":null,"content":"First unit.","references":[]}
 {"id":"FOO.1::BAR.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"spec-1.md","line":null,"content":"A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”","references":[]}
 ```
@@ -218,7 +219,7 @@ units in the context, serialized into csv:
 ```sh
 $ $CMD unit list --format csv | sed "s:$(pwd)/::"
 FLIM.1,Requirement,repos/repo-a,,,dir/spec-2.md,,A unit in a nested directory.
-FLIM.1::FLAM.1,Requirement,repos/repo-a,,,dir/spec-2.md,,Second unit in the same directory. This one has a newline.
+FLIM.1::FLAM.1,Requirement,repos/repo-a,,,dir/spec-2.md,,Second unit in the same directory. This one has a newline. And refers to [FLIM.1]
 FOO.1,Requirement,repos/repo-a,,,spec-1.md,,First unit.
 FOO.1::BAR.1,Requirement,repos/repo-a,,,spec-1.md,,"A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”"
 ```
@@ -290,8 +291,8 @@ $ cat > repos/repo-a/spec-1.md<<EOF \
 > |FOO.2| \
 > : We've updated the first unit. \
 > \
-> |FOO.1::BAZ.1| \
-> : And we replaced [FOO.1::BAR.1] with this unit. \
+> |FOO.2::BAZ.1| \
+> : And we replaced FOO.1::BAR.1 with this unit. \
 > EOF
 ```
 
@@ -301,11 +302,10 @@ After syncing, the units in the context will be updated accordingly:
 $ $CMD sync
 $ $CMD unit list | sed "s:$(pwd)/::"
 FLIM.1          repos/repo-a  A unit in a nested directory.
-FLIM.1::FLAM.1  repos/repo-a  Second unit in the same directory. This one has a newline.
-FOO.1::BAZ.1    repos/repo-a  And we replaced [FOO.1::BAR.1] with this unit.
+FLIM.1::FLAM.1  repos/repo-a  Second unit in the same directory. This one has a newline. And refers to [FLIM.1]
 FOO.2           repos/repo-a  We’ve updated the first unit.
+FOO.2::BAZ.1    repos/repo-a  And we replaced FOO.1::BAR.1 with this unit.
 ```
-
 
 ## `parse`ing specs
 
@@ -433,6 +433,58 @@ PARSE-SPECS.1::INLINE.1,Requirement,,parsing-spec.md,,"The folowing inline styli
 * ![images](/url ""fig:"")
 * smallcaps"
 PARSE-SPECS.1::JSON.1,Requirement,,parsing-spec.md,,Must support parsing a file of specs into JSON.
+```
+
+## `linkify`ing spec files
+
+The tool can add unit reference links and unit definition anchors to 
+specifications written in markdown.
+
+Consider the specs used in the section on [managing
+repositories](#managing-repositories), in `repo-a`, which is registered  in
+context `foo`:
+
+```sh
+$ $CMD context list
+  bar
+* foo
+$ $CMD repo list | sed "s:$(pwd)/::"
+  repos/repo-a
+  repos/repo-b
+$ ls repos/repo-a/*.md repos/repo-a/dir/*.md
+repos/repo-a/dir/spec-2.md
+repos/repo-a/spec-1.md
+```
+
+We can linkify them with
+
+```sh
+$ $CMD linkify repos/repo-a/*.md repos/repo-a/dir/*.md 
+```
+
+Which will change the files in place, yielding the following:
+
+```sh
+$ for f in repos/repo-a/*.md repos/repo-a/dir/*.md; do printf "\nin $f...\n\n"; cat $f | sed "s:$(pwd)/::"; done
+
+in repos/repo-a/spec-1.md...
+
+<span id="FOO.2">|FOO.2|</span>
+:   We've updated the first unit.
+
+<span id="FOO.2::BAZ.1">|FOO.2::BAZ.1|</span>
+:   And we replaced FOO.1::BAR.1 with this unit.
+
+in repos/repo-a/dir/spec-2.md...
+
+<span id="FLIM.1">|FLIM.1|</span>
+:   A unit in a nested directory.
+
+<span id="FLIM.1::FLAM.1">|FLIM.1::FLAM.1|</span>
+:   Second unit in the same directory. This one has a newline. And
+    refers to [FLIM.1]
+
+  [FLIM.1]: repos/repo-a/dir/spec-2.md#FLIM.1
 ```
 
 <!-- FIXME: Remove need for this -->

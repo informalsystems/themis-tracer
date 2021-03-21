@@ -6,15 +6,25 @@ use {
 };
 
 #[derive(Error, Debug)]
-enum Error {
+pub enum Error {
     #[error("Cannot read database path")]
     DbPath,
+
+    // TODO Record the query that failed?
     #[error("Querying database: {0}")]
     Query(#[from] sql::Error),
+
     #[error("Context {0} does not exists")]
     NonexistentContext(String),
+
     #[error("No context is set. Try: `context switch <context>`")]
     NoContext,
+
+    #[error("No unit found corresponding to tag {0}")]
+    UnitNotFound(String),
+
+    #[error("No repo found related to unit with tag {0}")]
+    RelatedRepoNotFound(String),
 }
 
 fn create(conn: &sql::Connection, name: &str, statement: &str) -> Result<()> {
@@ -230,6 +240,13 @@ pub mod context {
 pub mod repo {
     use {super::*, crate::repo::Repo, serde_json};
 
+    pub(super) fn of_row(row: &sql::Row) -> sql::Result<Repo> {
+        let json: String = row.get(2)?;
+        serde_json::from_str(&*json)
+            // TODO I'm not sure how to get the right error type here at the moment...
+            .map_err(|_| sql::Error::InvalidParameterName("TODO returning wrong error".into()))
+    }
+
     fn insert(conn: &sql::Connection, repo: &Repo) -> Result<()> {
         let encoded = serde_json::to_string(repo)?;
         let path = repo.path_as_string();
@@ -265,13 +282,6 @@ pub mod repo {
                 relate_to_context(conn, repo, &ctx)
             }
         }
-    }
-
-    fn of_row(row: &sql::Row) -> sql::Result<Repo> {
-        let json: String = row.get(2)?;
-        serde_json::from_str(&*json)
-            // TODO I'm not sure how to get the right error type here at the moment...
-            .map_err(|_| sql::Error::InvalidParameterName("TODO returning wrong error".into()))
     }
 
     /// `get_all_in_context(conn)` is
@@ -327,6 +337,36 @@ pub mod unit {
         stmt.query_row_named(&[(":tag", &tag)], of_row)
             .optional()
             .map_err(|e| Error::Query(e).into())
+    }
+
+    /// `get_uri(&conn, &tag)` is the uri to the unit indicated by `tag`.
+    /// If a remote URL can be onbtained for the source repo, that is is used
+    /// as the base, otherwise it falls back to the local path of the repo.
+    pub fn get_path(conn: &sql::Connection, tag: &str) -> Result<String> {
+        let unit = get(conn, &tag)?.ok_or_else(|| Error::UnitNotFound(tag.into()))?;
+
+        let q = r#"
+            SELECT repo.id, repo.path, repo.json
+            FROM repo
+            INNER JOIN unit ON unit.tag = :tag
+            INNER JOIN unit_repo ON unit_repo.unit = unit.id
+            WHERE repo.id = unit_repo.repo
+            "#;
+        let mut stmt = conn.prepare(q)?;
+        let repo = stmt
+            .query_row_named(&[(":tag", &tag)], repo::of_row)
+            .optional()
+            .map_err(|e: sql::Error| -> anyhow::Error { Error::Query(e).into() })?
+            .ok_or_else(|| Error::RelatedRepoNotFound(tag.into()))?;
+
+        // TODO Use URL lib?
+        // Would this conflict with being able to use local paths?
+        let mut url = (&repo).get_url();
+        url.push('/');
+        url.push_str(&unit.file_path_as_str().unwrap_or_else(|| "".to_string()));
+        url.push('#');
+        url.push_str(tag);
+        Ok(url)
     }
 
     fn insert(conn: &sql::Connection, unit: &LogicalUnit) -> Result<()> {

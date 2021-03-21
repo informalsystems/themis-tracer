@@ -1,5 +1,5 @@
 use {
-    crate::{repo::Repo, util},
+    crate::{parser::parser, repo::Repo},
     serde::{de, Deserialize, Deserializer, Serialize, Serializer},
     std::{
         fmt,
@@ -15,7 +15,7 @@ pub struct Id {
 
 impl Id {
     pub fn new(s: &str) -> Result<Id, String> {
-        let parts = util::parser::logical_unit_id(s).map_err(|_| "parsing id")?;
+        let parts = parser::logical_unit_id(s).map_err(|_| "parsing id")?;
         Ok(Id { parts })
     }
 
@@ -77,6 +77,13 @@ impl LogicalUnit {
         let content = self.content.replace("\n", " ");
         let repo = self.repo.clone().map_or("".into(), |r| r.path_as_string());
         (tag, repo, content)
+    }
+
+    /// `unit.file_path_as_str()` is the file path (relative to the `unit`'s
+    /// repo) as a string
+    pub fn file_path_as_str(&self) -> Option<String> {
+        let path = self.file.as_ref()?.clone();
+        path.into_os_string().into_string().ok()
     }
 }
 

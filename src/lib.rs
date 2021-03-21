@@ -5,14 +5,15 @@
 // FIXME rm after rapid dev
 #![allow(dead_code)]
 
-pub mod artifact;
 pub mod cmd;
-pub mod context;
-pub mod db;
-pub mod logical_unit;
-pub mod repo;
 
+mod artifact;
+mod context;
+mod db;
 mod envvar;
+mod linkify;
 mod locations;
+mod logical_unit;
 mod pandoc;
-mod util;
+mod parser;
+mod repo;
