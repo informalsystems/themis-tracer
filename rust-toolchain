@@ -1,6 +1,7 @@
 # -*- mode: conf-toml -*-
 [toolchain]
 channel = "stable"
+version = "12"
 components = [
 "rustfmt",
 "clippy",
