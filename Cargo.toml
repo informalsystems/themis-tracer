@@ -39,7 +39,7 @@ rusqlite = "*"
 scraper = "*" # TODO Replace with lol_html?
 serde = { version = "*", features = ["derive"] }
 serde_json = "*"
-simple_logger = "*"
+env_logger = "*"
 structopt = "*"
 tabwriter = "*"
 thiserror = "*"
