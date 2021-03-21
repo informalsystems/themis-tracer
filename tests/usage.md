@@ -28,6 +28,7 @@ reference-friendly, documentation of the tool's usage.
     - [`parse`ing specs](#parseing-specs)
         - [`parse --format json` (the default, if no argument is given)](#parse---format-json-the-default-if-no-argument-is-given)
         - [`parse --format csv`](#parse---format-csv)
+    - [`linkify`ing spec files](#linkifying-spec-files)
     - [Cleanup](#cleanup)
 
 <!-- markdown-toc end -->
