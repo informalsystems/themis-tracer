@@ -26,38 +26,12 @@ the correctness and continuity of communication, implementation, and operation.
   - [X] out of markdown
   - [ ] out of source code
 - [X] Creation of database of linked artifacts
-- [ ] Linkification of spec reference IDs in the artifacts
+- [X] Linkification of spec reference IDs in the artifacts
 - [ ] Generation of a static site to give an overview of connected artifacts
 - [-] Suggestion of link reference IDs by fuzzy matching on spec text and ID tag
   - [X] Currently facilitated viz =fzf=
   - [ ] Native support
 * Tasks
-** TODO Add linkification of md files
-- [X] Add tests to ensure anchored (and other styled tags) are parsed correctly
-- [X] Use kuchiki to rewrite naked tags in definition terms to IDed anchors
-- [X] Use kuchiki to rewrite unlinked tag refs to links
-  + [X] Select text nodes
-  + [X] Check if a =text node= contains a tag-ref
-    - [X] Parse text into a vec of enums ~Text(String) | UnitRef(String)~
-    - [X] Generate a =Ref link= for each ~UnitRef~
-      + [X] Get location by querying the db for locations of logical units.
-      + [X] Create a link element
-    - [X] Add =Text= after text node
-    - [X] Add =Ref= after text node
-    - [X] Remove =text node= (after all parts text and refs parts are added)
-- [X] Use pandoc to convert HTML back to markdown, using the =--reference-links=
-  flag.
-- [X] Add CLI to call command
-- [X] Add artifact to path
-- [X] Add test cases
-- [X] Add test case for error condition (when reference link is invalid)
-- [X] Make linkify command take a list of files
-- [X] Rework anchoring to support gfm
-  + [X] Turn pandoc::write_file to pandoc::html_to_pandoc: String -> String
-  + [X] Use flag to trigger gfm compat
-  + [X] On linkification, don't anchor in html when gfm is true
-  + [X] Implement simple regex rule to anchor tags
-- [X] Check whether linkification is idempotent
 ** TODO Actually fetch upstream git data
 - [ ] Compute the url for linkification from the remote git URL (specific to github to start)
 ** TODO Make =context new= also switch the context

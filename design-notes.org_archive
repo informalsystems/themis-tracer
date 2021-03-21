@@ -103,3 +103,37 @@ https://github.com/informalsystems/themis-tracer/issues/16
   file:src/artifact.rs::74  into the ~pandoc~ module, have it return a tuple of
   definition and markdown contents.
 
+
+* DONE Add linkification of md files
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-03-21 Sun 17:53
+:ARCHIVE_FILE: ~/Sync/informal-systems/mvd/themis-tracer/design-notes.org
+:ARCHIVE_OLPATH: Tasks
+:ARCHIVE_CATEGORY: design-notes
+:ARCHIVE_TODO: DONE
+:END:
+- [X] Add tests to ensure anchored (and other styled tags) are parsed correctly
+- [X] Use kuchiki to rewrite naked tags in definition terms to IDed anchors
+- [X] Use kuchiki to rewrite unlinked tag refs to links
+  + [X] Select text nodes
+  + [X] Check if a =text node= contains a tag-ref
+    - [X] Parse text into a vec of enums ~Text(String) | UnitRef(String)~
+    - [X] Generate a =Ref link= for each ~UnitRef~
+      + [X] Get location by querying the db for locations of logical units.
+      + [X] Create a link element
+    - [X] Add =Text= after text node
+    - [X] Add =Ref= after text node
+    - [X] Remove =text node= (after all parts text and refs parts are added)
+- [X] Use pandoc to convert HTML back to markdown, using the =--reference-links=
+  flag.
+- [X] Add CLI to call command
+- [X] Add artifact to path
+- [X] Add test cases
+- [X] Add test case for error condition (when reference link is invalid)
+- [X] Make linkify command take a list of files
+- [X] Rework anchoring to support gfm
+  + [X] Turn pandoc::write_file to pandoc::html_to_pandoc: String -> String
+  + [X] Use flag to trigger gfm compat
+  + [X] On linkification, don't anchor in html when gfm is true
+  + [X] Implement simple regex rule to anchor tags
+- [X] Check whether linkification is idempotent
