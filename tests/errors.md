@@ -31,7 +31,7 @@ TRACER_HOME: ../target/test-sandbox
 Where you see `$CMD` in the following you should just use the installed binary
 `themis-tracer`.
 
-Some repos work with
+Some repos to work with
 
 ```sh
 $ mkdir repos
@@ -163,6 +163,24 @@ $ $CMD context switch foo
 $ $CMD unit list | sed "s:$(pwd)/::" 
 FOO.1         repos/repo-a  First unit.
 FOO.1::BAR.1  repos/repo-a  Second unit.
+```
+
+## `linkify`
+
+### A warning is reported for invalid link references
+
+```sh
+$ $CMD context switch foo
+$ cat > repos/repo-a/spec-with-invalid-reference.md<<EOF \
+> |BLOPS.1| \
+> : A Reference to an invalid logical unit: [NO-UNIT.1] \
+> EOF
+$ $CMD linkify repos/repo-a/spec-with-invalid-reference.md
+Error: linkifying file repos/repo-a/spec-with-invalid-reference.md
+
+Caused by:
+    No unit found corresponding to tag NO-UNIT.1
+[1]
 ```
 
 <!-- FIXME: Remove need for this -->

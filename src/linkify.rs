@@ -3,7 +3,7 @@ use {
         db, pandoc,
         parser::{parser, UnitRefSearch},
     },
-    anyhow::Result,
+    anyhow::{Context as AnyhowContext, Result},
     html5ever::{local_name, namespace_url, ns, QualName},
     // lol_html::{element, rewrite_str, RewriteStrSettings},
     kuchiki,
@@ -26,7 +26,8 @@ pub enum Error {
 
 pub fn file_via_pandoc(conn: &sql::Connection, path: &path::Path) -> Result<()> {
     let html = pandoc::parse_file(path)?;
-    let new_html = linkify_spec_string(Some(conn), &html)?;
+    let new_html = linkify_spec_string(Some(conn), &html)
+        .with_context(|| format!("linkifying file {}", path.display()))?;
     pandoc::write_file(&new_html, path)?;
 
     // FIXME
@@ -107,6 +108,8 @@ pub fn linkify_spec_html<R: Read, W: Write + Seek>(
     Ok(())
 }
 
+// TODO Switch to using a populated in-memmory sqlite db for testing?
+// Use without a `conn` is only intended for unit testing purposes
 fn linkify_tag_refs(
     conn: Option<&sql::Connection>,
     node: kuchiki::NodeDataRef<RefCell<String>>,
@@ -126,9 +129,8 @@ fn linkify_tag_refs(
                         // Tag refs are converted into link element nodes
                         UnitRefSearch::Ref(tag) => {
                             let url = match conn {
-                                // Only intended for testing purposes
+                                None => tag_to_id_ref(tag), // For unit testing
                                 Some(c) => db::unit::get_path(c, &tag)?,
-                                None => tag_to_id_ref(tag),
                             };
                             new_link(url, tag.into())
                         }

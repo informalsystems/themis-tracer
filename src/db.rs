@@ -6,7 +6,7 @@ use {
 };
 
 #[derive(Error, Debug)]
-enum Error {
+pub enum Error {
     #[error("Cannot read database path")]
     DbPath,
 
@@ -344,6 +344,7 @@ pub mod unit {
     /// as the base, otherwise it falls back to the local path of the repo.
     pub fn get_path(conn: &sql::Connection, tag: &str) -> Result<String> {
         let unit = get(conn, &tag)?.ok_or_else(|| Error::UnitNotFound(tag.into()))?;
+
         let q = r#"
             SELECT repo.id, repo.path, repo.json
             FROM repo
