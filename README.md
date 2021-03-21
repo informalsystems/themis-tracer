@@ -45,6 +45,8 @@ welcome 🙂.
     - [Tutorial](#tutorial)
       - [Logical units in markdown](#logical-units-in-markdown)
       - [TODO](#todo)
+    - [Aliases and scripts](#aliases-and-scripts)
+      - [Lookup info on a unit via fuzzy matching](#lookup-info-on-a-unit-via-fuzzy-matching)
   - [License](#license)
 
 <!-- markdown-toc end -->
@@ -151,6 +153,19 @@ ensure that, when specifications change, we can automatically see which parts of
 the code need to change too.
 
 #### TODO
+
+### Aliases and scripts
+
+Demos of useful CLI patterns. We aim to support this natively shortly, but these
+are useful to drop in your rc file in the meantime.
+
+#### Lookup info on a unit via fuzzy matching
+
+Requires [fzf](https://github.com/junegunn/fzf).
+
+```sh
+alias themis-tracer-search='themis-tracer unit show $(themis-tracer unit list | fzf | awk '\''{print $1}'\'')'
+```
 
 ## License
 
