@@ -292,7 +292,7 @@ $ cat > repos/repo-a/spec-1.md<<EOF \
 > : We've updated the first unit. \
 > \
 > |FOO.2::BAZ.1| \
-> : And we replaced [FOO.1::BAR.1] with this unit. \
+> : And we replaced FOO.1::BAR.1 with this unit. \
 > EOF
 ```
 
@@ -304,7 +304,7 @@ $ $CMD unit list | sed "s:$(pwd)/::"
 FLIM.1          repos/repo-a  A unit in a nested directory.
 FLIM.1::FLAM.1  repos/repo-a  Second unit in the same directory. This one has a newline. And refers to [FLIM.1]
 FOO.2           repos/repo-a  We’ve updated the first unit.
-FOO.2::BAZ.1    repos/repo-a  And we replaced [FOO.1::BAR.1] with this unit.
+FOO.2::BAZ.1    repos/repo-a  And we replaced FOO.1::BAR.1 with this unit.
 ```
 
 ## `parse`ing specs
@@ -440,8 +440,9 @@ PARSE-SPECS.1::JSON.1,Requirement,,parsing-spec.md,,Must support parsing a file 
 The tool can add unit reference links and unit definition anchors to 
 specifications written in markdown.
 
-Consider this spec used in the section on [managing
-repositories](#managing-repositories), which is registered  in context `foo`:
+Consider the specs used in the section on [managing
+repositories](#managing-repositories), in `repo-a`, which is registered  in
+context `foo`:
 
 ```sh
 $ $CMD context list
@@ -450,25 +451,32 @@ $ $CMD context list
 $ $CMD repo list | sed "s:$(pwd)/::"
   repos/repo-a
   repos/repo-b
-$ cat repos/repo-a/dir/spec-2.md
-|FLIM.1|
-: A unit in a nested directory.
-
-|FLIM.1::FLAM.1|
-: Second unit in the same directory.
-  This one has a newline.  And refers to [FLIM.1]
+$ ls repos/repo-a/*.md repos/repo-a/dir/*.md
+repos/repo-a/dir/spec-2.md
+repos/repo-a/spec-1.md
 ```
 
-We linkify it with
+We can linkify them with
 
 ```sh
-$ $CMD linkify repos/repo-a/dir/spec-2.md 
+$ $CMD linkify repos/repo-a/*.md repos/repo-a/dir/*.md 
 ```
 
-Which will change the file in place, yielding the following:
+Which will change the files in place, yielding the following:
 
 ```sh
-$ cat repos/repo-a/dir/spec-2.md | sed "s:$(pwd)/::"
+$ for f in repos/repo-a/*.md repos/repo-a/dir/*.md; do printf "\nin $f...\n\n"; cat $f | sed "s:$(pwd)/::"; done
+
+in repos/repo-a/spec-1.md...
+
+[|FOO.2|]{#FOO.2}
+:   We've updated the first unit.
+
+[|FOO.2::BAZ.1|]{#FOO.2::BAZ.1}
+:   And we replaced FOO.1::BAR.1 with this unit.
+
+in repos/repo-a/dir/spec-2.md...
+
 [|FLIM.1|]{#FLIM.1}
 :   A unit in a nested directory.
 

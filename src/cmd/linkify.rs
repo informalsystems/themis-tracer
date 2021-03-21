@@ -1,10 +1,13 @@
 use {
     crate::{db, linkify},
     anyhow::Result,
-    std::path::Path,
+    std::path::PathBuf,
 };
 
-pub fn run(path: &Path) -> Result<()> {
+pub fn run(paths: &[PathBuf]) -> Result<()> {
     let conn = db::connection()?;
-    linkify::file_via_pandoc(&conn, path)
+    for path in paths.iter() {
+        linkify::file_via_pandoc(&conn, path)?
+    }
+    Ok(())
 }

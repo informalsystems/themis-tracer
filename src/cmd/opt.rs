@@ -19,13 +19,19 @@ pub enum Cmd {
         format: cmd::format::Format,
     },
 
-    /// Linkify a markdown file: anchor logical unit definitions and link logical unit references
+    /// Linkify a markdown file
+    ///
+    /// This command anchors logical unit definitions and links logical unit
+    /// references in a markdown file, modifying the file in place.
     Linkify {
-        /// The path to the file to linkify
-        path: PathBuf,
+        /// Paths to the the files to linkify
+        paths: Vec<PathBuf>,
     },
 
-    /// Update the units for the current context from all assocaited repositories
+    /// Update the curren context
+    ///
+    /// Update the logical units for the current context by rescanning all
+    /// assocaited repositories.
     Sync {},
 
     /// Initialize tracer
@@ -131,7 +137,7 @@ pub fn run() -> Result<()> {
     match opt {
         Cmd::Context(opt) => cmd::context::run(opt),
         Cmd::Init {} => cmd::init::run(),
-        Cmd::Linkify { path } => cmd::linkify::run(&path),
+        Cmd::Linkify { paths } => cmd::linkify::run(&paths),
         Cmd::Parse { path, format } => cmd::parse::run(&path, format),
         Cmd::Repo(opt) => cmd::repo::run(opt),
         Cmd::Sync {} => cmd::sync::run(),
