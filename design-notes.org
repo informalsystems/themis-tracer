@@ -33,8 +33,14 @@ the correctness and continuity of communication, implementation, and operation.
   - [ ] Native support
 * Tasks
 ** TODO Actually fetch upstream git data
+- [X] Get the =upstream= (fall back =origin=) URI from repo when it is added to
+  a context
+  + [X] remote = =find_remote(name)=: https://docs.rs/git2/0.13.17/git2/struct.Repository.html#method.find_remote
+  + [X] =remote.url=: https://docs.rs/git2/0.13.17/git2/struct.Remote.html#method.url
 - [ ] Compute the url for linkification from the remote git URL (specific to github to start)
-** TODO Make =context new= also switch the context
+** TODO Change all functions that take String to take &str
+** TODO Store the repo's default branch
+https://docs.rs/git2/0.13.17/git2/struct.Remote.html#method.default_branch
 ** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17
 ** TODO Software development as a value flow
 

@@ -137,3 +137,12 @@ https://github.com/informalsystems/themis-tracer/issues/16
   + [X] On linkification, don't anchor in html when gfm is true
   + [X] Implement simple regex rule to anchor tags
 - [X] Check whether linkification is idempotent
+
+* DONE Make =context new= also switch the context
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-03-22 Mon 16:12
+:ARCHIVE_FILE: ~/Sync/informal-systems/mvd/themis-tracer/design-notes.org
+:ARCHIVE_OLPATH: Tasks
+:ARCHIVE_CATEGORY: design-notes
+:ARCHIVE_TODO: DONE
+:END:
