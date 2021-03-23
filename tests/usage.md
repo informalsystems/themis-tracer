@@ -42,7 +42,7 @@ Where you see `$CMD` in the following you should just use the installed binary:
 `themis-tracer`.
 
 <!-- TODO replace by adding the executable to the path -->
-<!-- $MDX set-CMD=../target/debug/themis-tracer,set-TRACER_HOME=../target/test-sandbox -->
+<!-- $MDX set-CMD=../target/debug/themis-tracer,set-TRACER_HOME=../target/test-sandbox,set-RUST_LOG=error -->
 ```sh
 $ echo CMD: $CMD
 CMD: ../target/debug/themis-tracer
@@ -64,6 +64,25 @@ $ $CMD init
 Initialized into ../target/test-sandbox/.tracer
 $ ls $TRACER_HOME/.tracer
 tracer.db
+```
+
+## Set the log level
+
+Set the logging level by setting the environment variable `RUST_LOG`. Valid
+levels are
+
+- `error`
+- `warn` (default)
+- `info`
+- `debug`
+- `trace`
+
+E.g.,
+
+```sh
+$ RUST_LOG=info $CMD --version
+[2021-03-23T20:39:19Z INFO  themis_tracer] log level set to info
+tracer 0.1.0
 ```
 
 ## Manage `context`s
@@ -446,7 +465,7 @@ PARSE-SPECS.1::JSON.1,Requirement,,parsing-spec.md,,Must support parsing a file 
 
 ## `linkify`ing spec files
 
-The tool can add unit reference links and unit definition anchors to 
+The tool can add unit reference links and unit definition anchors to
 specifications written in markdown.
 
 Consider the specs used in the section on [managing
@@ -468,7 +487,7 @@ repos/repo-a/spec-1.md
 We can linkify them with
 
 ```sh
-$ $CMD linkify repos/repo-a/*.md repos/repo-a/dir/*.md 
+$ $CMD linkify repos/repo-a/*.md repos/repo-a/dir/*.md
 ```
 
 Which will change the files in place, yielding the following:

@@ -20,7 +20,7 @@ behaves under various error conditions.
 ## Setting the environment
 
 <!-- TODO replace by adding the executable to the path -->
-<!-- $MDX set-CMD=../target/debug/themis-tracer,set-TRACER_HOME=../target/test-sandbox -->
+<!-- $MDX set-CMD=../target/debug/themis-tracer,set-TRACER_HOME=../target/test-sandbox,set-RUST_LOG=error -->
 ```sh
 $ echo CMD: $CMD
 CMD: ../target/debug/themis-tracer
