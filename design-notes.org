@@ -32,16 +32,15 @@ the correctness and continuity of communication, implementation, and operation.
   - [X] Currently facilitated viz =fzf=
   - [ ] Native support
 * Tasks
-** TODO Actually fetch upstream git data
-- [X] Get the =upstream= (fall back =origin=) URI from repo when it is added to
-  a context
-  + [X] remote = =find_remote(name)=: https://docs.rs/git2/0.13.17/git2/struct.Repository.html#method.find_remote
-  + [X] =remote.url=: https://docs.rs/git2/0.13.17/git2/struct.Remote.html#method.url
-  + [X] Make sync also sync the upstream URL
-- [X] Compute the url for linkification from the remote git URL (specific to github to start)
-** TODO Change all functions that take String to take &str
+** TODO Fix computing of git URL
+- We need to go to the =user/repo/tree/<branch>/path/to/asset= So need to add in =/tree/<branch>/=
+- [ ] Do default branch
+- [ ] Fix URL normalization
 ** TODO Store the repo's default branch
 https://docs.rs/git2/0.13.17/git2/struct.Remote.html#method.default_branch
+** TODO Add logging
+- [ ] Add logging to debug linkification
+** TODO Change all functions that take String to take &str
 ** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17
 ** TODO Software development as a value flow
 
