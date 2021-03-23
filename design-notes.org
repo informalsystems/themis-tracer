@@ -37,7 +37,8 @@ the correctness and continuity of communication, implementation, and operation.
   a context
   + [X] remote = =find_remote(name)=: https://docs.rs/git2/0.13.17/git2/struct.Repository.html#method.find_remote
   + [X] =remote.url=: https://docs.rs/git2/0.13.17/git2/struct.Remote.html#method.url
-- [ ] Compute the url for linkification from the remote git URL (specific to github to start)
+  + [X] Make sync also sync the upstream URL
+- [X] Compute the url for linkification from the remote git URL (specific to github to start)
 ** TODO Change all functions that take String to take &str
 ** TODO Store the repo's default branch
 https://docs.rs/git2/0.13.17/git2/struct.Remote.html#method.default_branch

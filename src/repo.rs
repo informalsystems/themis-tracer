@@ -15,6 +15,11 @@ use {
 const GIT_SSH_PREFIX: &str = "git@github.com:";
 const GITHUB_URL_PREFIX: &str = "https://github.com/";
 
+// NOTE: the level of nesting in this data structure may be unnecssary complicated.
+// The motivation was to abstrasct the underlying representation, in anticipation of
+// supporing differences between local and remote repos.
+// TODO: Consider refactoring to simplify the internal preresentation.
+
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 struct Info {
     // The local path, either in the users working files or in the tools private cache
@@ -56,6 +61,14 @@ impl Location {
     fn get_upstream_url(&self) -> Option<String> {
         self.get_info().upstream
     }
+
+    fn set_upstream_url(&mut self, url: Option<&str>) {
+        match self.inner {
+            LocationInfo::Local(ref mut info) | LocationInfo::Remote(ref mut info) => {
+                info.upstream = url.map(|s| s.to_string())
+            }
+        };
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -83,11 +96,19 @@ impl Repo {
         }
     }
 
+    /// The upstream URL (if one exists), or else the the absolute local path
+    /// where the repo is located
     pub fn get_url(&self) -> String {
         self.location
             .get_upstream_url()
             .map(|s| normalize_repo_url(&s))
             .unwrap_or_else(|| self.path_as_string())
+    }
+
+    pub fn sync(&mut self) {
+        let url = get_repo_remote(&self.path());
+        // TODO Update branch
+        self.location.set_upstream_url(url.as_deref())
     }
 }
 
