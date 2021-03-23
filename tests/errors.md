@@ -41,6 +41,14 @@ $ git init repos/repo-b | sed "s:$(pwd)/::" # We trim the absolute path prefix, 
 Initialized empty Git repository in repos/repo-b/.git/
 ```
 
+One of these repos has a remote:
+
+```sh
+$ git init --bare repos/repo-a-remote.git | sed "s:$(pwd)/::"
+Initialized empty Git repository in repos/repo-a-remote.git/
+$ cd repos/repo-a ; git remote add upstream ../repo-a-remote.git
+```
+
 And some specs in the repos:
 
 ```sh

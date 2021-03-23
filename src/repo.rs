@@ -67,6 +67,14 @@ impl Location {
             }
         };
     }
+
+    fn set_default_branch(&mut self, branch: Option<&str>) {
+        match self.inner {
+            LocationInfo::Local(ref mut info) | LocationInfo::Remote(ref mut info) => {
+                info.branch = branch.map(|s| s.to_string())
+            }
+        };
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -78,8 +86,8 @@ impl Repo {
     // TODO support for default branch and upstream
     pub fn new_local(path: PathBuf) -> Result<Repo> {
         let repo = git2::Repository::open(&path)?;
-        let upstream = get_repo_remote(&repo);
-        let location = Location::new_local(path, upstream, None);
+        let (upstream, branch) = get_repo_remote_and_branch(&repo)?;
+        let location = Location::new_local(path, upstream, branch);
         Ok(Repo { location })
     }
     // pub fn from_local(path: &Path) -> Result<Repo<'a>, String> {}
@@ -106,19 +114,34 @@ impl Repo {
 
     pub fn sync(&mut self) -> Result<()> {
         let repo = git2::Repository::open(&self.path())?;
-        let url = get_repo_remote(&repo);
-        // TODO Update branch
+        let (url, branch) = get_repo_remote_and_branch(&repo)?;
         self.location.set_upstream_url(url.as_deref());
+        self.location.set_default_branch(branch.as_deref());
         Ok(())
     }
 }
 
-fn get_repo_remote(repo: &git2::Repository) -> Option<String> {
-    let remote = repo
+// Assumes the default remote is `upstream` or `origin`, in that order of
+// preference.
+fn get_repo_remote_and_branch(repo: &git2::Repository) -> Result<(Option<String>, Option<String>)> {
+    match repo
         .find_remote("upstream")
         .or_else(|_| repo.find_remote("origin"))
-        .ok()?;
-    remote.url().map(|s| s.to_string())
+        .ok()
+    {
+        None => Ok((None, None)),
+        Some(remote) => {
+            if let Some(remote_url) = remote.url().map(|s| s.to_string()) {
+                let branch = remote
+                    .default_branch()
+                    .ok()
+                    .map(|buf| String::from_utf8_lossy(&buf.to_vec()).to_string());
+                Ok((Some(remote_url), branch))
+            } else {
+                Ok((None, None))
+            }
+        }
+    }
 }
 
 // git@github.com:informalsystems/themis-tracer.git -> https://github.com/informalsystems/themis-tracer
