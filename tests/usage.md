@@ -493,7 +493,7 @@ in repos/repo-a/dir/spec-2.md...
 :   Second unit in the same directory. This one has a newline. And
     refers to [FLIM.1]
 
-  [FLIM.1]: https://github.com/informalsystems/themis-tracer/dir/spec-2.md#FLIM.1
+  [FLIM.1]: https://github.com/informalsystems/themis-tracer/blob/master/dir/spec-2.md#FLIM.1
 ```
 
 <!-- FIXME: Remove need for this -->

@@ -265,6 +265,17 @@ pub mod repo {
         Ok(())
     }
 
+    pub fn update(conn: &sql::Connection, repo: &mut Repo) -> Result<()> {
+        repo.update()?;
+        let encoded = serde_json::to_string(repo)?;
+        let path = repo.path_as_string();
+
+        let mut stmt = conn.prepare("UPDATE repo SET json = :json WHERE path = :path")?;
+        stmt.execute_named(&[(":path", &path), (":json", &encoded)])
+            .map_err(|e| Error::Query(e).into())
+            .map(|_| ())
+    }
+
     fn insert(conn: &sql::Connection, repo: &Repo) -> Result<()> {
         let encoded = serde_json::to_string(repo)?;
         let path = repo.path_as_string();
@@ -377,9 +388,11 @@ pub mod unit {
             .map_err(|e: sql::Error| -> anyhow::Error { Error::Query(e).into() })?
             .ok_or_else(|| Error::RelatedRepoNotFound(tag.into()))?;
 
-        // TODO Use URL lib?
-        // Would this conflict with being able to use local paths?
+        // Construct the URL to a file on github from its upstream URL and default branch
+        let branch = (&repo).get_branch().unwrap_or("master".to_string());
         let mut url = (&repo).get_url();
+        url.push_str("/blob/");
+        url.push_str(&branch);
         url.push('/');
         url.push_str(&unit.file_path_as_str().unwrap_or_else(|| "".to_string()));
         url.push('#');

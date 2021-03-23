@@ -5,7 +5,7 @@
 
 use {
     anyhow::Result,
-    git2,
+    git2, log,
     serde::{Deserialize, Serialize},
     std::{fmt, path::PathBuf},
 };
@@ -60,6 +60,10 @@ impl Location {
         self.get_info().upstream
     }
 
+    fn get_branch(&self) -> Option<String> {
+        self.get_info().branch
+    }
+
     fn set_upstream_url(&mut self, url: Option<&str>) {
         match self.inner {
             LocationInfo::Local(ref mut info) | LocationInfo::Remote(ref mut info) => {
@@ -112,7 +116,12 @@ impl Repo {
             .unwrap_or_else(|| self.path_as_string())
     }
 
-    pub fn sync(&mut self) -> Result<()> {
+    /// The default branch for the repo
+    pub fn get_branch(&self) -> Option<String> {
+        self.location.get_branch()
+    }
+
+    pub fn update(&mut self) -> Result<()> {
         let repo = git2::Repository::open(&self.path())?;
         let (url, branch) = get_repo_remote_and_branch(&repo)?;
         self.location.set_upstream_url(url.as_deref());
@@ -130,13 +139,23 @@ fn get_repo_remote_and_branch(repo: &git2::Repository) -> Result<(Option<String>
         .ok()
     {
         None => Ok((None, None)),
-        Some(remote) => {
+        Some(mut remote) => {
             if let Some(remote_url) = remote.url().map(|s| s.to_string()) {
-                let branch = remote
-                    .default_branch()
-                    .ok()
-                    .map(|buf| String::from_utf8_lossy(&buf.to_vec()).to_string());
-                Ok((Some(remote_url), branch))
+                match remote.connect(git2::Direction::Fetch) {
+                    Err(err) => {
+                        log::warn!("failed to fetch from remote: {}", err);
+                        // TODO Currently doesn't support fetching from
+                        // authenticated
+                        Ok((Some(remote_url), None))
+                    }
+                    Ok(()) => {
+                        let branch = remote
+                            .default_branch()
+                            .ok()
+                            .map(|buf| String::from_utf8_lossy(&buf.to_vec()).to_string());
+                        Ok((Some(remote_url), branch))
+                    }
+                }
             } else {
                 Ok((None, None))
             }
