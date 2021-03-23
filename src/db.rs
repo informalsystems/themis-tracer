@@ -2,6 +2,7 @@ use {
     crate::{context::Context, locations},
     anyhow::{Context as AnyhowContext, Result},
     rusqlite as sql,
+    std::path::Path,
     thiserror::Error,
 };
 
@@ -245,6 +246,23 @@ pub mod repo {
         serde_json::from_str(&*json)
             // TODO I'm not sure how to get the right error type here at the moment...
             .map_err(|_| sql::Error::InvalidParameterName("TODO returning wrong error".into()))
+    }
+
+    pub fn get(conn: &sql::Connection, path: &Path) -> Result<Repo> {
+        let mut stmt = conn.prepare("SELECT * FROM repo WHERE repo.path = :path")?;
+        let row =
+            stmt.query_row_named(&[(":path", &path.to_string_lossy().to_string())], of_row)?;
+        Ok(row)
+    }
+
+    // TODO Is this actually useful?
+    /// `purge(&conn, &repo)` removes the `repo` from the db as well as all units
+    /// registered to that repo and all relations to that repo
+    pub fn purge(conn: &sql::Connection, repo: &Repo) -> Result<()> {
+        unit::purge(&conn, &repo)?;
+        let mut stmt = conn.prepare("DELETE FROM repo WHERE path = :path")?;
+        let _ = stmt.execute_named(&[(":path", &repo.path_as_string())])?;
+        Ok(())
     }
 
     fn insert(conn: &sql::Connection, repo: &Repo) -> Result<()> {
