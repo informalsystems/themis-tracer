@@ -81,7 +81,7 @@ These are examples of implementation units:
 - A function declaration 
 - A module
 - A more specific specification that describes how a more general specification
-  is to be implemented (see [TRC-IMPL.2::PREFIX.1][]). Thus,
+  is to be implemented (see [TRC-IMPL.1::PREFIX.1][]). Thus,
   [LOGICAL-UNIT.1::IMPLEMENTATION.1][] is an implementation of [LOGICAL-UNIT.1][].
 
 |LOGICAL-UNIT.1::VERIFICATION.1|
