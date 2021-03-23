@@ -32,14 +32,6 @@ the correctness and continuity of communication, implementation, and operation.
   - [X] Currently facilitated viz =fzf=
   - [ ] Native support
 * Tasks
-** TODO Fix computing of git URL
-- We need to go to the =user/repo/tree/<branch>/path/to/asset= So need to add in =/tree/<branch>/=
-- [ ] Do default branch
-- [ ] Fix URL normalization
-** TODO Store the repo's default branch
-https://docs.rs/git2/0.13.17/git2/struct.Remote.html#method.default_branch
-** TODO Add logging
-- [ ] Add logging to debug linkification
 ** TODO Change all functions that take String to take &str
 ** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17
 ** TODO Software development as a value flow
