@@ -54,7 +54,7 @@ fn add(path: PathBuf) -> Result<()> {
         Err(Error::RepoNotFound(path).into())
     } else {
         let conn = db::connection()?;
-        let repo = Repo::new_local(path);
+        let repo = Repo::new_local(path)?;
         match db::repo::add(&conn, &repo) {
             // You'd think I could use a `map_err` here, but I can't for a
             // reason I don't want to burn time unraveling at the moment.

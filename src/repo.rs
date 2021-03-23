@@ -4,12 +4,10 @@
 //! case, a single flat file.
 
 use {
+    anyhow::Result,
     git2,
     serde::{Deserialize, Serialize},
-    std::{
-        fmt,
-        path::{Path, PathBuf},
-    },
+    std::{fmt, path::PathBuf},
 };
 
 const GIT_SSH_PREFIX: &str = "git@github.com:";
@@ -78,10 +76,11 @@ pub struct Repo {
 
 impl Repo {
     // TODO support for default branch and upstream
-    pub fn new_local(path: PathBuf) -> Repo {
-        let upstream = get_repo_remote(&path);
+    pub fn new_local(path: PathBuf) -> Result<Repo> {
+        let repo = git2::Repository::open(&path)?;
+        let upstream = get_repo_remote(&repo);
         let location = Location::new_local(path, upstream, None);
-        Repo { location }
+        Ok(Repo { location })
     }
     // pub fn from_local(path: &Path) -> Result<Repo<'a>, String> {}
 
@@ -105,15 +104,16 @@ impl Repo {
             .unwrap_or_else(|| self.path_as_string())
     }
 
-    pub fn sync(&mut self) {
-        let url = get_repo_remote(&self.path());
+    pub fn sync(&mut self) -> Result<()> {
+        let repo = git2::Repository::open(&self.path())?;
+        let url = get_repo_remote(&repo);
         // TODO Update branch
-        self.location.set_upstream_url(url.as_deref())
+        self.location.set_upstream_url(url.as_deref());
+        Ok(())
     }
 }
 
-fn get_repo_remote(path: &Path) -> Option<String> {
-    let repo = git2::Repository::open(&path).ok()?;
+fn get_repo_remote(repo: &git2::Repository) -> Option<String> {
     let remote = repo
         .find_remote("upstream")
         .or_else(|_| repo.find_remote("origin"))
@@ -150,14 +150,7 @@ impl fmt::Display for Repo {
 
 #[cfg(test)]
 mod test {
-    use {super::*, std::path::PathBuf};
-
-    #[test]
-    fn repo_path_to_string() {
-        let path = "/foo/bar/baz";
-        let repo = Repo::new_local(PathBuf::from(path));
-        assert_eq!(path, repo.path_as_string());
-    }
+    use super::*;
 
     #[test]
     fn can_normalize_repo_url() {
