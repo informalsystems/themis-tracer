@@ -80,8 +80,8 @@ levels are
 E.g.,
 
 ```sh
-$ RUST_LOG=info $CMD --version
-[2021-03-23T20:39:19Z INFO  themis_tracer] log level set to info
+$ RUST_LOG=info $CMD --version 2>&1 | sed "s/^.*Z /[/"
+[INFO  themis_tracer] log level set to info
 tracer 0.1.0
 ```
 
