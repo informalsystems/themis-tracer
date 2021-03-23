@@ -120,6 +120,15 @@ $ git init repos/repo-b | sed "s:$(pwd)/::" # We trim the absolute path prefix, 
 Initialized empty Git repository in repos/repo-b/.git/
 ```
 
+We'll also add a fake upstream to one of the repos:
+
+```sh
+$ cd repos/repo-a ; git remote add upstream git@github.com:informalsystems/themis-tracer.git
+$ cd repos/repo-a ; git remote -v
+upstream	git@github.com:informalsystems/themis-tracer.git (fetch)
+upstream	git@github.com:informalsystems/themis-tracer.git (push)
+```
+
 Assume also that `repo-a` contains some specs with logical units:
 
 ```sh
@@ -205,10 +214,10 @@ units in the context, serialized into json:
 
 ```sh
 $ $CMD unit list --format json | sed "s:$(pwd)/::"
-{"id":"FLIM.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"dir/spec-2.md","line":null,"content":"A unit in a nested directory.","references":[]}
-{"id":"FLIM.1::FLAM.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"dir/spec-2.md","line":null,"content":"Second unit in the same directory. This one has a newline. And refers to [FLIM.1]","references":[]}
-{"id":"FOO.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"spec-1.md","line":null,"content":"First unit.","references":[]}
-{"id":"FOO.1::BAR.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":null,"branch":null}}}},"file":"spec-1.md","line":null,"content":"A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”","references":[]}
+{"id":"FLIM.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":"git@github.com:informalsystems/themis-tracer.git","branch":null}}}},"file":"dir/spec-2.md","line":null,"content":"A unit in a nested directory.","references":[]}
+{"id":"FLIM.1::FLAM.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":"git@github.com:informalsystems/themis-tracer.git","branch":null}}}},"file":"dir/spec-2.md","line":null,"content":"Second unit in the same directory. This one has a newline. And refers to [FLIM.1]","references":[]}
+{"id":"FOO.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":"git@github.com:informalsystems/themis-tracer.git","branch":null}}}},"file":"spec-1.md","line":null,"content":"First unit.","references":[]}
+{"id":"FOO.1::BAR.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":"git@github.com:informalsystems/themis-tracer.git","branch":null}}}},"file":"spec-1.md","line":null,"content":"A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”","references":[]}
 ```
 
 #### `unit list --fmt json`
@@ -218,10 +227,10 @@ units in the context, serialized into csv:
 
 ```sh
 $ $CMD unit list --format csv | sed "s:$(pwd)/::"
-FLIM.1,Requirement,repos/repo-a,,,dir/spec-2.md,,A unit in a nested directory.
-FLIM.1::FLAM.1,Requirement,repos/repo-a,,,dir/spec-2.md,,Second unit in the same directory. This one has a newline. And refers to [FLIM.1]
-FOO.1,Requirement,repos/repo-a,,,spec-1.md,,First unit.
-FOO.1::BAR.1,Requirement,repos/repo-a,,,spec-1.md,,"A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”"
+FLIM.1,Requirement,repos/repo-a,git@github.com:informalsystems/themis-tracer.git,,dir/spec-2.md,,A unit in a nested directory.
+FLIM.1::FLAM.1,Requirement,repos/repo-a,git@github.com:informalsystems/themis-tracer.git,,dir/spec-2.md,,Second unit in the same directory. This one has a newline. And refers to [FLIM.1]
+FOO.1,Requirement,repos/repo-a,git@github.com:informalsystems/themis-tracer.git,,spec-1.md,,First unit.
+FOO.1::BAR.1,Requirement,repos/repo-a,git@github.com:informalsystems/themis-tracer.git,,spec-1.md,,"A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”"
 ```
 
 ### `show` all information about a particular unit
@@ -256,7 +265,7 @@ $ $CMD unit show FOO.1::BAR.1 --format json | sed "s:$(pwd)/::" | jq
       "inner": {
         "Local": {
           "path": "repos/repo-a",
-          "upstream": null,
+          "upstream": "git@github.com:informalsystems/themis-tracer.git",
           "branch": null
         }
       }
@@ -276,7 +285,7 @@ serialized into CSV:
 
 ```sh
 $ $CMD unit show FOO.1::BAR.1 --format csv | sed "s:$(pwd)/::"
-FOO.1::BAR.1,Requirement,repos/repo-a,,,spec-1.md,,"A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”"
+FOO.1::BAR.1,Requirement,repos/repo-a,git@github.com:informalsystems/themis-tracer.git,,spec-1.md,,"A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”"
 ```
 
 ## `sync`ing repos in the context
@@ -484,7 +493,7 @@ in repos/repo-a/dir/spec-2.md...
 :   Second unit in the same directory. This one has a newline. And
     refers to [FLIM.1]
 
-  [FLIM.1]: repos/repo-a/dir/spec-2.md#FLIM.1
+  [FLIM.1]: https://github.com/informalsystems/themis-tracer/dir/spec-2.md#FLIM.1
 ```
 
 <!-- FIXME: Remove need for this -->

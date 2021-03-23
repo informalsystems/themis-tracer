@@ -6,7 +6,8 @@ use {
 pub fn run() -> Result<()> {
     let conn = db::connection()?;
     let repos = db::repo::get_all_in_context(&conn)?;
-    for repo in repos {
+    for mut repo in repos {
+        repo.sync();
         db::unit::purge(&conn, &repo)?;
         cmd::repo::load_units_from_repo(&conn, &repo)?;
     }
