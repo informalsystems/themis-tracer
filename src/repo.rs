@@ -90,7 +90,7 @@ impl Repo {
     // TODO support for default branch and upstream
     pub fn new_local(path: PathBuf) -> Result<Repo> {
         let repo = git2::Repository::open(&path)?;
-        let (upstream, branch) = get_repo_remote_and_branch(&repo)?;
+        let (upstream, branch) = get_repo_remote_and_branch(&repo);
         let location = Location::new_local(path, upstream, branch);
         Ok(Repo { location })
     }
@@ -123,7 +123,7 @@ impl Repo {
 
     pub fn update(&mut self) -> Result<()> {
         let repo = git2::Repository::open(&self.path())?;
-        let (url, branch) = get_repo_remote_and_branch(&repo)?;
+        let (url, branch) = get_repo_remote_and_branch(&repo);
         self.location.set_upstream_url(url.as_deref());
         self.location.set_default_branch(branch.as_deref());
         Ok(())
@@ -132,13 +132,13 @@ impl Repo {
 
 // Assumes the default remote is `upstream` or `origin`, in that order of
 // preference.
-fn get_repo_remote_and_branch(repo: &git2::Repository) -> Result<(Option<String>, Option<String>)> {
+fn get_repo_remote_and_branch(repo: &git2::Repository) -> (Option<String>, Option<String>) {
     match repo
         .find_remote("upstream")
         .or_else(|_| repo.find_remote("origin"))
         .ok()
     {
-        None => Ok((None, None)),
+        None => (None, None),
         Some(mut remote) => {
             if let Some(remote_url) = remote.url().map(|s| s.to_string()) {
                 match remote.connect(git2::Direction::Fetch) {
@@ -146,18 +146,18 @@ fn get_repo_remote_and_branch(repo: &git2::Repository) -> Result<(Option<String>
                         log::warn!("failed to fetch from remote: {}", err);
                         // TODO Currently doesn't support fetching from
                         // authenticated
-                        Ok((Some(remote_url), None))
+                        (Some(remote_url), None)
                     }
                     Ok(()) => {
                         let branch = remote
                             .default_branch()
                             .ok()
                             .map(|buf| String::from_utf8_lossy(&buf.to_vec()).to_string());
-                        Ok((Some(remote_url), branch))
+                        (Some(remote_url), branch)
                     }
                 }
             } else {
-                Ok((None, None))
+                (None, None)
             }
         }
     }

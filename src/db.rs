@@ -389,7 +389,7 @@ pub mod unit {
             .ok_or_else(|| Error::RelatedRepoNotFound(tag.into()))?;
 
         // Construct the URL to a file on github from its upstream URL and default branch
-        let branch = (&repo).get_branch().unwrap_or("master".to_string());
+        let branch = (&repo).get_branch().unwrap_or_else(|| "master".to_string());
         let mut url = (&repo).get_url();
         url.push_str("/blob/");
         url.push_str(&branch);
