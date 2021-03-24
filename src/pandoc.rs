@@ -107,7 +107,7 @@ pub fn html_to_markdown(html: &str) -> Result<String> {
             "--to",
             "markdown",
             "--reference-links",
-            "--markdown-headings=atx",
+            "--atx-headers",
         ])
         .stdout(Stdio::piped())
         .stdin(Stdio::piped())
