@@ -5,10 +5,8 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
-#[structopt(
-    name = "tracer",
-    about = "Spining threads of signifcance for the context of critical systems"
-)]
+#[structopt(name = "tracer")]
+/// Weaving together the context for critical systems
 pub enum Cmd {
     /// Parse logical units out of a spec
     Parse {

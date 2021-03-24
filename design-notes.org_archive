@@ -146,3 +146,50 @@ https://github.com/informalsystems/themis-tracer/issues/16
 :ARCHIVE_CATEGORY: design-notes
 :ARCHIVE_TODO: DONE
 :END:
+
+* DONE Actually fetch upstream git data
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-03-23 Tue 13:30
+:ARCHIVE_FILE: ~/Sync/informal-systems/mvd/themis-tracer/design-notes.org
+:ARCHIVE_OLPATH: Tasks
+:ARCHIVE_CATEGORY: design-notes
+:ARCHIVE_TODO: DONE
+:END:
+- [X] Get the =upstream= (fall back =origin=) URI from repo when it is added to
+  a context
+  + [X] remote = =find_remote(name)=: https://docs.rs/git2/0.13.17/git2/struct.Repository.html#method.find_remote
+  + [X] =remote.url=: https://docs.rs/git2/0.13.17/git2/struct.Remote.html#method.url
+  + [X] Make sync also sync the upstream URL
+- [X] Compute the url for linkification from the remote git URL (specific to github to start)
+
+* DONE Store the repo's default branch
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-03-23 Tue 16:41
+:ARCHIVE_FILE: ~/Sync/informal-systems/mvd/themis-tracer/design-notes.org
+:ARCHIVE_OLPATH: Tasks
+:ARCHIVE_CATEGORY: design-notes
+:ARCHIVE_TODO: DONE
+:END:
+https://docs.rs/git2/0.13.17/git2/struct.Remote.html#method.default_branch
+
+* DONE Fix computing of git URL
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-03-23 Tue 16:41
+:ARCHIVE_FILE: ~/Sync/informal-systems/mvd/themis-tracer/design-notes.org
+:ARCHIVE_OLPATH: Tasks
+:ARCHIVE_CATEGORY: design-notes
+:ARCHIVE_TODO: DONE
+:END:
+- We need to go to the =user/repo/tree/<branch>/path/to/asset= So need to add in =/tree/<branch>/=
+- [X] Do default branch
+- [X] Fix URL normalization
+
+* DONE Add logging
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-03-23 Tue 16:41
+:ARCHIVE_FILE: ~/Sync/informal-systems/mvd/themis-tracer/design-notes.org
+:ARCHIVE_OLPATH: Tasks
+:ARCHIVE_CATEGORY: design-notes
+:ARCHIVE_TODO: DONE
+:END:
+- [X] Add logging to debug linkification

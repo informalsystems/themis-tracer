@@ -2,7 +2,7 @@
 
 ## Essential concepts
 
-<a id="TERMINOLOGY.1" class="lu-tag">|TERMINOLOGY.1|</a>
+<span id="TERMINOLOGY.1" class="lu-tag">|TERMINOLOGY.1|</a>
 : > from Latin terminus "end, boundary line," in Medieval Latin "expression,
   definition," related to termen "boundary, end"
   ([etymonline](https://www.etymonline.com/word/term#etymonline_v_10648))
@@ -12,7 +12,7 @@
   models](https://en.wikipedia.org/wiki/Reference_model) used in OOP and other
   realist requirement tracing frameworks.
 
-<a id="CONTEXT.1" class="lu-tag">|CONTEXT.1|</a>
+<span id="CONTEXT.1" class="lu-tag">|CONTEXT.1|</a>
 : A context gathers together the artifacts involved in an enterprise.
 : > from Latin contextus "a joining together," originally past participle of
   contexere "to weave together," from assimilated form of com "with, together"
@@ -81,7 +81,7 @@ These are examples of implementation units:
 - A function declaration 
 - A module
 - A more specific specification that describes how a more general specification
-  is to be implemented (see [TRC-IMPL.2::PREFIX.1][]). Thus,
+  is to be implemented (see [TRC-IMPL.1::PREFIX.1][]). Thus,
   [LOGICAL-UNIT.1::IMPLEMENTATION.1][] is an implementation of [LOGICAL-UNIT.1][].
 
 |LOGICAL-UNIT.1::VERIFICATION.1|

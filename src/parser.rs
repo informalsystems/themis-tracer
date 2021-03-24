@@ -30,7 +30,7 @@ peg::parser! {
 
         pub rule logical_unit_id() -> Vec<(String, u32)> =
             id:(luid_part() ** "::")
-        { id }
+        { ? if id.is_empty() { Err("empty") } else { Ok(id) } }
 
         pub rule find_logical_unit_refs() -> Option<Vec<UnitRefSearch>> =
             res:ref_search_result()*
@@ -80,6 +80,11 @@ mod test_parser {
                 ("BING".to_string(), 3)
             ]
         )
+    }
+
+    #[test]
+    fn the_empty_string_is_not_an_id() {
+        assert!(parser::logical_unit_id("").is_err())
     }
 
     #[test]

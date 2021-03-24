@@ -4,12 +4,10 @@
 //! case, a single flat file.
 
 use {
-    git2,
+    anyhow::Result,
+    git2, log,
     serde::{Deserialize, Serialize},
-    std::{
-        fmt,
-        path::{Path, PathBuf},
-    },
+    std::{fmt, path::PathBuf},
 };
 
 const GIT_SSH_PREFIX: &str = "git@github.com:";
@@ -62,10 +60,22 @@ impl Location {
         self.get_info().upstream
     }
 
+    fn get_branch(&self) -> Option<String> {
+        self.get_info().branch
+    }
+
     fn set_upstream_url(&mut self, url: Option<&str>) {
         match self.inner {
             LocationInfo::Local(ref mut info) | LocationInfo::Remote(ref mut info) => {
                 info.upstream = url.map(|s| s.to_string())
+            }
+        };
+    }
+
+    fn set_default_branch(&mut self, branch: Option<&str>) {
+        match self.inner {
+            LocationInfo::Local(ref mut info) | LocationInfo::Remote(ref mut info) => {
+                info.branch = branch.map(|s| s.to_string())
             }
         };
     }
@@ -78,10 +88,11 @@ pub struct Repo {
 
 impl Repo {
     // TODO support for default branch and upstream
-    pub fn new_local(path: PathBuf) -> Repo {
-        let upstream = get_repo_remote(&path);
-        let location = Location::new_local(path, upstream, None);
-        Repo { location }
+    pub fn new_local(path: PathBuf) -> Result<Repo> {
+        let repo = git2::Repository::open(&path)?;
+        let (upstream, branch) = get_repo_remote_and_branch(&repo);
+        let location = Location::new_local(path, upstream, branch);
+        Ok(Repo { location })
     }
     // pub fn from_local(path: &Path) -> Result<Repo<'a>, String> {}
 
@@ -105,20 +116,51 @@ impl Repo {
             .unwrap_or_else(|| self.path_as_string())
     }
 
-    pub fn sync(&mut self) {
-        let url = get_repo_remote(&self.path());
-        // TODO Update branch
-        self.location.set_upstream_url(url.as_deref())
+    /// The default branch for the repo
+    pub fn get_branch(&self) -> Option<String> {
+        self.location.get_branch()
+    }
+
+    pub fn update(&mut self) -> Result<()> {
+        let repo = git2::Repository::open(&self.path())?;
+        let (url, branch) = get_repo_remote_and_branch(&repo);
+        self.location.set_upstream_url(url.as_deref());
+        self.location.set_default_branch(branch.as_deref());
+        Ok(())
     }
 }
 
-fn get_repo_remote(path: &Path) -> Option<String> {
-    let repo = git2::Repository::open(&path).ok()?;
-    let remote = repo
+// Assumes the default remote is `upstream` or `origin`, in that order of
+// preference.
+fn get_repo_remote_and_branch(repo: &git2::Repository) -> (Option<String>, Option<String>) {
+    match repo
         .find_remote("upstream")
         .or_else(|_| repo.find_remote("origin"))
-        .ok()?;
-    remote.url().map(|s| s.to_string())
+        .ok()
+    {
+        None => (None, None),
+        Some(mut remote) => {
+            if let Some(remote_url) = remote.url().map(|s| s.to_string()) {
+                match remote.connect(git2::Direction::Fetch) {
+                    Err(err) => {
+                        log::warn!("failed to fetch from remote: {}", err);
+                        // TODO Currently doesn't support fetching from
+                        // authenticated
+                        (Some(remote_url), None)
+                    }
+                    Ok(()) => {
+                        let branch = remote
+                            .default_branch()
+                            .ok()
+                            .map(|buf| String::from_utf8_lossy(&buf.to_vec()).to_string());
+                        (Some(remote_url), branch)
+                    }
+                }
+            } else {
+                (None, None)
+            }
+        }
+    }
 }
 
 // git@github.com:informalsystems/themis-tracer.git -> https://github.com/informalsystems/themis-tracer
@@ -150,14 +192,7 @@ impl fmt::Display for Repo {
 
 #[cfg(test)]
 mod test {
-    use {super::*, std::path::PathBuf};
-
-    #[test]
-    fn repo_path_to_string() {
-        let path = "/foo/bar/baz";
-        let repo = Repo::new_local(PathBuf::from(path));
-        assert_eq!(path, repo.path_as_string());
-    }
+    use super::*;
 
     #[test]
     fn can_normalize_repo_url() {

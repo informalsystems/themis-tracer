@@ -8,6 +8,7 @@ use {
     // lol_html::{element, rewrite_str, RewriteStrSettings},
     kuchiki,
     kuchiki::{iter::NodeIterator, traits::TendrilSink, Attribute, ExpandedName, NodeRef},
+    log,
     regex::Regex,
     rusqlite as sql,
     std::{
@@ -31,6 +32,10 @@ pub enum Error {
 /// `gfm` determines wheter we are targeting GitHub Flavored markdown
 /// compability and inherent the resulting limitations
 pub fn file_via_pandoc(conn: &sql::Connection, path: &path::Path, gfm: bool) -> Result<()> {
+    log::debug!("linkifying file {:?}", path);
+    if gfm {
+        log::debug!("adapting output for github flavored markdown");
+    }
     let html = pandoc::parse_file(path)?;
     let new_html = linkify_spec_string(Some(conn), &html, gfm)
         .with_context(|| format!("linkifying file {}", path.display()))?;
@@ -118,8 +123,22 @@ pub fn linkify_spec_html<R: Read, W: Write + Seek>(
 
     // Linkification
     let texts = doc.descendants().text_nodes();
+
+    // All the nodes we'll need to remove after linkifying their content
+    // We have to do this after we've processed all the descendents, because
+    // if detach each node right after linkifying it, we lose the pointer
+    // to the next node in the tree.
+    let mut nodes_to_detatch: Vec<kuchiki::NodeDataRef<RefCell<String>>> = Vec::new();
     for text in texts {
-        linkify_tag_refs(conn, text)?;
+        if linkify_tag_refs(conn, &text)? {
+            nodes_to_detatch.push(text);
+        }
+    }
+
+    // Remove all those nodes which contained unit refs, since we've now
+    // duplicated them
+    for node in nodes_to_detatch {
+        node.as_node().detach()
     }
 
     doc.serialize(writer)?;
@@ -129,10 +148,15 @@ pub fn linkify_spec_html<R: Read, W: Write + Seek>(
 
 // TODO Switch to using a populated in-memmory sqlite db for testing?
 // Use without a `conn` is only intended for unit testing purposes
+// Returns `Ok(true)` if the given text node contains a logical unit reference,
+// in which case it will linkify the reference, and duplicate all the contents
+// of the node, inserting it ahead of the original node.
+// NOTE: We need to clean up these nodes separately. See `nodes_to_detach` above.
 fn linkify_tag_refs(
     conn: Option<&sql::Connection>,
-    node: kuchiki::NodeDataRef<RefCell<String>>,
-) -> Result<()> {
+    node: &kuchiki::NodeDataRef<RefCell<String>>,
+) -> Result<bool> {
+    let mut unit_ref_found = false;
     if let Some(text_node) = node.as_node().as_text() {
         let text = &text_node.borrow();
         // We want to extract unlinked logical unit references from a chunk of
@@ -147,6 +171,7 @@ fn linkify_tag_refs(
                         UnitRefSearch::Text(t) => NodeRef::new_text(t),
                         // Tag refs are converted into link element nodes
                         UnitRefSearch::Ref(tag) => {
+                            unit_ref_found = true;
                             let url = match conn {
                                 None => tag_to_id_ref(tag), // For unit testing
                                 Some(c) => db::unit::get_path(c, &tag)?,
@@ -159,13 +184,10 @@ fn linkify_tag_refs(
                     // the new nodes on top of the original text node.
                     node.as_node().insert_before(new_node);
                 }
-                // After all the new nodes have been stacked on top of the
-                // original one, we remove the original.
-                node.as_node().detach()
             }
         }
     };
-    Ok(())
+    Ok(unit_ref_found)
 }
 
 fn tag_to_id_ref(tag: &str) -> String {
@@ -338,6 +360,35 @@ text and then another ref [FOO.1].
 <p>
 Here is some text, and here is a ref <a href="#FOO.1::BAR.1">FOO.1::BAR.1</a> and here is more
 text and then another ref <a href="#FOO.1">FOO.1</a>.
+</p>
+"##;
+        assert_html_transformation(html, expected)
+    }
+
+    // Adresses a bug where deletion of the current text node was aborting
+    // iteration through thre reamining text nodes.
+    #[test]
+    fn can_linkify_refs_accross_multiple_paragraphs() {
+        let html = r#"
+<p>
+Here is some text, and here is a ref [FOO.1::BAR.1] and here is more
+text and then another ref [FOO.1].
+</p>
+
+<p>
+Here is some text, and here is a ref [FOO.1::BIR.1] and here is more
+text and then another ref [FOP.1].
+</p>
+"#;
+        let expected = r##"
+<p>
+Here is some text, and here is a ref <a href="#FOO.1::BAR.1">FOO.1::BAR.1</a> and here is more
+text and then another ref <a href="#FOO.1">FOO.1</a>.
+</p>
+
+<p>
+Here is some text, and here is a ref <a href="#FOO.1::BIR.1">FOO.1::BIR.1</a> and here is more
+text and then another ref <a href="#FOP.1">FOP.1</a>.
 </p>
 "##;
         assert_html_transformation(html, expected)
