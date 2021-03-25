@@ -37,14 +37,16 @@ the correctness and continuity of communication, implementation, and operation.
 - [-] Build graph of units [TRC-GRAPH.1]
   - [X] Use https://docs.rs/petgraph/0.5.1/petgraph/
   - [ ] get =db::unit::all_in_context=
-  - [-] implement =graph::units=
+  - [X] implement =graph::units=
     + [X] enter each into a =map: tag -> unit=
-    + [ ] using a graphmap https://docs.rs/petgraph/0.5.1/petgraph/graphmap/struct.GraphMap.html
-    + [ ] add each unit to the graph, and
-      - [ ] look up it's parent in the map.
-        + [ ] If it has a parent
-          - [ ] ensure the parent is added
-          - [ ] add an edge from parent to child
+    + [X] using a graph
+    + [X] for each unit
+      - [X] add it to the graph
+      - [X] add it's index to the map
+      - [X] If it has a parent
+        + [X] look up it's parent in the map.
+          - [X] ensure the parent is added
+          - [X] add an edge from parent to child
 - [ ] Generate nested deflist from graph of entries
 - [ ] Implement full site search
   - [ ] Generate index :: https://github.com/mattico/elasticlunr-rs

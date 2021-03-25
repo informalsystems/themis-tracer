@@ -1,5 +1,5 @@
 use {
-    crate::{parser::parser, repo::Repo},
+    crate::{parser::parser, repo::Repo, util},
     serde::{de, Deserialize, Deserializer, Serialize, Serializer},
     std::{
         fmt,
@@ -88,8 +88,10 @@ impl LogicalUnit {
 
     /// The id of the unit's parent unit, or None, if the unit is an urunit.
     pub fn parent_id(&self) -> Option<Id> {
-        self.id.parts.split_last().map(|(_, parts)| Id {
-            parts: parts.to_vec(),
+        self.id.parts.split_last().and_then(|(_, parts)| {
+            util::some_if(!parts.is_empty(), || Id {
+                parts: parts.to_vec(),
+            })
         })
     }
 }
