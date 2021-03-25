@@ -1862,6 +1862,7 @@ dependencies = [
  "kuchiki",
  "log",
  "peg",
+ "petgraph",
  "regex",
  "rusqlite",
  "scraper",

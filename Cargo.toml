@@ -36,6 +36,7 @@ itertools = "*"
 kuchiki = "*"
 log = "*"
 peg = "*"
+petgraph = "*"
 regex = "*"
 rusqlite = "*"
 scraper = "*" # TODO Replace with lol_html?

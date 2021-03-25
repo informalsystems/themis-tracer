@@ -34,8 +34,17 @@ the correctness and continuity of communication, implementation, and operation.
 * Tasks
 ** TODO Generate static site for context
 - [X] Select HTML generation lib
-- [ ] Build graph of units [TRC-GRAPH.1]
-  - [ ] Use https://docs.rs/petgraph/0.5.1/petgraph/
+- [-] Build graph of units [TRC-GRAPH.1]
+  - [X] Use https://docs.rs/petgraph/0.5.1/petgraph/
+  - [ ] get =db::unit::all_in_context=
+  - [-] implement =graph::units=
+    + [X] enter each into a =map: tag -> unit=
+    + [ ] using a graphmap https://docs.rs/petgraph/0.5.1/petgraph/graphmap/struct.GraphMap.html
+    + [ ] add each unit to the graph, and
+      - [ ] look up it's parent in the map.
+        + [ ] If it has a parent
+          - [ ] ensure the parent is added
+          - [ ] add an edge from parent to child
 - [ ] Generate nested deflist from graph of entries
 - [ ] Implement full site search
   - [ ] Generate index :: https://github.com/mattico/elasticlunr-rs
