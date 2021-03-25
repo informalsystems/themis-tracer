@@ -80,7 +80,7 @@ fn logical_units_of_defs(
                 // TODO Determine kind from file type
                 let kind = Kind::Requirement;
                 // TODO Determine line
-                match LogicalUnit::new(repo.clone(), file, None, kind, id, content.clone()) {
+                match LogicalUnit::new(repo.clone(), file, None, kind, &id, &content) {
                     Ok(lu) => Some(lu),
                     Err(err) => {
                         // TODO Replace with logging
@@ -116,8 +116,8 @@ mod test {
                 None,
                 None,
                 Kind::Requirement,
-                "FOO.1::BAR.1".to_string(),
-                "Biz baz blam.".to_string(),
+                "FOO.1::BAR.1",
+                "Biz baz blam.",
             )
             .unwrap(),
             LogicalUnit::new(
@@ -125,8 +125,8 @@ mod test {
                 None,
                 None,
                 Kind::Requirement,
-                "FOO.1::BAZ.1".to_string(),
-                "Pop crink splot.".to_string(),
+                "FOO.1::BAZ.1",
+                "Pop crink splot.",
             )
             .unwrap(),
             LogicalUnit::new(
@@ -134,8 +134,8 @@ mod test {
                 None,
                 None,
                 Kind::Requirement,
-                "FOO.1::BOP.1".to_string(),
-                "Can parse URLs".to_string(),
+                "FOO.1::BOP.1",
+                "Can parse URLs",
             )
             .unwrap(),
         ]

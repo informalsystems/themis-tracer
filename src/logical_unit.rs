@@ -50,8 +50,8 @@ impl LogicalUnit {
         file: Option<&Path>,
         line: Option<u64>,
         kind: Kind,
-        id: String,
-        content: String,
+        id: &str,
+        content: &str,
     ) -> Result<LogicalUnit, String> {
         let id = Id::new(&id)?;
         let file = file.map(|f| f.to_owned());
@@ -62,7 +62,7 @@ impl LogicalUnit {
             repo,
             file,
             line,
-            content,
+            content: content.to_string(),
             references,
         })
     }
