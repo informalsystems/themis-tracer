@@ -33,7 +33,7 @@ the correctness and continuity of communication, implementation, and operation.
   - [ ] Native support
 * Tasks
 ** TODO Generate static site for context
-- [ ] Select HTML generation lib
+- [X] Select HTML generation lib
 - [ ] Function to generate deflist item from unit entry
 - [ ] Generate deflist from vec of entries
 - [ ] Think about how to relate/display units from different artifacts and repos

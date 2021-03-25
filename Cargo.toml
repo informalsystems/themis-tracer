@@ -25,25 +25,26 @@ doc = false
 [dependencies]
 anyhow = "*"
 csv = "*"
+env_logger = "*"
 failure = "*"
+git2 = "*"
 glob = "*"
 home = "*"
 html2md = "*"
 html5ever = "*"
-git2 = "*"
 itertools = "*"
-log = "*"
 kuchiki = "*"
+log = "*"
 peg = "*"
 regex = "*"
 rusqlite = "*"
 scraper = "*" # TODO Replace with lol_html?
 serde = { version = "*", features = ["derive"] }
 serde_json = "*"
-env_logger = "*"
 structopt = "*"
 tabwriter = "*"
 thiserror = "*"
+typed-html = { git = "https://github.com/bodil/typed-html", rev = "4c13ecca506887d07638cdf12d6ea6d51cd3b29a" }
 
 [dev-dependencies]
 assert_cmd = "*"
