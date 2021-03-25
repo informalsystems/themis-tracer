@@ -32,6 +32,11 @@ the correctness and continuity of communication, implementation, and operation.
   - [X] Currently facilitated viz =fzf=
   - [ ] Native support
 * Tasks
+** TODO Generate static site for context
+- [ ] Select HTML generation lib
+- [ ] Function to generate deflist item from unit entry
+- [ ] Generate deflist from vec of entries
+- [ ] Think about how to relate/display units from different artifacts and repos
 ** TODO Change all functions that take String to take &str
 ** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17
 ** TODO Software development as a value flow
