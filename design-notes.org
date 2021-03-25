@@ -34,9 +34,20 @@ the correctness and continuity of communication, implementation, and operation.
 * Tasks
 ** TODO Generate static site for context
 - [X] Select HTML generation lib
-- [ ] Function to generate deflist item from unit entry
-- [ ] Generate deflist from vec of entries
+- [ ] Build graph of units [TRC-GRAPH.1]
+  - [ ] Use https://docs.rs/petgraph/0.5.1/petgraph/
+- [ ] Generate nested deflist from graph of entries
+- [ ] Implement full site search
+  - [ ] Generate index :: https://github.com/mattico/elasticlunr-rs
+  - [ ] Implement on front-end :: https://github.com/weixsong/elasticlunr.js
 - [ ] Think about how to relate/display units from different artifacts and repos
+  + [ ] Dot graph, with links to units (and description on hover?)
+    - Using https://docs.rs/petgraph/0.5.1/petgraph/dot/struct.Dot.html
+  + [ ] tree that can be collapsed/unfolded?
+    - see https://jsfiddle.net/te366hu2/2/
+    - [ ] give indication of when there are children
+  + A filterable/searchable table?
+    - See https://www.ag-grid.com/example.php
 ** TODO Change all functions that take String to take &str
 ** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17
 ** TODO Software development as a value flow
