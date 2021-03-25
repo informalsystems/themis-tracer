@@ -85,6 +85,13 @@ impl LogicalUnit {
         let path = self.file.as_ref()?.clone();
         path.into_os_string().into_string().ok()
     }
+
+    /// The id of the unit's parent unit, or None, if the unit is an urunit.
+    pub fn parent_id(&self) -> Option<Id> {
+        self.id.parts.split_last().map(|(_, parts)| Id {
+            parts: parts.to_vec(),
+        })
+    }
 }
 
 // TODO
