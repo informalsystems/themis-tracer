@@ -10,6 +10,7 @@ pub mod cmd;
 mod artifact;
 mod context;
 mod db;
+mod dot;
 mod envvar;
 mod graph;
 mod linkify;

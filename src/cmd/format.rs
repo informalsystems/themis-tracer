@@ -81,3 +81,42 @@ impl std::str::FromStr for Format {
         }
     }
 }
+
+/// Formats for dot graphs
+pub mod dot {
+    use super::*;
+
+    #[derive(Debug)]
+    pub enum Format {
+        Svg,
+        Dot,
+    }
+
+    impl fmt::Display for Format {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            let s = match self {
+                Format::Svg => "svg",
+                Format::Dot => "dot",
+            };
+            write!(f, "{}", s)
+        }
+    }
+
+    impl Default for Format {
+        fn default() -> Self {
+            Format::Svg
+        }
+    }
+
+    impl std::str::FromStr for Format {
+        type Err = ParseFormatError;
+
+        fn from_str(s: &str) -> Result<Self, Self::Err> {
+            match s {
+                "svg" => Ok(Format::Svg),
+                "dot" => Ok(Format::Dot),
+                _ => Err(ParseFormatError(s.to_string())),
+            }
+        }
+    }
+}

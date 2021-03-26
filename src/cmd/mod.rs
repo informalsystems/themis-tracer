@@ -14,6 +14,7 @@ mod format;
 /// subcommand defined in `opt`. Each module exports a `run` function for this
 /// purpose.
 mod context;
+mod graph;
 mod init;
 mod linkify;
 mod parse;
