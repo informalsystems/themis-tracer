@@ -45,7 +45,6 @@ serde_json = "*"
 structopt = "*"
 tabwriter = "*"
 thiserror = "*"
-typed-html = { git = "https://github.com/bodil/typed-html", rev = "4c13ecca506887d07638cdf12d6ea6d51cd3b29a" }
 
 [dev-dependencies]
 assert_cmd = "*"

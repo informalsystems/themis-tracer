@@ -9,7 +9,7 @@ use {
     std::collections::BTreeMap,
 };
 
-type UnitGraph<'a> = StableGraph<&'a LogicalUnit, (), Directed>;
+pub type UnitGraph<'a> = StableGraph<&'a LogicalUnit, (), Directed>;
 
 // TODO Switch to using stable graph
 pub fn of_units(units: &Vec<LogicalUnit>) -> UnitGraph {
@@ -76,12 +76,11 @@ pub fn as_dot(base_url: &str, graph: &UnitGraph) -> String {
 }
 
 #[cfg(test)]
-mod test {
+pub(crate) mod test {
     use {super::*, crate::logical_unit::Kind};
 
-    #[test]
-    fn can_construct_graph_of_units() {
-        let units = vec![
+    pub fn test_units() -> Vec<LogicalUnit> {
+        vec![
             LogicalUnit::new(None, None, None, Kind::Requirement, "FOO.1", "Foo content").unwrap(),
             LogicalUnit::new(
                 None,
@@ -101,18 +100,33 @@ mod test {
                 "Baz content",
             )
             .unwrap(),
+            LogicalUnit::new(
+                None,
+                None,
+                None,
+                Kind::Requirement,
+                "FOO.1::BING.1",
+                "Bing content",
+            )
+            .unwrap(),
             LogicalUnit::new(None, None, None, Kind::Requirement, "FIZ.1", "Fiz content").unwrap(),
-        ];
+        ]
+    }
 
+    #[test]
+    fn can_construct_graph_of_units() {
         let expected = r#"digraph {
     0 [ label="FOO.1" tooltip="Foo content" href="just/a/test#FOO.1" ]
     1 [ label="FOO.1::BAR.1" tooltip="Bar content" href="just/a/test#FOO.1::BAR.1" ]
     2 [ label="FOO.1::BAR.1::BAZ.1" tooltip="Baz content" href="just/a/test#FOO.1::BAR.1::BAZ.1" ]
-    3 [ label="FIZ.1" tooltip="Fiz content" href="just/a/test#FIZ.1" ]
+    3 [ label="FOO.1::BING.1" tooltip="Bing content" href="just/a/test#FOO.1::BING.1" ]
+    4 [ label="FIZ.1" tooltip="Fiz content" href="just/a/test#FIZ.1" ]
     0 -> 1 [ ]
     1 -> 2 [ ]
+    0 -> 3 [ ]
 }
 "#;
+        let units = test_units();
         let graph = of_units(&units);
         let actual = as_dot("just/a/test", &graph);
         println!("Expected:\n{}", expected);

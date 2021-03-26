@@ -19,4 +19,5 @@ mod logical_unit;
 mod pandoc;
 mod parser;
 mod repo;
+mod site;
 mod util;
