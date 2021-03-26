@@ -570,7 +570,7 @@ And we can generate an SVG of the context with
 $ $CMD graph --format svg > context.svg
 ```
 
-![Graph of the current context][./context.svg]
+![Graph of the current context](./context.svg)
 
 <!-- FIXME: Remove need for this -->
 ## Cleanup
