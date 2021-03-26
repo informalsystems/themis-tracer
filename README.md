@@ -106,6 +106,10 @@ The tool is currently in early development, so expect snags.
   probably already have this on your system. Check with `sqlite3 --version`. If
   you need to install it, check you OS's package manager.
 
+#### Optional
+
+- [graphviz](https://graphviz.org/download/) (only needed for generating graphs)
+
 ### From git using cargo
 
 ```sh
