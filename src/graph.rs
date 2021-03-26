@@ -1,11 +1,17 @@
 use {
     crate::logical_unit::{Id, LogicalUnit},
-    petgraph::{graph::NodeIndex, Directed, Graph},
+    petgraph::{
+        dot::{Config, Dot},
+        graph::NodeIndex,
+        Directed, Graph,
+    },
     std::collections::HashMap,
 };
 
-pub fn of_units(units: &Vec<LogicalUnit>) -> Graph<&LogicalUnit, (), Directed> {
-    let mut graph: Graph<&LogicalUnit, (), Directed> = Graph::new();
+type UnitGraph<'a> = Graph<&'a LogicalUnit, (), Directed>;
+
+pub fn of_units(units: &Vec<LogicalUnit>) -> UnitGraph {
+    let mut graph: UnitGraph = Graph::new();
     // map from unit id to the unit and its index in the graph (if it's been added)
     let mut map: HashMap<Id, (&LogicalUnit, Option<NodeIndex>)> = HashMap::new();
     for u in units {
@@ -28,10 +34,29 @@ pub fn of_units(units: &Vec<LogicalUnit>) -> Graph<&LogicalUnit, (), Directed> {
                     }
                 }
             };
-            graph.add_edge(idx, parent_idx, ());
+            graph.add_edge(parent_idx, idx, ());
         }
     }
     graph
+}
+
+pub fn unit_as_dot(base_url: &str, graph: &UnitGraph) -> String {
+    format!(
+        "{:?}",
+        Dot::with_attr_getters(
+            graph,
+            &[Config::NodeNoLabel, Config::EdgeNoLabel],
+            &|_graph, _| "".to_string(),
+            &|_graph, (_idx, unit)| {
+                format!(
+                    r##"label="{id}" tooltip="{content}" href="{url}#{id}" "##,
+                    id = unit.id,
+                    content = unit.content,
+                    url = base_url
+                )
+            },
+        )
+    )
 }
 
 #[cfg(test)]
@@ -41,22 +66,39 @@ mod test {
     #[test]
     fn can_construct_graph_of_units() {
         let units = vec![
-            LogicalUnit::new(None, None, None, Kind::Requirement, "FOO.1", "").unwrap(),
-            LogicalUnit::new(None, None, None, Kind::Requirement, "FOO.1::BAR.1", "").unwrap(),
+            LogicalUnit::new(None, None, None, Kind::Requirement, "FOO.1", "Foo content").unwrap(),
+            LogicalUnit::new(
+                None,
+                None,
+                None,
+                Kind::Requirement,
+                "FOO.1::BAR.1",
+                "Bar content",
+            )
+            .unwrap(),
             LogicalUnit::new(
                 None,
                 None,
                 None,
                 Kind::Requirement,
                 "FOO.1::BAR.1::BAZ.1",
-                "",
+                "Baz content",
             )
             .unwrap(),
-            LogicalUnit::new(None, None, None, Kind::Requirement, "FIZ.1", "").unwrap(),
+            LogicalUnit::new(None, None, None, Kind::Requirement, "FIZ.1", "Fiz content").unwrap(),
         ];
 
+        let expected = r#"digraph {
+    0 [ label="FOO.1" tooltip="Coo content" href="just/a/test#FOO.1" ]
+    1 [ label="FOO.1::BAR.1" tooltip="Bar content" href="just/a/test#FOO.1::BAR.1" ]
+    2 [ label="FOO.1::BAR.1::BAZ.1" tooltip="Baz content" href="just/a/test#FOO.1::BAR.1::BAZ.1" ]
+    3 [ label="FIZ.1" tooltip="Fiz content" href="just/a/test#FIZ.1" ]
+    0 -> 1 [ ]
+    1 -> 2 [ ]
+}
+"#;
         let graph = of_units(&units);
-        assert_eq!(graph.node_count(), units.len());
-        assert_eq!(graph.edge_count(), 2);
+        let dot_graph = unit_as_dot("just/a/test", &graph);
+        assert_eq!(expected, dot_graph);
     }
 }

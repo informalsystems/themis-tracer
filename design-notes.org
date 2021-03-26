@@ -47,13 +47,13 @@ the correctness and continuity of communication, implementation, and operation.
         + [X] look up it's parent in the map.
           - [X] ensure the parent is added
           - [X] add an edge from parent to child
+- [ ] Dot graph, with links to units (and description on hover?)
+  - Using https://docs.rs/petgraph/0.5.1/petgraph/dot/struct.Dot.html
 - [ ] Generate nested deflist from graph of entries
 - [ ] Implement full site search
   - [ ] Generate index :: https://github.com/mattico/elasticlunr-rs
   - [ ] Implement on front-end :: https://github.com/weixsong/elasticlunr.js
 - [ ] Think about how to relate/display units from different artifacts and repos
-  + [ ] Dot graph, with links to units (and description on hover?)
-    - Using https://docs.rs/petgraph/0.5.1/petgraph/dot/struct.Dot.html
   + [ ] tree that can be collapsed/unfolded?
     - see https://jsfiddle.net/te366hu2/2/
     - [ ] give indication of when there are children
