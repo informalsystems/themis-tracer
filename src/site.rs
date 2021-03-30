@@ -1,11 +1,83 @@
 use {
-    crate::graph::UnitGraph,
+    crate::{graph::UnitGraph, logical_unit::LogicalUnit},
     anyhow::Result,
     petgraph::{graph::NodeIndex, Direction},
-    std::io::Write,
+    std::{fmt, io::Write},
 };
 
-// TODO Use html construction lib?
+#[derive(Clone, Debug)]
+enum Html {
+    Tag(String, Vec<(String, String)>, Vec<Html>),
+    Text(String),
+}
+
+fn indent_n(f: &mut fmt::Formatter<'_>, n: u32) -> fmt::Result {
+    for _ in 0..n {
+        write!(f, " ")?;
+    }
+    Ok(())
+}
+
+fn attrs_to_string(attrs: &[(String, String)]) -> String {
+    attrs
+        .iter()
+        .map(|(a, v)| format!(r#"{}="{}""#, a, v))
+        .collect::<Vec<String>>()
+        .join(" ")
+}
+
+macro_rules! tag {
+    ($tag:literal, $attrs:expr, $($child:expr);*) => {
+        { let mut children = Vec::new();
+          $(
+              children.push($child);
+          )*
+          Html::Tag($tag.to_string(), $attrs, children) }
+    };
+}
+
+macro_rules! txt {
+    ($txt:expr) => {
+        Html::Text($txt.to_string())
+    };
+}
+
+macro_rules! attr {
+    ($attr:literal, $value:expr) => {
+        ($attr.to_string(), $value.to_string())
+    };
+}
+
+impl Html {
+    fn fmt_indented(&self, f: &mut fmt::Formatter<'_>, indent: u32) -> fmt::Result {
+        match self {
+            Html::Tag(tag, attrs, inner) => {
+                indent_n(f, indent)?;
+                writeln!(
+                    f,
+                    "<{tag} {attrs}>",
+                    tag = tag,
+                    attrs = attrs_to_string(attrs)
+                )?;
+                for i in inner.iter() {
+                    i.fmt_indented(f, indent + 2)?;
+                }
+                indent_n(f, indent)?;
+                writeln!(f, "</{}>", tag)
+            }
+            Html::Text(text) => {
+                indent_n(f, indent + 2)?;
+                writeln!(f, "{}", text)
+            }
+        }
+    }
+}
+
+impl<'a> fmt::Display for Html {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.fmt_indented(f, 0)
+    }
+}
 
 fn dl_tree<W: Write>(parent_idx: NodeIndex<u32>, graph: &UnitGraph, writer: &mut W) -> Result<()> {
     let parent = graph.node_weight(parent_idx).unwrap();
@@ -98,5 +170,37 @@ mod test {
         println!("Expected:\n{}", expected);
         println!("Actual:\n{}", actual);
         assert_eq!(expected, actual)
+    }
+
+    #[test]
+    fn can_write_html() {
+        let html = tag!(
+            "html",
+            vec![],
+            tag!("head", vec![], tag!("title", vec![], txt!("foo")));
+            tag!(
+                "body",
+                vec![attr!("class", "class1 class2")],
+                tag!("p", vec![], txt!("Some content"))
+            )
+        );
+        let actual = html.to_string();
+        let expected = r#"<html >
+  <head >
+    <title >
+        foo
+    </title>
+  </head>
+  <body class="class1 class2">
+    <p >
+        Some content
+    </p>
+  </body>
+</html>
+"#
+        .to_string();
+        println!("Expected:\n{}", expected);
+        println!("Actual:\n{}", actual);
+        assert_eq!(expected, actual);
     }
 }
