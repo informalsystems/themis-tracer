@@ -12,7 +12,7 @@ use {
 pub type UnitGraph<'a> = StableGraph<&'a LogicalUnit, (), Directed>;
 
 // TODO Switch to using stable graph
-pub fn of_units(units: &Vec<LogicalUnit>) -> UnitGraph {
+pub fn of_units(units: &[LogicalUnit]) -> UnitGraph {
     log::debug!("generating graph of units");
     let mut graph: UnitGraph = StableGraph::new();
     // map from unit id to the unit and its index in the graph (if it's been added)
@@ -33,7 +33,7 @@ pub fn of_units(units: &Vec<LogicalUnit>) -> UnitGraph {
                 let parent_idx = {
                     let &(parent, idx_opt) =
                     // an orphan unit entails an invalid database
-                    map.get(&parent_id.to_string()).expect(&format!("parent of unit {} must be in map", u));
+                    map.get(&parent_id.to_string()).unwrap_or_else(|| panic!("parent of unit {} must be in map", u));
                     match idx_opt {
                         // If the parent is already enterd, we retreive it's index in the graph
                         Some(i) => i,
