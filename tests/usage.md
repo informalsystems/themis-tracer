@@ -10,6 +10,7 @@ reference-friendly, documentation of the tool's usage.
     - [Setting the environment](#setting-the-environment)
     - [Show the current version](#show-the-current-version)
     - [`init`ialize the tool](#initialize-the-tool)
+    - [Set the log level](#set-the-log-level)
     - [Manage `context`s](#manage-contexts)
         - [`context new`](#context-new)
         - [`context list`](#context-list)
@@ -29,6 +30,7 @@ reference-friendly, documentation of the tool's usage.
         - [`parse --format json` (the default, if no argument is given)](#parse---format-json-the-default-if-no-argument-is-given)
         - [`parse --format csv`](#parse---format-csv)
     - [`linkify`ing spec files](#linkifying-spec-files)
+    - [`graph`ing the context](#graphing-the-context)
     - [Cleanup](#cleanup)
 
 <!-- markdown-toc end -->
@@ -354,13 +356,19 @@ The following spec describes our current support for parsing logical units:
 
 Supported formats include:
 
-|PARSE-SPECS.1::JSON.1|
+|PARSE-SPECS.1::FORMAT.1|
+: Must support parsing specs into machine readable formats.
+
+|PARSE-SPECS.1::FORMAT.1::JSON.1|
 : Must support parsing a file of specs into JSON.
 
-|PARSE-SPECS.1::CSV.1|
+|PARSE-SPECS.1::FORMAT.1::CSV.1|
 : Must support parse a file of specs into CSV.
 
 ## Content
+
+|PARSE-SPECS.1::CONTENT.1|
+: Parsing must support all expected forms of content.
 
 |PARSE-SPECS.1::CONTENT.1::MULTI-PARA.1|
 : The content of logical units must be preserved.
@@ -369,7 +377,7 @@ Supported formats include:
  - includes
  - lists
 
-|PARSE-SPECS.1::INLINE.1|
+|PARSE-SPECS.1::CONTENT.1::INLINE.1|
 : The folowing inline styling must be preserved:
 : - **Strong** (__both__ ways)
  - *Emphasizes* (_both_ ways)
@@ -401,6 +409,24 @@ $ $CMD parse parsing-spec.md | jq
   "references": []
 }
 {
+  "id": "PARSE-SPECS.1::CONTENT.1",
+  "kind": "Requirement",
+  "repo": null,
+  "file": "parsing-spec.md",
+  "line": null,
+  "content": "Parsing must support all expected forms of content.",
+  "references": []
+}
+{
+  "id": "PARSE-SPECS.1::CONTENT.1::INLINE.1",
+  "kind": "Requirement",
+  "repo": null,
+  "file": "parsing-spec.md",
+  "line": null,
+  "content": "The folowing inline styling must be preserved:\n\n* **Strong** (**both** ways)\n* *Emphasizes* (*both* ways)\n* ~~Strikethrough~~\n* `code`\n* [links](/url)\n* ![images](/url \"fig:\")\n* smallcaps",
+  "references": []
+}
+{
   "id": "PARSE-SPECS.1::CONTENT.1::MULTI-PARA.1",
   "kind": "Requirement",
   "repo": null,
@@ -410,7 +436,16 @@ $ $CMD parse parsing-spec.md | jq
   "references": []
 }
 {
-  "id": "PARSE-SPECS.1::CSV.1",
+  "id": "PARSE-SPECS.1::FORMAT.1",
+  "kind": "Requirement",
+  "repo": null,
+  "file": "parsing-spec.md",
+  "line": null,
+  "content": "Must support parsing specs into machine readable formats.",
+  "references": []
+}
+{
+  "id": "PARSE-SPECS.1::FORMAT.1::CSV.1",
   "kind": "Requirement",
   "repo": null,
   "file": "parsing-spec.md",
@@ -419,16 +454,7 @@ $ $CMD parse parsing-spec.md | jq
   "references": []
 }
 {
-  "id": "PARSE-SPECS.1::INLINE.1",
-  "kind": "Requirement",
-  "repo": null,
-  "file": "parsing-spec.md",
-  "line": null,
-  "content": "The folowing inline styling must be preserved:\n\n* **Strong** (**both** ways)\n* *Emphasizes* (*both* ways)\n* ~~Strikethrough~~\n* `code`\n* [links](/url)\n* ![images](/url \"fig:\")\n* smallcaps",
-  "references": []
-}
-{
-  "id": "PARSE-SPECS.1::JSON.1",
+  "id": "PARSE-SPECS.1::FORMAT.1::JSON.1",
   "kind": "Requirement",
   "repo": null,
   "file": "parsing-spec.md",
@@ -443,15 +469,8 @@ $ $CMD parse parsing-spec.md | jq
 ```sh
 $ $CMD parse parsing-spec.md --format csv
 PARSE-SPECS.1,Requirement,,parsing-spec.md,,"We can parse a file of logical units into different formats, preserving all critical content of the logical unit content."
-PARSE-SPECS.1::CONTENT.1::MULTI-PARA.1,Requirement,,parsing-spec.md,,"The content of logical units must be preserved.
-
-Even when it spans multiple paragraphs.
-
-* Or
-* includes
-* lists"
-PARSE-SPECS.1::CSV.1,Requirement,,parsing-spec.md,,Must support parse a file of specs into CSV.
-PARSE-SPECS.1::INLINE.1,Requirement,,parsing-spec.md,,"The folowing inline styling must be preserved:
+PARSE-SPECS.1::CONTENT.1,Requirement,,parsing-spec.md,,Parsing must support all expected forms of content.
+PARSE-SPECS.1::CONTENT.1::INLINE.1,Requirement,,parsing-spec.md,,"The folowing inline styling must be preserved:
 
 * **Strong** (**both** ways)
 * *Emphasizes* (*both* ways)
@@ -460,7 +479,16 @@ PARSE-SPECS.1::INLINE.1,Requirement,,parsing-spec.md,,"The folowing inline styli
 * [links](/url)
 * ![images](/url ""fig:"")
 * smallcaps"
-PARSE-SPECS.1::JSON.1,Requirement,,parsing-spec.md,,Must support parsing a file of specs into JSON.
+PARSE-SPECS.1::CONTENT.1::MULTI-PARA.1,Requirement,,parsing-spec.md,,"The content of logical units must be preserved.
+
+Even when it spans multiple paragraphs.
+
+* Or
+* includes
+* lists"
+PARSE-SPECS.1::FORMAT.1,Requirement,,parsing-spec.md,,Must support parsing specs into machine readable formats.
+PARSE-SPECS.1::FORMAT.1::CSV.1,Requirement,,parsing-spec.md,,Must support parse a file of specs into CSV.
+PARSE-SPECS.1::FORMAT.1::JSON.1,Requirement,,parsing-spec.md,,Must support parsing a file of specs into JSON.
 ```
 
 ## `linkify`ing spec files
@@ -513,6 +541,108 @@ in repos/repo-a/dir/spec-2.md...
     refers to [FLIM.1]
 
   [FLIM.1]: https://github.com/informalsystems/themis-tracer/blob/master/dir/spec-2.md#FLIM.1
+```
+
+## `graph`ing the context
+
+### `graph --format dot`
+
+We can generate a graphviz dot graph of the current context with
+
+```sh
+$ $CMD graph --format dot
+digraph {
+    0 [ label="FLIM.1" tooltip="A unit in a nested directory." href="TODO#FLIM.1" ]
+    1 [ label="FLIM.1::FLAM.1" tooltip="Second unit in the same directory. This one has a newline. And refers to [FLIM.1]" href="TODO#FLIM.1::FLAM.1" ]
+    2 [ label="FOO.2" tooltip="We’ve updated the first unit." href="TODO#FOO.2" ]
+    3 [ label="FOO.2::BAZ.1" tooltip="And we replaced FOO.1::BAR.1 with this unit." href="TODO#FOO.2::BAZ.1" ]
+    0 -> 1 [ ]
+    2 -> 3 [ ]
+}
+
+```
+
+### `graph --format svg`
+
+And we can generate an SVG of the context with
+
+```sh
+$ $CMD graph --format svg > context.svg
+```
+
+![Graph of the current context](./context.svg)
+
+### `site`
+
+We can generate HTML summarizing the current context with
+
+```sh
+$ $CMD site
+<html >
+  <head >
+    <title >
+        Context
+    </title>
+  </head>
+  <body >
+    <dl >
+      <dt id="FLIM.1">
+        <strong >
+            FLIM.1
+        </strong>
+      </dt>
+      <dd >
+        <p class="content">
+            A unit in a nested directory.
+        </p>
+        <details class="implementations">
+          <summary >
+              Implemented by...
+          </summary>
+          <dl >
+            <dt id="FLIM.1::FLAM.1">
+              <strong >
+                  FLIM.1::FLAM.1
+              </strong>
+            </dt>
+            <dd >
+              <p class="content">
+                  Second unit in the same directory. This one has a newline. And refers to [FLIM.1]
+              </p>
+            </dd>
+          </dl>
+        </details>
+      </dd>
+      <dt id="FOO.2">
+        <strong >
+            FOO.2
+        </strong>
+      </dt>
+      <dd >
+        <p class="content">
+            We’ve updated the first unit.
+        </p>
+        <details class="implementations">
+          <summary >
+              Implemented by...
+          </summary>
+          <dl >
+            <dt id="FOO.2::BAZ.1">
+              <strong >
+                  FOO.2::BAZ.1
+              </strong>
+            </dt>
+            <dd >
+              <p class="content">
+                  And we replaced FOO.1::BAR.1 with this unit.
+              </p>
+            </dd>
+          </dl>
+        </details>
+      </dd>
+    </dl>
+  </body>
+</html>
 ```
 
 <!-- FIXME: Remove need for this -->

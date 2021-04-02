@@ -46,6 +46,16 @@ pub enum Cmd {
 
     /// Manage logical units
     Unit(Unit),
+
+    /// Generate a dot graph of the current context
+    Graph {
+        /// Format can be dot or svg
+        #[structopt(short, long, default_value, parse(try_from_str))]
+        format: cmd::format::dot::Format,
+    },
+
+    /// Generate an HTML site summarizing the current context
+    Site {},
 }
 
 #[derive(Debug, StructOpt)]
@@ -140,5 +150,7 @@ pub fn run() -> Result<()> {
         Cmd::Repo(opt) => cmd::repo::run(opt),
         Cmd::Sync {} => cmd::sync::run(),
         Cmd::Unit(opt) => cmd::unit::run(opt),
+        Cmd::Graph { format } => cmd::graph::run(format),
+        Cmd::Site {} => cmd::site::run(),
     }
 }

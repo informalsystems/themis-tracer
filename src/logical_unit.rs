@@ -1,5 +1,5 @@
 use {
-    crate::{parser::parser, repo::Repo},
+    crate::{parser::parser, repo::Repo, util},
     serde::{de, Deserialize, Deserializer, Serialize, Serializer},
     std::{
         fmt,
@@ -50,8 +50,8 @@ impl LogicalUnit {
         file: Option<&Path>,
         line: Option<u64>,
         kind: Kind,
-        id: String,
-        content: String,
+        id: &str,
+        content: &str,
     ) -> Result<LogicalUnit, String> {
         let id = Id::new(&id)?;
         let file = file.map(|f| f.to_owned());
@@ -62,7 +62,7 @@ impl LogicalUnit {
             repo,
             file,
             line,
-            content,
+            content: content.to_string(),
             references,
         })
     }
@@ -84,6 +84,15 @@ impl LogicalUnit {
     pub fn file_path_as_str(&self) -> Option<String> {
         let path = self.file.as_ref()?.clone();
         path.into_os_string().into_string().ok()
+    }
+
+    /// The id of the unit's parent unit, or None, if the unit is an urunit.
+    pub fn parent_id(&self) -> Option<Id> {
+        self.id.parts.split_last().and_then(|(_, parts)| {
+            util::some_if(!parts.is_empty(), || Id {
+                parts: parts.to_vec(),
+            })
+        })
     }
 }
 

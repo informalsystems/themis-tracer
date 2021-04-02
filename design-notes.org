@@ -32,6 +32,40 @@ the correctness and continuity of communication, implementation, and operation.
   - [X] Currently facilitated viz =fzf=
   - [ ] Native support
 * Tasks
+** TODO Generate static site for context
+- [X] Select HTML generation lib
+- [-] Build graph of units [TRC-GRAPH.1]
+  - [X] Use https://docs.rs/petgraph/0.5.1/petgraph/
+  - [ ] get =db::unit::all_in_context=
+  - [X] implement =graph::units=
+    + [X] enter each into a =map: tag -> unit=
+    + [X] using a graph
+    + [X] for each unit
+      - [X] add it to the graph
+      - [X] add it's index to the map
+      - [X] If it has a parent
+        + [X] look up it's parent in the map.
+          - [X] ensure the parent is added
+          - [X] add an edge from parent to child
+- [X] Dot graph, with links to units (and description on hover?)
+  - Using https://docs.rs/petgraph/0.5.1/petgraph/dot/struct.Dot.html
+- [-] Generate nested deflist from graph of entries
+  + [X] Get external source nodes
+  + [-] For each urnode
+    - [X] Create <dt> with tag
+    - [-] Create <dd> with
+      - [X] content
+      - [X] get children,
+      - [ ] create detail including recursive application of above
+- [ ] Implement full site search
+  - [ ] Generate index :: https://github.com/mattico/elasticlunr-rs
+  - [ ] Implement on front-end :: https://github.com/weixsong/elasticlunr.js
+- [ ] Think about how to relate/display units from different artifacts and repos
+  + [ ] tree that can be collapsed/unfolded?
+    - see https://jsfiddle.net/te366hu2/2/
+    - [ ] give indication of when there are children
+  + A filterable/searchable table?
+    - See https://www.ag-grid.com/example.php
 ** TODO Change all functions that take String to take &str
 ** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17
 ** TODO Software development as a value flow

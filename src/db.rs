@@ -452,6 +452,8 @@ pub mod unit {
         for u in rows {
             units.push(u?);
         }
+        // TODO Replace with an ordered set
+        units.sort();
 
         Ok(units)
     }
