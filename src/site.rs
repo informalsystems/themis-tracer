@@ -5,7 +5,7 @@ use {
 };
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-enum Html {
+pub enum Html {
     Tag(String, Vec<(String, String)>, Vec<Html>),
     Text(String),
 }
@@ -78,7 +78,7 @@ impl From<&UnitGraph<'_>> for Html {
     fn from(graph: &UnitGraph) -> Html {
         let unit_tree: Vec<Html> = graph
             .externals(Direction::Incoming)
-            .map(|i| unit_tree_html(i, graph))
+            .flat_map(|i| unit_tree_html(i, graph))
             .collect();
 
         tag!(
@@ -96,25 +96,44 @@ impl From<&UnitGraph<'_>> for Html {
     }
 }
 
-fn unit_tree_html(parent_idx: NodeIndex<u32>, graph: &UnitGraph) -> Html {
+fn unit_tree_html(parent_idx: NodeIndex<u32>, graph: &UnitGraph) -> Vec<Html> {
     let parent = graph.node_weight(parent_idx).unwrap();
-    let mut implementors: Vec<Html> = graph
-        .neighbors_directed(parent_idx, Direction::Outgoing)
-        .map(|child| unit_tree_html(child, graph))
-        .collect();
+
     let content = tag!(
-        "dd",
-        vec![],
-        vec![tag!(
-            "p",
-            vec![attr!("class", "content")],
-            vec![txt!(parent.content)]
-        )]
+        "p",
+        vec![attr!("class", "content")],
+        vec![txt!(parent.content)]
     );
+
+    let mut implementors: Vec<Html> = {
+        let items: Vec<Html> = graph
+            .neighbors_directed(parent_idx, Direction::Outgoing)
+            .flat_map(|child| unit_tree_html(child, graph))
+            .collect();
+        if items.is_empty() {
+            vec![]
+        } else {
+            vec![tag!(
+                "details",
+                vec![attr!("class", "implementations")],
+                vec![
+                    tag!("summary", vec![], vec![txt!("Implemented by...")]),
+                    tag!("dl", vec![], items)
+                ]
+            )]
+        }
+    };
 
     let mut children = vec![content];
     children.append(&mut implementors);
-    tag!("dt", vec![attr!("id", parent.id)], children)
+    vec![
+        tag!(
+            "dt",
+            vec![attr!("id", parent.id)],
+            vec![tag!("strong", vec![], vec![txt!(parent.id)])]
+        ),
+        tag!("dd", vec![], children),
+    ]
 }
 
 #[cfg(test)]
@@ -133,40 +152,69 @@ mod test {
   <body >
     <dl >
       <dt id="FOO.1">
-        <dd >
-          <p class="content">
-              Foo content
-          </p>
-        </dd>
-        <dt id="FOO.1::BING.1">
-          <dd >
-            <p class="content">
-                Bing content
-            </p>
-          </dd>
-        </dt>
-        <dt id="FOO.1::BAR.1">
-          <dd >
-            <p class="content">
-                Bar content
-            </p>
-          </dd>
-          <dt id="FOO.1::BAR.1::BAZ.1">
+        <strong >
+            FOO.1
+        </strong>
+      </dt>
+      <dd >
+        <p class="content">
+            Foo content
+        </p>
+        <details class="implementations">
+          <summary >
+              Implemented by...
+          </summary>
+          <dl >
+            <dt id="FOO.1::BING.1">
+              <strong >
+                  FOO.1::BING.1
+              </strong>
+            </dt>
             <dd >
               <p class="content">
-                  Baz content
+                  Bing content
               </p>
             </dd>
-          </dt>
-        </dt>
-      </dt>
+            <dt id="FOO.1::BAR.1">
+              <strong >
+                  FOO.1::BAR.1
+              </strong>
+            </dt>
+            <dd >
+              <p class="content">
+                  Bar content
+              </p>
+              <details class="implementations">
+                <summary >
+                    Implemented by...
+                </summary>
+                <dl >
+                  <dt id="FOO.1::BAR.1::BAZ.1">
+                    <strong >
+                        FOO.1::BAR.1::BAZ.1
+                    </strong>
+                  </dt>
+                  <dd >
+                    <p class="content">
+                        Baz content
+                    </p>
+                  </dd>
+                </dl>
+              </details>
+            </dd>
+          </dl>
+        </details>
+      </dd>
       <dt id="FIZ.1">
-        <dd >
-          <p class="content">
-              Fiz content
-          </p>
-        </dd>
+        <strong >
+            FIZ.1
+        </strong>
       </dt>
+      <dd >
+        <p class="content">
+            Fiz content
+        </p>
+      </dd>
     </dl>
   </body>
 </html>

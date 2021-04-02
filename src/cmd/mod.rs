@@ -19,5 +19,6 @@ mod init;
 mod linkify;
 mod parse;
 mod repo;
+mod site;
 mod sync;
 mod unit;

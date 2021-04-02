@@ -53,6 +53,9 @@ pub enum Cmd {
         #[structopt(short, long, default_value, parse(try_from_str))]
         format: cmd::format::dot::Format,
     },
+
+    /// Generate an HTML site summarizing the current context
+    Site {},
 }
 
 #[derive(Debug, StructOpt)]
@@ -148,5 +151,6 @@ pub fn run() -> Result<()> {
         Cmd::Sync {} => cmd::sync::run(),
         Cmd::Unit(opt) => cmd::unit::run(opt),
         Cmd::Graph { format } => cmd::graph::run(format),
+        Cmd::Site {} => cmd::site::run(),
     }
 }

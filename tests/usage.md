@@ -572,6 +572,79 @@ $ $CMD graph --format svg > context.svg
 
 ![Graph of the current context](./context.svg)
 
+### `site`
+
+We can generate HTML summarizing the current context with
+
+```sh
+$ $CMD site
+<html >
+  <head >
+    <title >
+        Context
+    </title>
+  </head>
+  <body >
+    <dl >
+      <dt id="FLIM.1">
+        <strong >
+            FLIM.1
+        </strong>
+      </dt>
+      <dd >
+        <p class="content">
+            A unit in a nested directory.
+        </p>
+        <details class="implementations">
+          <summary >
+              Implemented by...
+          </summary>
+          <dl >
+            <dt id="FLIM.1::FLAM.1">
+              <strong >
+                  FLIM.1::FLAM.1
+              </strong>
+            </dt>
+            <dd >
+              <p class="content">
+                  Second unit in the same directory. This one has a newline. And refers to [FLIM.1]
+              </p>
+            </dd>
+          </dl>
+        </details>
+      </dd>
+      <dt id="FOO.2">
+        <strong >
+            FOO.2
+        </strong>
+      </dt>
+      <dd >
+        <p class="content">
+            We’ve updated the first unit.
+        </p>
+        <details class="implementations">
+          <summary >
+              Implemented by...
+          </summary>
+          <dl >
+            <dt id="FOO.2::BAZ.1">
+              <strong >
+                  FOO.2::BAZ.1
+              </strong>
+            </dt>
+            <dd >
+              <p class="content">
+                  And we replaced FOO.1::BAR.1 with this unit.
+              </p>
+            </dd>
+          </dl>
+        </details>
+      </dd>
+    </dl>
+  </body>
+</html>
+```
+
 <!-- FIXME: Remove need for this -->
 ## Cleanup
 
