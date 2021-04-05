@@ -10,6 +10,9 @@ use {
         collections::HashSet,
         convert::TryFrom,
         fmt,
+        fs::File,
+        io,
+        io::BufRead, // modularity is awkward in rust
         path::{Path, PathBuf},
     },
     thiserror::Error,
@@ -25,53 +28,94 @@ pub enum Error {
     SourceFileNoExt(PathBuf),
 }
 
-enum SourceFile {
+enum SourceFileKind {
     Markdown,
     Rust,
 }
 
-impl SourceFile {
-    fn units(&self, repo: Option<Repo>, path: &Path) -> Result<HashSet<LogicalUnit>> {
-        match self {
-            SourceFile::Markdown => self::units_of_md(repo, path),
-            SourceFile::Rust => self::units_of_rs(repo, path),
+struct SourceFile<'a> {
+    kind: SourceFileKind,
+    path: &'a Path,
+    repo: Option<&'a Repo>,
+}
+
+impl<'a> SourceFile<'a> {
+    fn new(kind: SourceFileKind, path: &'a Path) -> Self {
+        Self {
+            kind,
+            path,
+            repo: None,
         }
+    }
+
+    fn set_repo(&mut self, repo: Option<&'a Repo>) {
+        self.repo = repo
+    }
+
+    fn units(&self) -> Result<HashSet<LogicalUnit>> {
+        match self.kind {
+            SourceFileKind::Markdown => self.units_of_md(),
+            SourceFileKind::Rust => self.units_of_rs(),
+        }
+    }
+
+    fn units_of_md(&self) -> Result<HashSet<LogicalUnit>> {
+        pandoc::definitions_from_file(self.path)
+            .map(|defs| {
+                logical_units_of_defs(self.repo.cloned(), Some(self.path), &defs)
+                    .iter()
+                    .cloned()
+                    .collect()
+            })
+            .with_context(|| {
+                format!(
+                    "while parsing artifact {}",
+                    self.path
+                        .as_os_str()
+                        .to_str()
+                        .unwrap_or("<cannot render path>")
+                )
+            })
+    }
+
+    fn units_of_rs(&self) -> Result<HashSet<LogicalUnit>> {
+        let file = File::open(self.path)?;
+        let units: HashSet<LogicalUnit> = io::BufReader::new(file)
+            .lines()
+            .map(|l| l.unwrap()) // FIXME remove unwrap
+            .enumerate()
+            .flat_map(|line| self.unit_of_rs_line(line))
+            .collect();
+        Ok(units)
+    }
+
+    fn unit_of_rs_line(&self, (_n, _line): (usize, String)) -> Option<LogicalUnit> {
+        panic!("TODO")
     }
 }
 
-fn units_of_md(repo: Option<Repo>, path: &Path) -> Result<HashSet<LogicalUnit>> {
-    pandoc::definitions_from_file(path)
-        .map(|defs| {
-            logical_units_of_defs(repo, Some(path), &defs)
-                .iter()
-                .cloned()
-                .collect()
-        })
-        .with_context(|| {
-            format!(
-                "while parsing artifact {}",
-                path.as_os_str().to_str().unwrap_or("<cannot render path>")
-            )
-        })
-}
-
-fn units_of_rs(_repo: Option<Repo>, _path: &Path) -> Result<HashSet<LogicalUnit>> {
-    panic!("TODO")
-}
-
-impl TryFrom<&Path> for SourceFile {
+impl TryFrom<&Path> for SourceFileKind {
     type Error = Error;
 
     fn try_from(p: &Path) -> std::result::Result<Self, Self::Error> {
         if let Some(ext) = p.extension().and_then(|e| e.to_str()) {
             match ext {
-                "md" => Ok(SourceFile::Markdown),
-                "rs" => Ok(SourceFile::Rust),
+                "md" => Ok(SourceFileKind::Markdown),
+                "rs" => Ok(SourceFileKind::Rust),
                 _ => Err(Error::SourceFileExt(ext.to_string())),
             }
         } else {
             Err(Error::SourceFileNoExt(p.to_path_buf()))
         }
+    }
+}
+
+impl<'a> TryFrom<&'a Path> for SourceFile<'a> {
+    type Error = Error;
+
+    fn try_from(p: &'a Path) -> std::result::Result<Self, Self::Error> {
+        let kind = SourceFileKind::try_from(p)?;
+        Ok(SourceFile::new(kind, p))
     }
 }
 
@@ -90,9 +134,10 @@ impl Artifact {
     }
 
     /// Parse the file `path` into an artifact
-    pub fn from_file(repo: Option<Repo>, path: &Path) -> Result<Artifact> {
-        let source_file = SourceFile::try_from(path)?;
-        let units = source_file.units(repo, &path)?;
+    pub fn from_file(repo: Option<&Repo>, path: &Path) -> Result<Artifact> {
+        let mut source_file = SourceFile::try_from(path)?;
+        source_file.set_repo(repo);
+        let units = source_file.units()?;
         Ok(Artifact::new(Some(path.to_owned()), units))
     }
 

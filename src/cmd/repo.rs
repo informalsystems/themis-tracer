@@ -31,7 +31,7 @@ fn list() -> Result<()> {
 }
 
 fn load_units_from_file(conn: &sql::Connection, repo: &Repo, path: &Path) -> Result<()> {
-    Artifact::from_file(Some(repo.clone()), path)?
+    Artifact::from_file(Some(repo), path)?
         .logical_units
         .iter()
         .try_for_each(|unit| db::unit::add(conn, repo, unit))
