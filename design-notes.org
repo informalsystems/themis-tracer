@@ -22,9 +22,9 @@ the correctness and continuity of communication, implementation, and operation.
   verification.
 
 * Sprint deliverables
-- [-] Parsing spec reference IDs
+- [X] Parsing spec reference IDs
   - [X] out of markdown
-  - [ ] out of source code
+  - [X] out of source code
 - [X] Creation of database of linked artifacts
 - [X] Linkification of spec reference IDs in the artifacts
 - [X] Generation of a static site to give an overview of connected artifacts

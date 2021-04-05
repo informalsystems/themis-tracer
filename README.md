@@ -60,7 +60,7 @@ Manage multiple parallel contexts, spread across any number of repositories.
 - [x] Enable switching between contexts.
 - [ ] Support nested contexts, providing different perspectives to empower
       different kinds of work on the same domain.
-- [ ] An integrated HUD to show key terminology, specifications, and diagrams,
+- [ ] An integrated HUD showing key terminology, specifications, and diagrams,
       to support focused work and effective communication without noisy
       backchannels.
 
@@ -71,7 +71,7 @@ Trace _logical units_ (chunks of functionality) through:
 - [x] Human-language specifications (written in a slightly extended flavor of
       Markdown)
 - [ ] Formal specifications (e.g. in TLA+)
-- [ ] Code (initially only in Rust)
+- [x] Code (initially only in Rust)
 
 ### **TODO** Tracking
 
