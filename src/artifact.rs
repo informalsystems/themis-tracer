@@ -2,13 +2,14 @@ use {
     crate::{
         logical_unit::{Kind, LogicalUnit},
         pandoc,
-        parser::parser,
+        parser::{parser, TAG_ID_RE},
         repo::Repo,
     },
     anyhow::{Context, Result},
+    log,
     std::{
         collections::HashSet,
-        convert::TryFrom,
+        convert::{TryFrom, TryInto},
         fmt,
         fs::File,
         io,
@@ -55,7 +56,7 @@ impl<'a> SourceFile<'a> {
     fn units(&self) -> Result<HashSet<LogicalUnit>> {
         match self.kind {
             SourceFileKind::Markdown => self.units_of_md(),
-            SourceFileKind::Rust => self.units_of_rs(),
+            SourceFileKind::Rust => self.units_of_src(),
         }
     }
 
@@ -78,19 +79,41 @@ impl<'a> SourceFile<'a> {
             })
     }
 
-    fn units_of_rs(&self) -> Result<HashSet<LogicalUnit>> {
-        let file = File::open(self.path)?;
-        let units: HashSet<LogicalUnit> = io::BufReader::new(file)
+    fn units_of_src(&self) -> Result<HashSet<LogicalUnit>> {
+        let mut file = File::open(self.path)?;
+        self.units_of_src_reader(&mut file)
+    }
+
+    fn units_of_src_reader(&self, reader: &mut impl io::Read) -> Result<HashSet<LogicalUnit>> {
+        let units: HashSet<LogicalUnit> = io::BufReader::new(reader)
             .lines()
-            .map(|l| l.unwrap()) // FIXME remove unwrap
-            .enumerate()
-            .flat_map(|line| self.unit_of_rs_line(line))
+            .collect::<io::Result<Vec<String>>>()? // Fail if we errored on any read
+            .iter() // TODO avoid an intermediate collection?
+            .enumerate() // Get the line numbers
+            .flat_map(|line| self.unit_of_src_line(line))
             .collect();
         Ok(units)
     }
 
-    fn unit_of_rs_line(&self, (_n, _line): (usize, String)) -> Option<LogicalUnit> {
-        panic!("TODO")
+    fn unit_of_src_line(&self, (n, line): (usize, &String)) -> Option<LogicalUnit> {
+        let id = TAG_ID_RE
+            .captures(line)
+            .and_then(|c| c.name("tag"))?
+            .as_str();
+        let content = "";
+        if let Ok(unit) = LogicalUnit::new(
+            self.repo.cloned(),
+            Some(self.path.clone()),
+            Some(n.try_into().unwrap()),
+            Kind::Implementation,
+            id,
+            content,
+        ) {
+            Some(unit)
+        } else {
+            log::error!("unable to parse unit ID {}", id);
+            None
+        }
     }
 }
 
@@ -107,6 +130,13 @@ impl TryFrom<&Path> for SourceFileKind {
         } else {
             Err(Error::SourceFileNoExt(p.to_path_buf()))
         }
+    }
+}
+
+// For testing purposes
+impl<'a> From<SourceFileKind> for SourceFile<'a> {
+    fn from(kind: SourceFileKind) -> SourceFile<'a> {
+        SourceFile::new(kind, Path::new("/"))
     }
 }
 
@@ -266,9 +296,12 @@ mod test {
         assert_eq!(actual.unwrap(), expected)
     }
 
+    // FIXME we can't currently parse out units followed by anchor
+    #[ignore]
+    #[test]
     fn can_parse_logical_unit_preceding_anchor() {
         let spec = r#"
-|TAG.1::IN-ANCHOR-TAG.1|<a id="TAG.1::IN-TARGET.1"></a>
+|TAG.1::IN-ANCHOR-TAG.1| <a id="TAG.1::IN-TARGET.1"></a>
 : We can parse tags in an anchor html element.
 "#;
         let logical_units: HashSet<LogicalUnit> = vec![LogicalUnit::new(
@@ -287,5 +320,50 @@ mod test {
         let expected = Artifact::new(None, logical_units);
         let actual = Artifact::from_string(&spec);
         assert_eq!(actual.unwrap(), expected)
+    }
+
+    #[test]
+    fn can_prase_logical_units_from_rs_file() {
+        let src = r#"
+// 1
+// 2
+// 3
+///4 |FOO.1::BAR.2::BAZ.1|
+fn some_fun() {}
+// 6
+
+///8 |FLO.1::BOA.2::BOZ.1|
+fn some_other_fun() {}
+"#;
+        let expected: HashSet<LogicalUnit> = vec![
+            LogicalUnit::new(
+                None,
+                Some(Path::new("/")),
+                Some(4),
+                Kind::Implementation,
+                "FOO.1::BAR.2::BAZ.1",
+                "",
+            )
+            .unwrap(),
+            LogicalUnit::new(
+                None,
+                Some(Path::new("/")),
+                Some(8),
+                Kind::Implementation,
+                "FLO.1::BOA.2::BOZ.1",
+                "",
+            )
+            .unwrap(),
+        ]
+        .iter()
+        .cloned()
+        .collect();
+
+        let mut reader = io::Cursor::new(src);
+        let actual = SourceFile::from(SourceFileKind::Rust)
+            .units_of_src_reader(&mut reader)
+            .unwrap();
+
+        assert_eq!(actual, expected);
     }
 }
