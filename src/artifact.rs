@@ -8,43 +8,92 @@ use {
     anyhow::{Context, Result},
     std::{
         collections::HashSet,
+        convert::TryFrom,
         fmt,
         path::{Path, PathBuf},
     },
     thiserror::Error,
 };
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct Artifact {
-    pub source: Option<PathBuf>,
-    pub logical_units: HashSet<LogicalUnit>,
-}
-
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("parsing artifact {0}: {1}")]
     ParsingArtifact(PathBuf, serde_json::Error),
+    #[error("no source file defined file for {0} files")]
+    SourceFileExt(String),
+    #[error("cannot determine source file for {0}, because it has no extension")]
+    SourceFileNoExt(PathBuf),
+}
+
+enum SourceFile {
+    Markdown,
+    Rust,
+}
+
+impl SourceFile {
+    fn units(&self, repo: Option<Repo>, path: &Path) -> Result<HashSet<LogicalUnit>> {
+        match self {
+            SourceFile::Markdown => self::units_of_md(repo, path),
+            SourceFile::Rust => self::units_of_rs(repo, path),
+        }
+    }
+}
+
+fn units_of_md(repo: Option<Repo>, path: &Path) -> Result<HashSet<LogicalUnit>> {
+    pandoc::definitions_from_file(path)
+        .map(|defs| {
+            logical_units_of_defs(repo, Some(path), &defs)
+                .iter()
+                .cloned()
+                .collect()
+        })
+        .with_context(|| {
+            format!(
+                "while parsing artifact {}",
+                path.as_os_str().to_str().unwrap_or("<cannot render path>")
+            )
+        })
+}
+
+fn units_of_rs(_repo: Option<Repo>, _path: &Path) -> Result<HashSet<LogicalUnit>> {
+    panic!("TODO")
+}
+
+impl TryFrom<&Path> for SourceFile {
+    type Error = Error;
+
+    fn try_from(p: &Path) -> std::result::Result<Self, Self::Error> {
+        if let Some(ext) = p.extension().and_then(|e| e.to_str()) {
+            match ext {
+                "md" => Ok(SourceFile::Markdown),
+                "rs" => Ok(SourceFile::Rust),
+                _ => Err(Error::SourceFileExt(ext.to_string())),
+            }
+        } else {
+            Err(Error::SourceFileNoExt(p.to_path_buf()))
+        }
+    }
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct Artifact {
+    pub path: Option<PathBuf>,
+    pub logical_units: HashSet<LogicalUnit>,
 }
 
 impl Artifact {
-    pub fn new(source: Option<PathBuf>, logical_units: HashSet<LogicalUnit>) -> Artifact {
+    pub fn new(path: Option<PathBuf>, logical_units: HashSet<LogicalUnit>) -> Artifact {
         Artifact {
-            source,
+            path,
             logical_units,
         }
     }
 
     /// Parse the file `path` into an artifact
     pub fn from_file(repo: Option<Repo>, path: &Path) -> Result<Artifact> {
-        pandoc::definitions_from_file(path)
-            .map(|defs| logical_units_of_defs(repo, Some(path), &defs))
-            .map(|lus| Artifact::new(Some(path.to_owned()), lus.iter().cloned().collect()))
-            .with_context(|| {
-                format!(
-                    "while parsing artifact {}",
-                    path.as_os_str().to_str().unwrap_or("<cannot render path>")
-                )
-            })
+        let source_file = SourceFile::try_from(path)?;
+        let units = source_file.units(repo, &path)?;
+        Ok(Artifact::new(Some(path.to_owned()), units))
     }
 
     /// Parse the string `s` into an artifact with no source
@@ -61,7 +110,7 @@ impl fmt::Display for Artifact {
         write!(
             f,
             "Artifact from source '{:?}' content: {:?}",
-            self.source, self.logical_units
+            self.path, self.logical_units
         )
     }
 }

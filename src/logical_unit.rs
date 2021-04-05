@@ -26,7 +26,9 @@ impl Id {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum Kind {
+    // TODO Replace with Written
     Requirement,
+    // TODO Replace with Executable
     Model,
     Implementation,
     Verification,
