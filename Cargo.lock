@@ -1362,6 +1362,7 @@ dependencies = [
  "html5ever",
  "itertools",
  "kuchiki",
+ "lazy_static",
  "log",
  "peg",
  "petgraph",
@@ -1375,6 +1376,7 @@ dependencies = [
  "tempfile",
  "textwrap 0.13.4",
  "thiserror",
+ "walkdir",
 ]
 
 [[package]]

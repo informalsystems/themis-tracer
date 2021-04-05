@@ -169,6 +169,15 @@ $ cat > repos/repo-a/dir/spec-2.md <<EOF \
 > : Second unit in the same directory. \
 >   This one has a newline.  And refers to [FLIM.1]\
 > EOF
+$ cat > repos/repo-a/dir/main.rs <<EOF \
+> //! An program implemnting FLIM \
+> \
+> /// |FLIM.1::IMPL.1| \
+> fn main() { \
+>   println!("implements FLIM.1") \
+> } \
+>  \
+> EOF
 ```
 
 **NOTE**: Here and following, we use the filter `| sed "s:$(pwd)/::"` to trim
@@ -224,6 +233,7 @@ $ $CMD context list
 $ $CMD unit list | sed "s:$(pwd)/::" # We trim the absolute path prefix, for testing purposes
 FLIM.1          repos/repo-a  A unit in a nested directory.
 FLIM.1::FLAM.1  repos/repo-a  Second unit in the same directory. This one has a newline. And refers to [FLIM.1]
+FLIM.1::IMPL.1  repos/repo-a
 FOO.1           repos/repo-a  First unit.
 FOO.1::BAR.1    repos/repo-a  A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”
 ```
@@ -237,6 +247,7 @@ units in the context, serialized into json:
 $ $CMD unit list --format json | sed "s:$(pwd)/::"
 {"id":"FLIM.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":"git@github.com:informalsystems/themis-tracer.git","branch":null}}}},"file":"dir/spec-2.md","line":null,"content":"A unit in a nested directory.","references":[]}
 {"id":"FLIM.1::FLAM.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":"git@github.com:informalsystems/themis-tracer.git","branch":null}}}},"file":"dir/spec-2.md","line":null,"content":"Second unit in the same directory. This one has a newline. And refers to [FLIM.1]","references":[]}
+{"id":"FLIM.1::IMPL.1","kind":"Implementation","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":"git@github.com:informalsystems/themis-tracer.git","branch":null}}}},"file":"dir/main.rs","line":2,"content":"","references":[]}
 {"id":"FOO.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":"git@github.com:informalsystems/themis-tracer.git","branch":null}}}},"file":"spec-1.md","line":null,"content":"First unit.","references":[]}
 {"id":"FOO.1::BAR.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":"git@github.com:informalsystems/themis-tracer.git","branch":null}}}},"file":"spec-1.md","line":null,"content":"A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”","references":[]}
 ```
@@ -250,6 +261,7 @@ units in the context, serialized into csv:
 $ $CMD unit list --format csv | sed "s:$(pwd)/::"
 FLIM.1,Requirement,repos/repo-a,git@github.com:informalsystems/themis-tracer.git,,dir/spec-2.md,,A unit in a nested directory.
 FLIM.1::FLAM.1,Requirement,repos/repo-a,git@github.com:informalsystems/themis-tracer.git,,dir/spec-2.md,,Second unit in the same directory. This one has a newline. And refers to [FLIM.1]
+FLIM.1::IMPL.1,Implementation,repos/repo-a,git@github.com:informalsystems/themis-tracer.git,,dir/main.rs,2,
 FOO.1,Requirement,repos/repo-a,git@github.com:informalsystems/themis-tracer.git,,spec-1.md,,First unit.
 FOO.1::BAR.1,Requirement,repos/repo-a,git@github.com:informalsystems/themis-tracer.git,,spec-1.md,,"A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”"
 ```
@@ -333,6 +345,7 @@ $ $CMD sync
 $ $CMD unit list | sed "s:$(pwd)/::"
 FLIM.1          repos/repo-a  A unit in a nested directory.
 FLIM.1::FLAM.1  repos/repo-a  Second unit in the same directory. This one has a newline. And refers to [FLIM.1]
+FLIM.1::IMPL.1  repos/repo-a
 FOO.2           repos/repo-a  We’ve updated the first unit.
 FOO.2::BAZ.1    repos/repo-a  And we replaced FOO.1::BAR.1 with this unit.
 ```
@@ -554,10 +567,12 @@ $ $CMD graph --format dot
 digraph {
     0 [ label="FLIM.1" tooltip="A unit in a nested directory." href="TODO#FLIM.1" ]
     1 [ label="FLIM.1::FLAM.1" tooltip="Second unit in the same directory. This one has a newline. And refers to [FLIM.1]" href="TODO#FLIM.1::FLAM.1" ]
-    2 [ label="FOO.2" tooltip="We’ve updated the first unit." href="TODO#FOO.2" ]
-    3 [ label="FOO.2::BAZ.1" tooltip="And we replaced FOO.1::BAR.1 with this unit." href="TODO#FOO.2::BAZ.1" ]
+    2 [ label="FLIM.1::IMPL.1" tooltip="" href="TODO#FLIM.1::IMPL.1" ]
+    3 [ label="FOO.2" tooltip="We’ve updated the first unit." href="TODO#FOO.2" ]
+    4 [ label="FOO.2::BAZ.1" tooltip="And we replaced FOO.1::BAR.1 with this unit." href="TODO#FOO.2::BAZ.1" ]
     0 -> 1 [ ]
-    2 -> 3 [ ]
+    0 -> 2 [ ]
+    3 -> 4 [ ]
 }
 
 ```
@@ -600,6 +615,16 @@ $ $CMD site
               Implemented by...
           </summary>
           <dl >
+            <dt id="FLIM.1::IMPL.1">
+              <strong >
+                  FLIM.1::IMPL.1
+              </strong>
+            </dt>
+            <dd >
+              <p class="content">
+
+              </p>
+            </dd>
             <dt id="FLIM.1::FLAM.1">
               <strong >
                   FLIM.1::FLAM.1

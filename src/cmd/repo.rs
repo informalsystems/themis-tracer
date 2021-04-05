@@ -1,7 +1,6 @@
 use {
-    crate::{artifact::Artifact, cmd::opt, db, repo::Repo},
+    crate::{artifact::Artifact, cmd::opt, db, locations, repo::Repo},
     anyhow::Result,
-    glob::glob,
     rusqlite as sql,
     std::{
         env, fs,
@@ -31,7 +30,7 @@ fn list() -> Result<()> {
 }
 
 fn load_units_from_file(conn: &sql::Connection, repo: &Repo, path: &Path) -> Result<()> {
-    Artifact::from_file(Some(repo.clone()), path)?
+    Artifact::from_file(Some(repo), path)?
         .logical_units
         .iter()
         .try_for_each(|unit| db::unit::add(conn, repo, unit))
@@ -39,10 +38,9 @@ fn load_units_from_file(conn: &sql::Connection, repo: &Repo, path: &Path) -> Res
 
 pub fn load_units_from_repo(conn: &sql::Connection, repo: &Repo) -> Result<()> {
     env::set_current_dir(repo.path())?;
-    // TODO Support more than just MD files
-    for path in glob("**/*.md")? {
-        let path = path?;
-        load_units_from_file(conn, repo, &(path))?
+    for path in locations::find_all_supported_source_files(&repo.path())? {
+        let path = path.strip_prefix(repo.path())?;
+        load_units_from_file(conn, repo, &path)?
     }
     Ok(())
 }

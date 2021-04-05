@@ -1,7 +1,30 @@
+use {lazy_static::lazy_static, regex::Regex};
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum UnitRefSearch {
     Text(String),
     Ref(String),
+}
+
+lazy_static! {
+    /// Matches patterns that include valid unit def tags with escaped pipes
+    /// like \|FOO.1::BAR.1::BAZ.1\|.
+    ///
+    /// However is more permissive, and will also match syntactically incorrect tags.
+    /// Final validation of tag syntax is left for the peg parser below.
+    ///
+    /// The content of the tag (between the pipes) is saved with the named
+    /// capture group `tag`.
+    pub static ref TAG_ID_ESCAPED_RE: Regex = Regex::new(r"(?m)\\\|(?P<tag>([-A-Z.:0-9])+)\\\|").unwrap();
+
+    /// Matches patterns that include valid unit def tags like |FOO.1::BAR.1::BAZ.1|.
+    ///
+    /// However is more permissive, and will also match syntactically incorrect tags.
+    /// Final validation of tag syntax is left for the peg parser below.
+    ///
+    /// The content of the tag (between the pipes) is saved with the named
+    /// capture group `tag`.
+    pub static ref TAG_ID_RE: Regex = Regex::new(r"(?m)\|(?P<tag>([-A-Z.:0-9])+)\|").unwrap();
 }
 
 // Since peg doesn't allow for composing rule sets, we put all the parsers in

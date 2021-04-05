@@ -1,16 +1,13 @@
 use {
     crate::{
         db, pandoc,
-        parser::{parser, UnitRefSearch},
+        parser::{parser, UnitRefSearch, TAG_ID_ESCAPED_RE},
     },
     anyhow::{Context as AnyhowContext, Result},
     html5ever::{local_name, namespace_url, ns, QualName},
-    // lol_html::{element, rewrite_str, RewriteStrSettings},
     kuchiki,
     kuchiki::{iter::NodeIterator, traits::TendrilSink, Attribute, ExpandedName, NodeRef},
-    log,
-    regex::Regex,
-    rusqlite as sql,
+    log, rusqlite as sql,
     std::{
         cell::RefCell,
         fs,
@@ -44,7 +41,7 @@ pub fn file_via_pandoc(conn: &sql::Connection, path: &path::Path, gfm: bool) -> 
     // Adjustments to the pandoc generated markdown
     let adjusted = {
         if gfm {
-            gfm_anchorify(&pandoc_md)?
+            gfm_anchorify(&pandoc_md)
         } else {
             pandoc_md.replace("[\\|", "[|").replace("\\|]", "|]")
         }
@@ -57,12 +54,10 @@ pub fn file_via_pandoc(conn: &sql::Connection, path: &path::Path, gfm: bool) -> 
     Ok(())
 }
 
-fn gfm_anchorify(md: &str) -> Result<String> {
-    // TODO Use lazy static for regex compilation
-    let re = Regex::new(r"(?m)^\\\|(?P<tag>([-A-Z.:0-9])+)\\\|")?;
-    Ok(re
+fn gfm_anchorify(md: &str) -> String {
+    TAG_ID_ESCAPED_RE
         .replace_all(&md, r#"<span id="$tag">|$tag|</span>"#)
-        .to_string())
+        .to_string()
 }
 
 /// As [linkify_spec_html], but with a `String` as input and output.
@@ -429,8 +424,7 @@ text and then another ref <a href="#FOO.1">FOO.1</a>.
 \|FOO.1::BAR.1\|
 : Some other stuff
 "#,
-        )
-        .unwrap();
+        );
 
         let expected = r#"
 <span id="FOO.1">|FOO.1|</span>

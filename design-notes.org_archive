@@ -193,3 +193,40 @@ https://docs.rs/git2/0.13.17/git2/struct.Remote.html#method.default_branch
 :ARCHIVE_TODO: DONE
 :END:
 - [X] Add logging to debug linkification
+
+* DONE Generate static site for context
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-04-04 Sun 20:06
+:ARCHIVE_FILE: ~/Sync/informal-systems/mvd/themis-tracer/design-notes.org
+:ARCHIVE_OLPATH: Tasks
+:ARCHIVE_CATEGORY: design-notes
+:ARCHIVE_TODO: DONE
+:END:
+- [X] Select HTML generation lib
+- [X] Build graph of units [TRC-GRAPH.1]
+  - [X] Use https://docs.rs/petgraph/0.5.1/petgraph/
+  - [X] get =db::unit::all_in_context=
+  - [X] implement =graph::units=
+    + [X] enter each into a =map: tag -> unit=
+    + [X] using a graph
+    + [X] for each unit
+      - [X] add it to the graph
+      - [X] add it's index to the map
+      - [X] If it has a parent
+        + [X] look up it's parent in the map.
+          - [X] ensure the parent is added
+          - [X] add an edge from parent to child
+- [X] Dot graph, with links to units (and description on hover?)
+  - Using https://docs.rs/petgraph/0.5.1/petgraph/dot/struct.Dot.html
+- [X] Generate nested deflist from graph of entries
+  + [X] Get external source nodes
+  + [X] For each urnode
+    - [X] Create <dt> with tag
+    - [X] Create <dd> with
+      - [X] content
+      - [X] get children,
+      - [X] create detail including recursive application of above
+- [X] Think about how to relate/display units from different artifacts and repos
+  + [X] tree that can be collapsed/unfolded?
+    - see https://jsfiddle.net/te366hu2/2/
+    - [X] give indication of when there are children
