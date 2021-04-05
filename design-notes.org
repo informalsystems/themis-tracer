@@ -32,17 +32,6 @@ the correctness and continuity of communication, implementation, and operation.
   - [X] Currently facilitated viz =fzf=
   - [ ] Native support
 * Tasks
-** TODO Extract units from source code
-- [X] Add =SourceFile= type
-  + [X] Implement Source for
-    - [X] Markdown
-    - [X] Rust
-- [X] Run =Artifact::from_file= through the =Source=
-- [X] Add unit tests for source extraction
-- [X] Tie source unit extraction into CLI (by searching for =.rs= files)
-  + [X] See if we can ignore hidden dirs
-- [X] Relativize unit paths to repo
-- [ ] Add integration tests
 ** TODO Change all functions that take String to take &str
 ** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17
 ** TODO Software development as a value flow

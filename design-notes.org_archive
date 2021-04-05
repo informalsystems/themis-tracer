@@ -230,3 +230,22 @@ https://docs.rs/git2/0.13.17/git2/struct.Remote.html#method.default_branch
   + [X] tree that can be collapsed/unfolded?
     - see https://jsfiddle.net/te366hu2/2/
     - [X] give indication of when there are children
+
+* DONE Extract units from source code
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-04-05 Mon 19:37
+:ARCHIVE_FILE: ~/Sync/informal-systems/mvd/themis-tracer/design-notes.org
+:ARCHIVE_OLPATH: Tasks
+:ARCHIVE_CATEGORY: design-notes
+:ARCHIVE_TODO: DONE
+:END:
+- [X] Add =SourceFile= type
+  + [X] Implement Source for
+    - [X] Markdown
+    - [X] Rust
+- [X] Run =Artifact::from_file= through the =Source=
+- [X] Add unit tests for source extraction
+- [X] Tie source unit extraction into CLI (by searching for =.rs= files)
+  + [X] See if we can ignore hidden dirs
+- [X] Relativize unit paths to repo
+- [X] Add integration tests
