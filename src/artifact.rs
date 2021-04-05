@@ -29,7 +29,7 @@ pub enum Error {
     SourceFileNoExt(PathBuf),
 }
 
-enum SourceFileKind {
+pub enum SourceFileKind {
     Markdown,
     Rust,
 }
@@ -103,7 +103,7 @@ impl<'a> SourceFile<'a> {
         let content = "";
         if let Ok(unit) = LogicalUnit::new(
             self.repo.cloned(),
-            Some(self.path.clone()),
+            Some(self.path),
             Some(n.try_into().unwrap()),
             Kind::Implementation,
             id,

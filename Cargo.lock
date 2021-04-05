@@ -1376,6 +1376,7 @@ dependencies = [
  "tempfile",
  "textwrap 0.13.4",
  "thiserror",
+ "walkdir",
 ]
 
 [[package]]

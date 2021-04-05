@@ -2,10 +2,14 @@
 //! Dirs, URLs, etc.
 
 use {
-    crate::envvar,
+    crate::{artifact, envvar},
     anyhow::{Context, Result},
-    std::path::PathBuf,
+    std::{
+        convert::TryFrom,
+        path::{Path, PathBuf},
+    },
     thiserror::Error,
+    walkdir,
 };
 
 #[derive(Error, Debug)]
@@ -44,4 +48,28 @@ pub fn contexts_dir() -> Result<PathBuf> {
     let mut path = tracer_dir()?;
     path.push(CONTEXTS_DIR_NAME);
     Ok(path)
+}
+
+fn is_hidden(entry: &walkdir::DirEntry) -> bool {
+    entry
+        .file_name()
+        .to_str()
+        .map(|s| s.starts_with("."))
+        .unwrap_or(false)
+}
+
+fn source_file_is_supported(entry: &walkdir::DirEntry) -> bool {
+    !is_hidden(entry) && artifact::SourceFileKind::try_from(entry.path()).is_ok()
+}
+
+pub fn find_all_supported_source_files(p: &Path) -> Result<Vec<PathBuf>> {
+    // FIXME Avoid the tripper into iter
+    Ok(walkdir::WalkDir::new(p)
+        .into_iter()
+        .collect::<walkdir::Result<Vec<walkdir::DirEntry>>>()? // Bail if we hit any errors
+        .into_iter()
+        .filter(source_file_is_supported)
+        .into_iter()
+        .map(|e| e.into_path())
+        .collect())
 }
