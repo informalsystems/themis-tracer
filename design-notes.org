@@ -33,6 +33,48 @@ the correctness and continuity of communication, implementation, and operation.
   - [ ] Native support
 * Tasks
 ** TODO Change all functions that take String to take &str
+** TODO Prep for demo
+*** TODO Report on duplicate logical units
+*** TODO Ensure any logical units have a parent
+*** TODO Implement helper bash functions
+- [ ] Put existing aliases in a sh file in the repo that we can source.
+- [ ] Make function for jumping to source file of unit
+  #+begin_src sh
+  edit $(themis-tracer unit list --format json | rg worksite | jq '.repo.location.inner.Local.path + .file')
+  #+end_src
+*** TODO Implement format on save
+*** TODO Write presentation plan
+**** Contekst (working title)
+***** Vision and roadmap
+- Aims
+- Research
+- Status
+***** Demo:
+- usage.md
+- contexts
+  + list
+  + create
+  + switch
+- repos
+  + list
+  + add
+- units
+  + list
+  + sync
+    - duplicate unit!
+    - fix it, and sync
+  + search
+  + jump
+- site
+  + linkification
+  + graphs
+  + site
+- how to compose commands
+  + 1 liner to cd to repo
+  + sh file
+- editor integration?
+***** What's next
+*** TODO Install rusty status line thing
 ** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17
 ** TODO Software development as a value flow
 
