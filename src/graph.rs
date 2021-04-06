@@ -3,15 +3,32 @@ use {
     log,
     petgraph::{
         dot::{Config, Dot},
-        stable_graph::StableGraph,
+        stable_graph::{NodeIndex, StableGraph},
         Directed,
     },
     std::collections::BTreeMap,
 };
 
 pub type UnitGraph<'a> = StableGraph<&'a LogicalUnit, (), Directed>;
+type UnitMap<'a> = BTreeMap<String, (&'a LogicalUnit, Option<NodeIndex<u32>>)>;
 
-// TODO Switch to using stable graph
+// (true, idx) if the node was inserted or (false, idx) if it was already present
+fn try_insert_node<'a>(
+    graph: &mut UnitGraph<'a>,
+    map: &mut UnitMap<'a>,
+    unit: &'a LogicalUnit,
+) -> (bool, NodeIndex) {
+    let tag = unit.id.to_string();
+    match map.get(&tag).unwrap() {
+        (_, Some(idx)) => (false, *idx),
+        (_, None) => {
+            let idx = graph.add_node(unit);
+            map.insert(tag, (unit, Some(idx)));
+            (true, idx)
+        }
+    }
+}
+
 pub fn of_units(units: &[LogicalUnit]) -> UnitGraph {
     log::debug!("generating graph of units");
     let mut graph: UnitGraph = StableGraph::new();
@@ -21,34 +38,59 @@ pub fn of_units(units: &[LogicalUnit]) -> UnitGraph {
         map.insert(u.id.to_string(), (u, None));
     }
     for u in units {
-        // We can unwrap here, because we know every unit is in the map
-        // If the unit is not yet in the graph...
-        if let (_, None) = map.get(&u.id.to_string()).unwrap() {
-            let idx = graph.add_node(u);
-            // Record that it's added in the graph
-            map.insert(u.id.to_string(), (&u, Some(idx)));
-            // If the unit has a parentk...
+        // If we're adding the unit fresh to the graph
+        if let (true, idx) = try_insert_node(&mut graph, &mut map, u) {
             if let Some(parent_id) = u.parent_id() {
-                // ... get the parent's index in the graph
-                let parent_idx = {
-                    let &(parent, idx_opt) =
-                    // an orphan unit entails an invalid database
-                    map.get(&parent_id.to_string()).unwrap_or_else(|| panic!("parent of unit {} must be in map", u));
-                    match idx_opt {
-                        // If the parent is already enterd, we retreive it's index in the graph
-                        Some(i) => i,
-                        // Otherwise, we enter it into the graph
-                        None => {
-                            let i = graph.add_node(parent);
-                            map.insert(parent.id.to_string(), (parent, Some(i)));
-                            i
-                        }
+                match map.get(&parent_id.to_string()) {
+                    None => {
+                        log::warn!(
+                            "orphan unit {orphan} is missing its parent {parent}",
+                            orphan = u.id,
+                            parent = parent_id
+                        );
+                    }
+                    Some(&(parent, _)) => {
+                        let (_, parent_idx) = try_insert_node(&mut graph, &mut map, parent);
+                        graph.add_edge(parent_idx, idx, ());
                     }
                 };
-                // Finally, add an edge from the parent to the child
-                graph.add_edge(parent_idx, idx, ());
             }
         }
+        // We can unwrap here, because we know every unit is in the map
+        // If the unit is not yet in the graph...
+        // if let (_, None) = map.get(&u.id.to_string()).unwrap() {
+        //     let idx = graph.add_node(u);
+        //     // Record that it's added in the graph
+        //     map.insert(u.id.to_string(), (&u, Some(idx)));
+        //     // If the unit has a parentk...
+        //     if let Some(parent_id) = u.parent_id() {
+        //         // ... get the parent's index in the graph
+        //         let parent_idx = {
+        //             match map.get(&parent_id.to_string()) {
+        //                 None => {
+        //                     log::warn!(
+        //                         "orphan unit: found {orphan} but it's parent {parent} is missing",
+        //                         orphan = u.id,
+        //                         parent = parent_id
+        //                     );
+        //                     None
+        //                 }
+        //                 Some(&(parent, idx_opt)) => match idx_opt {
+        //                     // If the parent is already enterd, we retreive it's index in the graph
+        //                     Some(i) => i,
+        //                     // Otherwise, we enter it into the graph
+        //                     None => {
+        //                         let i = graph.add_node(parent);
+        //                         map.insert(parent.id.to_string(), (parent, Some(i)));
+        //                         i
+        //                     }
+        //                 },
+        //             }
+        //         };
+        //         // Finally, add an edge from the parent to the child
+        //         graph.add_edge(parent_idx, idx, ());
+        //     }
+        // }
     }
     graph
 }

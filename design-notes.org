@@ -34,8 +34,8 @@ the correctness and continuity of communication, implementation, and operation.
 * Tasks
 ** TODO Change all functions that take String to take &str
 ** TODO Prep for demo
-*** TODO Report on duplicate logical units
-*** TODO Ensure any logical units have a parent
+*** DONE Report on duplicate logical units
+*** DONE Ensure any logical units have a parent
 *** TODO Implement helper bash functions
 - [ ] Put existing aliases in a sh file in the repo that we can source.
 - [ ] Make function for jumping to source file of unit

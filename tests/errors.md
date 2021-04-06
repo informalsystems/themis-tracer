@@ -219,6 +219,28 @@ $ cat repos/repo-a/spec-1.md
 $ diff repos/repo-a/spec-1.md repos/repo-a/spec-1.md.copy
 ```
 
+## `graph`
+
+An error is logged for any orphan units when graphing:
+
+```sh
+$ cat > repos/repo-a/spec-with-orphan-unit.md<<EOF \
+> |PARENT.1::ORPHAN.1| \
+> : This unit has no parent. \
+> EOF
+$ $CMD sync
+$ RUST_LOG=warn $CMD graph --format dot 2>&1 | sed 's/^\[[^ ]* /[/'
+[WARN  tracer::graph] orphan unit PARENT.1::ORPHAN.1 is missing its parent PARENT.1
+digraph {
+    0 [ label="BLOPS.1" tooltip="A Reference to an invalid logical unit: [NO-UNIT.1]" href="TODO#BLOPS.1" ]
+    1 [ label="FOO.1" tooltip="First unit." href="TODO#FOO.1" ]
+    2 [ label="FOO.1::BAR.1" tooltip="Second unit." href="TODO#FOO.1::BAR.1" ]
+    3 [ label="PARENT.1::ORPHAN.1" tooltip="This unit has no parent." href="TODO#PARENT.1::ORPHAN.1" ]
+    1 -> 2 [ ]
+}
+
+```
+
 <!-- FIXME: Remove need for this -->
 ## Cleanup
 
