@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
-#[structopt(name = "tracer")]
+#[structopt(name = "kontxt")]
 /// Weaving together the context for critical systems
 pub enum Cmd {
     /// Parse logical units out of a spec

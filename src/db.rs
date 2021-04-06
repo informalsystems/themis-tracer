@@ -1,5 +1,5 @@
 use {
-    crate::{context::Context, locations, logical_unit::LogicalUnit},
+    crate::{context::Context, locations},
     anyhow::{Context as AnyhowContext, Result},
     rusqlite as sql,
     std::path::Path,
@@ -28,7 +28,7 @@ pub enum Error {
     RelatedRepoNotFound(String),
 
     #[error("Duplicate logical units found {0} {1}")]
-    DuplicateUnits(LogicalUnit, LogicalUnit),
+    DuplicateUnits(String, String),
 }
 
 fn create(conn: &sql::Connection, name: &str, statement: &str) -> Result<()> {
@@ -434,7 +434,7 @@ pub mod unit {
     /// `Error::DuplicateUnits` is returned.
     pub fn add(conn: &sql::Connection, repo: &Repo, unit: &LogicalUnit) -> Result<()> {
         if let Some(other_unit) = get(&conn, &unit.id.to_string())? {
-            Err(Error::DuplicateUnits(unit.clone(), other_unit).into())
+            Err(Error::DuplicateUnits(unit.to_string(), other_unit.to_string()).into())
         } else {
             insert(conn, unit)?;
             relate_to_repo(conn, repo, unit)

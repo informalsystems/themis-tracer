@@ -37,6 +37,7 @@ the correctness and continuity of communication, implementation, and operation.
 *** DONE Report on duplicate logical units
 *** DONE Ensure any logical units have a parent
 *** TODO Implement helper bash functions
+- [ ] Rename to kontxt
 - [ ] Put existing aliases in a sh file in the repo that we can source.
 - [ ] Make function for jumping to source file of unit
   #+begin_src sh

@@ -1,5 +1,5 @@
 [package]
-name = "themis-tracer"
+name = "kontxt"
 # TODO Add version constraints before incrementing version
 version = "0.1.0"
 authors = [
@@ -19,7 +19,7 @@ name = "tracer"
 path = "src/lib.rs"
 
 [[bin]]
-name = "themis-tracer"
+name = "kontxt"
 doc = false
 
 # TODO Pin to versions
