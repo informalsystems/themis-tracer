@@ -40,30 +40,18 @@ reference-friendly, documentation of the tool's usage.
 These variables are used in the environment of the following tests. You can
 ignore these when consulting this document for usage.
 
-Where you see `$CMD` in the following you should just use the installed binary:
-`themis-tracer`.
-
 <!-- TODO replace by adding the executable to the path -->
-<!-- $MDX set-CMD=../target/debug/themis-tracer,set-TRACER_HOME=../target/test-sandbox,set-RUST_LOG=error -->
+<!-- $MDX set-TRACER_HOME=../target/test-sandbox,set-RUST_LOG=error -->
 ```sh
-$ echo CMD: $CMD
-CMD: ../target/debug/themis-tracer
 $ echo TRACER_HOME: $TRACER_HOME
 TRACER_HOME: ../target/test-sandbox
 ```
 
-## Show the current version
+## Initialize the tool and show the current version
 
 ```sh
-$ $CMD --version
-tracer 0.1.0
-```
-
-## `init`ialize the tool
-
-```sh
-$ $CMD init
-Initialized into ../target/test-sandbox/.tracer
+$ kontxt --version
+kontxt 0.1.0
 $ ls $TRACER_HOME/.tracer
 tracer.db
 ```
@@ -82,9 +70,9 @@ levels are
 E.g.,
 
 ```sh
-$ RUST_LOG=info $CMD --version 2>&1 | sed "s/^.*Z /[/"
-[INFO  themis_tracer] log level set to info
-tracer 0.1.0
+$ RUST_LOG=info kontxt --version 2>&1 | sed "s/^.*Z /[/"
+[INFO  kontxt] log level set to info
+kontxt 0.1.0
 ```
 
 ## Manage `context`s
@@ -92,8 +80,8 @@ tracer 0.1.0
 ### `context new`
 
 ```sh
-$ $CMD context new foo
-$ $CMD context new bar
+$ kontxt context new foo
+$ kontxt context new bar
 ```
 
 ### `context list`
@@ -101,7 +89,7 @@ $ $CMD context new bar
 List the existing contexts as follows:
 
 ```sh
-$ $CMD context list
+$ kontxt context list
 * bar
   foo
 ```
@@ -114,17 +102,17 @@ context, `bar` is now active.
 Switch contexts as follows:
 
 ```sh
-$ $CMD context switch bar
+$ kontxt context switch bar
 ```
 
 The current context is indicted by a `*` preceding its name in the context list:
 
 ```sh
-$ $CMD context list
+$ kontxt context list
 * bar
   foo
-$ $CMD context switch foo
-$ $CMD context list
+$ kontxt context switch foo
+$ kontxt context list
   bar
 * foo
 ```
@@ -191,8 +179,8 @@ repositories with their absolute path. This is the unique name of a repository
 Add a repo to your current working context as follows:
 
 ```sh
-$ $CMD repo add repos/repo-a
-$ $CMD repo add repos/repo-b
+$ kontxt repo add repos/repo-a
+$ kontxt repo add repos/repo-b
 ```
 
 When a repository is added to a context, all of the logical units that the tool
@@ -202,10 +190,10 @@ units](#viewing-logical-units).
 ### `list` the repos in the current context
 
 ```sh
-$ $CMD context list
+$ kontxt context list
   bar
 * foo
-$ $CMD repo list | sed "s:$(pwd)/::" # We trim the absolute path prefix, for testing purposes
+$ kontxt repo list | sed "s:$(pwd)/::" # We trim the absolute path prefix, for testing purposes
   repos/repo-a
   repos/repo-b
 ```
@@ -215,8 +203,8 @@ context `bar` yet, so if we switch contexts and list its repos, we'll see that
 reflected:
 
 ```sh
-$ $CMD context switch bar
-$ $CMD repo list
+$ kontxt context switch bar
+$ kontxt repo list
 ```
 
 ## Viewing logical `unit`s
@@ -226,11 +214,11 @@ $ $CMD repo list
 `unit list` outputs a human readable synopsis of all units in the current context:
 
 ```sh
-$ $CMD context switch foo
-$ $CMD context list
+$ kontxt context switch foo
+$ kontxt context list
   bar
 * foo
-$ $CMD unit list | sed "s:$(pwd)/::" # We trim the absolute path prefix, for testing purposes
+$ kontxt unit list | sed "s:$(pwd)/::" # We trim the absolute path prefix, for testing purposes
 FLIM.1          repos/repo-a  A unit in a nested directory.
 FLIM.1::FLAM.1  repos/repo-a  Second unit in the same directory. This one has a newline. And refers to [FLIM.1]
 FLIM.1::IMPL.1  repos/repo-a
@@ -244,7 +232,7 @@ Using the `--fmt json` option you can output the complete data of all logical
 units in the context, serialized into json:
 
 ```sh
-$ $CMD unit list --format json | sed "s:$(pwd)/::"
+$ kontxt unit list --format json | sed "s:$(pwd)/::"
 {"id":"FLIM.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":"git@github.com:informalsystems/themis-tracer.git","branch":null}}}},"file":"dir/spec-2.md","line":null,"content":"A unit in a nested directory.","references":[]}
 {"id":"FLIM.1::FLAM.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":"git@github.com:informalsystems/themis-tracer.git","branch":null}}}},"file":"dir/spec-2.md","line":null,"content":"Second unit in the same directory. This one has a newline. And refers to [FLIM.1]","references":[]}
 {"id":"FLIM.1::IMPL.1","kind":"Implementation","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":"git@github.com:informalsystems/themis-tracer.git","branch":null}}}},"file":"dir/main.rs","line":2,"content":"","references":[]}
@@ -258,7 +246,7 @@ Using the `--fmt csv` option you can output the complete data of all logical
 units in the context, serialized into csv:
 
 ```sh
-$ $CMD unit list --format csv | sed "s:$(pwd)/::"
+$ kontxt unit list --format csv | sed "s:$(pwd)/::"
 FLIM.1,Requirement,repos/repo-a,git@github.com:informalsystems/themis-tracer.git,,dir/spec-2.md,,A unit in a nested directory.
 FLIM.1::FLAM.1,Requirement,repos/repo-a,git@github.com:informalsystems/themis-tracer.git,,dir/spec-2.md,,Second unit in the same directory. This one has a newline. And refers to [FLIM.1]
 FLIM.1::IMPL.1,Implementation,repos/repo-a,git@github.com:informalsystems/themis-tracer.git,,dir/main.rs,2,
@@ -272,7 +260,7 @@ Show all recorded information associated with the particular unit identified by
 the given `TAG`:
 
 ```sh
-$ $CMD unit show FOO.1::BAR.1 | sed "s:$(pwd)/::"
+$ kontxt unit show FOO.1::BAR.1 | sed "s:$(pwd)/::"
 tag:   FOO.1::BAR.1
 kind:  Requirement
 repo:  repos/repo-a
@@ -289,7 +277,7 @@ Using the `--format json` option outputs the complete data of a logical unit
 serialized into JSON:
 
 ```sh
-$ $CMD unit show FOO.1::BAR.1 --format json | sed "s:$(pwd)/::" | jq
+$ kontxt unit show FOO.1::BAR.1 --format json | sed "s:$(pwd)/::" | jq
 {
   "id": "FOO.1::BAR.1",
   "kind": "Requirement",
@@ -317,7 +305,7 @@ Using the `--format csv` option outputs the complete data of a logical unit,
 serialized into CSV:
 
 ```sh
-$ $CMD unit show FOO.1::BAR.1 --format csv | sed "s:$(pwd)/::"
+$ kontxt unit show FOO.1::BAR.1 --format csv | sed "s:$(pwd)/::"
 FOO.1::BAR.1,Requirement,repos/repo-a,git@github.com:informalsystems/themis-tracer.git,,spec-1.md,,"A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”"
 ```
 
@@ -341,8 +329,8 @@ $ cat > repos/repo-a/spec-1.md<<EOF \
 After syncing, the units in the context will be updated accordingly:
 
 ```sh
-$ $CMD sync
-$ $CMD unit list | sed "s:$(pwd)/::"
+$ kontxt sync
+$ kontxt unit list | sed "s:$(pwd)/::"
 FLIM.1          repos/repo-a  A unit in a nested directory.
 FLIM.1::FLAM.1  repos/repo-a  Second unit in the same directory. This one has a newline. And refers to [FLIM.1]
 FLIM.1::IMPL.1  repos/repo-a
@@ -411,7 +399,7 @@ units.
 The default formatting for parsed files is a stream of JSON objects:
 
 ```sh
-$ $CMD parse parsing-spec.md | jq
+$ kontxt parse parsing-spec.md | jq
 {
   "id": "PARSE-SPECS.1",
   "kind": "Requirement",
@@ -480,7 +468,7 @@ $ $CMD parse parsing-spec.md | jq
 ### `parse --format csv`
 
 ```sh
-$ $CMD parse parsing-spec.md --format csv
+$ kontxt parse parsing-spec.md --format csv
 PARSE-SPECS.1,Requirement,,parsing-spec.md,,"We can parse a file of logical units into different formats, preserving all critical content of the logical unit content."
 PARSE-SPECS.1::CONTENT.1,Requirement,,parsing-spec.md,,Parsing must support all expected forms of content.
 PARSE-SPECS.1::CONTENT.1::INLINE.1,Requirement,,parsing-spec.md,,"The folowing inline styling must be preserved:
@@ -514,10 +502,10 @@ repositories](#managing-repositories), in `repo-a`, which is registered  in
 context `foo`:
 
 ```sh
-$ $CMD context list
+$ kontxt context list
   bar
 * foo
-$ $CMD repo list | sed "s:$(pwd)/::"
+$ kontxt repo list | sed "s:$(pwd)/::"
   repos/repo-a
   repos/repo-b
 $ ls repos/repo-a/*.md repos/repo-a/dir/*.md
@@ -528,7 +516,7 @@ repos/repo-a/spec-1.md
 We can linkify them with
 
 ```sh
-$ $CMD linkify repos/repo-a/*.md repos/repo-a/dir/*.md
+$ kontxt linkify repos/repo-a/*.md repos/repo-a/dir/*.md
 ```
 
 Which will change the files in place, yielding the following:
@@ -563,7 +551,7 @@ in repos/repo-a/dir/spec-2.md...
 We can generate a graphviz dot graph of the current context with
 
 ```sh
-$ $CMD graph --format dot
+$ kontxt graph --format dot
 digraph {
     0 [ label="FLIM.1" tooltip="A unit in a nested directory." href="TODO#FLIM.1" ]
     1 [ label="FLIM.1::FLAM.1" tooltip="Second unit in the same directory. This one has a newline. And refers to [FLIM.1]" href="TODO#FLIM.1::FLAM.1" ]
@@ -582,7 +570,7 @@ digraph {
 And we can generate an SVG of the context with
 
 ```sh
-$ $CMD graph --format svg > context.svg
+$ kontxt graph --format svg > context.svg
 ```
 
 ![Graph of the current context](./context.svg)
@@ -592,7 +580,7 @@ $ $CMD graph --format svg > context.svg
 We can generate HTML summarizing the current context with
 
 ```sh
-$ $CMD site
+$ kontxt site
 <html >
   <head >
     <title >
