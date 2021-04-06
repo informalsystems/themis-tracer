@@ -8,6 +8,9 @@ use structopt::StructOpt;
 #[structopt(name = "kontxt")]
 /// Weaving together the context for critical systems
 pub enum Cmd {
+    #[structopt(flatten)]
+    Context(Context),
+
     /// Parse logical units out of a spec
     Parse {
         /// The file or directory to parse
@@ -25,21 +28,6 @@ pub enum Cmd {
         /// Paths to the the files to linkify
         paths: Vec<PathBuf>,
     },
-
-    /// Update the curren context
-    ///
-    /// Update the logical units for the current context by rescanning all
-    /// assocaited repositories.
-    Sync {},
-
-    /// Initialize tracer
-    ///
-    /// Defaults to initializing in your home directory. Set `TRACER_HOME` to
-    /// override.
-    Init {},
-
-    /// Manage contexts
-    Context(Context),
 
     /// Manage repositories
     Repo(Repo),
@@ -59,18 +47,23 @@ pub enum Cmd {
 }
 
 #[derive(Debug, StructOpt)]
-pub struct Context {
-    #[structopt(subcommand)]
-    pub cmd: ContextCmd,
-}
+pub enum Context {
+    /// Initialize kontxt
+    ///
+    /// Defaults to initializing in your home directory. Set `TRACER_HOME` to
+    /// override.
+    Init {},
 
-#[derive(Debug, StructOpt)]
-pub enum ContextCmd {
     /// Createa a new context
     New {
         /// The name of the context
         name: String,
     },
+    /// Update the curren context
+    ///
+    /// Update the logical units for the current context by rescanning all
+    /// assocaited repositories.
+    Sync {},
 
     /// List all available contexts
     List {},
@@ -142,13 +135,14 @@ fn unimplemented() -> Result<()> {
 
 pub fn run() -> Result<()> {
     let opt = Cmd::from_args();
+
+    cmd::init::ensured()?;
+
     match opt {
-        Cmd::Context(opt) => cmd::context::run(opt),
-        Cmd::Init {} => cmd::init::run(),
+        Cmd::Context(ctxt) => cmd::context::run(ctxt),
         Cmd::Linkify { paths } => cmd::linkify::run(&paths),
         Cmd::Parse { path, format } => cmd::parse::run(&path, format),
         Cmd::Repo(opt) => cmd::repo::run(opt),
-        Cmd::Sync {} => cmd::sync::run(),
         Cmd::Unit(opt) => cmd::unit::run(opt),
         Cmd::Graph { format } => cmd::graph::run(format),
         Cmd::Site {} => cmd::site::run(),

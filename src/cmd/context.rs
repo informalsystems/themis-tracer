@@ -1,10 +1,6 @@
 use {
-    crate::{
-        cmd::{init, opt},
-        context::Context,
-        db,
-    },
-    anyhow::{Context as AnyhowContext, Result},
+    crate::{cmd, context::Context, db},
+    anyhow::Result,
     thiserror::Error,
 };
 // use crate::context::Context;
@@ -63,11 +59,12 @@ fn switch(name: String) -> Result<()> {
     db::context::set(&conn, name)
 }
 
-pub fn run(opt: opt::Context) -> Result<()> {
-    init::ensured().context("Running `context` subcommand")?;
-    match opt.cmd {
-        opt::ContextCmd::New { name } => new(name),
-        opt::ContextCmd::List {} => list(),
-        opt::ContextCmd::Switch { name } => switch(name),
+pub fn run(ctx: cmd::opt::Context) -> Result<()> {
+    match ctx {
+        cmd::opt::Context::Init {} => cmd::init::run(),
+        cmd::opt::Context::Sync {} => cmd::sync::run(),
+        cmd::opt::Context::New { name } => new(name),
+        cmd::opt::Context::List {} => list(),
+        cmd::opt::Context::Switch { name } => switch(name),
     }
 }
