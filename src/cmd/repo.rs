@@ -76,8 +76,8 @@ fn add(path: PathBuf) -> Result<()> {
 }
 
 pub fn run(opt: opt::Repo) -> Result<()> {
-    match opt.cmd {
-        opt::RepoCmd::List {} => list(),
-        opt::RepoCmd::Add { path } => add(path),
+    match opt {
+        opt::Repo::List {} => list(),
+        opt::Repo::Add { path } => add(path),
     }
 }

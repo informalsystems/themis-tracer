@@ -1,6 +1,6 @@
 //! CLI specification
 use crate::cmd;
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -8,9 +8,54 @@ use structopt::StructOpt;
 #[structopt(name = "kontxt")]
 /// Weaving together the context for critical systems
 pub enum Cmd {
+    /// Initialize kontxt
+    ///
+    /// Defaults to initializing in your home directory. Set `TRACER_HOME` to
+    /// override.
+    Init {},
+
+    /// Manage contexts
     #[structopt(flatten)]
     Context(Context),
 
+    /// File operations
+    File(File),
+
+    /// Repository management
+    Repo(Repo),
+
+    /// Logical unit management
+    Unit(Unit),
+
+    /// Context views and reports
+    Generate(Generate),
+}
+
+#[derive(Debug, StructOpt)]
+pub enum Context {
+    /// Context creation
+    New {
+        /// The name of the context
+        name: String,
+    },
+    /// Context synchronization
+    ///
+    /// Update the logical units for the current context by rescanning all
+    /// assocaited repositories.
+    Sync {},
+
+    /// Context listing
+    List {},
+
+    /// Context switching
+    Switch {
+        /// The name of the context to switch to
+        name: String,
+    },
+}
+
+#[derive(Debug, StructOpt)]
+pub enum File {
     /// Parse logical units out of a spec
     Parse {
         /// The file or directory to parse
@@ -28,61 +73,10 @@ pub enum Cmd {
         /// Paths to the the files to linkify
         paths: Vec<PathBuf>,
     },
-
-    /// Manage repositories
-    Repo(Repo),
-
-    /// Manage logical units
-    Unit(Unit),
-
-    /// Generate a dot graph of the current context
-    Graph {
-        /// Format can be dot or svg
-        #[structopt(short, long, default_value, parse(try_from_str))]
-        format: cmd::format::dot::Format,
-    },
-
-    /// Generate an HTML site summarizing the current context
-    Site {},
 }
 
 #[derive(Debug, StructOpt)]
-pub enum Context {
-    /// Initialize kontxt
-    ///
-    /// Defaults to initializing in your home directory. Set `TRACER_HOME` to
-    /// override.
-    Init {},
-
-    /// Createa a new context
-    New {
-        /// The name of the context
-        name: String,
-    },
-    /// Update the curren context
-    ///
-    /// Update the logical units for the current context by rescanning all
-    /// assocaited repositories.
-    Sync {},
-
-    /// List all available contexts
-    List {},
-
-    /// Switch to a different context
-    Switch {
-        /// The name of the context to switch to
-        name: String,
-    },
-}
-
-#[derive(Debug, StructOpt)]
-pub struct Repo {
-    #[structopt(subcommand)]
-    pub cmd: RepoCmd,
-}
-
-#[derive(Debug, StructOpt)]
-pub enum RepoCmd {
+pub enum Repo {
     /// List all the repos registered to the current context
     List {},
 
@@ -95,13 +89,7 @@ pub enum RepoCmd {
 }
 
 #[derive(Debug, StructOpt)]
-pub struct Unit {
-    #[structopt(subcommand)]
-    pub cmd: UnitCmd,
-}
-
-#[derive(Debug, StructOpt)]
-pub enum UnitCmd {
+pub enum Unit {
     /// List the specs registered to the current context
     List {
         // TODO
@@ -128,9 +116,17 @@ pub enum UnitCmd {
     },
 }
 
-// FIXME
-fn unimplemented() -> Result<()> {
-    Err(anyhow!("{}", "Not yet implemented!"))
+#[derive(Debug, StructOpt)]
+pub enum Generate {
+    /// Generate a dot graph of the current context
+    Graph {
+        /// Format can be dot or svg
+        #[structopt(short, long, default_value, parse(try_from_str))]
+        format: cmd::format::dot::Format,
+    },
+
+    /// Generate an HTML site summarizing the current context
+    Site {},
 }
 
 pub fn run() -> Result<()> {
@@ -139,12 +135,13 @@ pub fn run() -> Result<()> {
     cmd::init::ensured()?;
 
     match opt {
+        Cmd::Init {} => cmd::init::run(),
         Cmd::Context(ctxt) => cmd::context::run(ctxt),
-        Cmd::Linkify { paths } => cmd::linkify::run(&paths),
-        Cmd::Parse { path, format } => cmd::parse::run(&path, format),
         Cmd::Repo(opt) => cmd::repo::run(opt),
         Cmd::Unit(opt) => cmd::unit::run(opt),
-        Cmd::Graph { format } => cmd::graph::run(format),
-        Cmd::Site {} => cmd::site::run(),
+        Cmd::File(file) => cmd::file::run(file),
+        // TODO Clean up
+        Cmd::Generate(Generate::Graph { format }) => cmd::graph::run(format),
+        Cmd::Generate(Generate::Site {}) => cmd::site::run(),
     }
 }

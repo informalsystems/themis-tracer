@@ -61,7 +61,6 @@ fn switch(name: String) -> Result<()> {
 
 pub fn run(ctx: cmd::opt::Context) -> Result<()> {
     match ctx {
-        cmd::opt::Context::Init {} => cmd::init::run(),
         cmd::opt::Context::Sync {} => cmd::sync::run(),
         cmd::opt::Context::New { name } => new(name),
         cmd::opt::Context::List {} => list(),
