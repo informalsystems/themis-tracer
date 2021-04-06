@@ -1,5 +1,5 @@
 use {
-    crate::{context::Context, locations},
+    crate::{context::Context, locations, logical_unit::LogicalUnit},
     anyhow::{Context as AnyhowContext, Result},
     rusqlite as sql,
     std::path::Path,
@@ -26,6 +26,9 @@ pub enum Error {
 
     #[error("No repo found related to unit with tag {0}")]
     RelatedRepoNotFound(String),
+
+    #[error("Duplicate logical units found {0} {1}")]
+    DuplicateUnits(LogicalUnit, LogicalUnit),
 }
 
 fn create(conn: &sql::Connection, name: &str, statement: &str) -> Result<()> {
@@ -400,10 +403,10 @@ pub mod unit {
         Ok(url)
     }
 
+    // Insert a unit into the db. This should not be used outside of this module,
+    // since it does not enforce any of the expected invariants.
     fn insert(conn: &sql::Connection, unit: &LogicalUnit) -> Result<()> {
-        // let tag: String = unit.id.into();
         let encoded = serde_json::to_string(unit)?;
-
         let mut stmt = conn.prepare("INSERT INTO unit (tag, json) VALUES (:tag, :json)")?;
         stmt.execute_named(&[(":tag", &unit.id.to_string()), (":json", &encoded)])
             .map_err(|e| Error::Query(e).into())
@@ -425,12 +428,17 @@ pub mod unit {
         .map(|_| ())
     }
 
-    // TODO Handle case of trying to add duplicate units
-    //   - Update if from same repo?
-    //   - Fail with message if in different repo
+    /// Adds the `unit` to the current context, and associates it with `repo`.
+    ///
+    /// If a conflicting unit is already present in the context, a
+    /// `Error::DuplicateUnits` is returned.
     pub fn add(conn: &sql::Connection, repo: &Repo, unit: &LogicalUnit) -> Result<()> {
-        insert(conn, unit)?;
-        relate_to_repo(conn, repo, unit)
+        if let Some(other_unit) = get(&conn, &unit.id.to_string())? {
+            Err(Error::DuplicateUnits(unit.clone(), other_unit).into())
+        } else {
+            insert(conn, unit)?;
+            relate_to_repo(conn, repo, unit)
+        }
     }
 
     pub fn get_all_in_context(conn: &sql::Connection) -> Result<Vec<LogicalUnit>> {

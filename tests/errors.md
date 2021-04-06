@@ -173,6 +173,19 @@ FOO.1         repos/repo-a  First unit.
 FOO.1::BAR.1  repos/repo-a  Second unit.
 ```
 
+If we had a duplicate unit to a repo, the duplication is reported on `sync`:
+
+```sh
+$ cat > repos/repo-a/spec-dup.md<<EOF \
+> |FOO.1| \
+> : Duplicate unit. \
+> EOF
+$ $CMD sync
+Error: Duplicate logical units found LOGICAL-UNIT{repo: /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a, file: spec-1.md, id: FOO.1, kind: Requirement, content: "First unit."} LOGICAL-UNIT{repo: /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a, file: spec-dup.md, id: FOO.1, kind: Requirement, content: "Duplicate unit."}
+[1]
+$ rm repos/repo-a/spec-dup.md
+```
+
 ## `linkify`
 
 ### A warning is reported for invalid link references
