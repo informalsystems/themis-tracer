@@ -9,6 +9,9 @@ use std::{env, io::Write};
 fn mdx_tests() {
     env::set_current_dir(&Path::new("./tests")).unwrap();
 
+    let test_sandbox_dir = Path::new("../target/test-sandbox");
+    let test_repos_dir = Path::new("./repos");
+
     let test_artifacts_dir = Path::new("../target/test-artifacts");
     fs::create_dir_all(test_artifacts_dir).unwrap();
 
@@ -27,15 +30,19 @@ fn mdx_tests() {
         let corrected = test_artifacts_dir.join(expected.with_extension("md.corrected"));
 
         Command::new("opam")
-            // Put the build executable on the
+            // Update the PATH var
+            .env("PATH", &path)
+            .env("TRACER_HOME", "../target/test-sandbox")
+            .env("RUST_LOG", "error")
             .arg("exec")
             .arg("--")
             .arg("ocaml-mdx")
             .arg("test")
             .arg(expected.to_owned())
+            // .arg("-s")
+            // .arg("`add` repos to the current working context")
             .arg("--output")
             .arg(corrected.to_owned())
-            .env("PATH", &path)
             .assert()
             .success();
 
@@ -52,5 +59,9 @@ fn mdx_tests() {
             eprintln!("failure in {:?}", expected);
             assert!(false)
         }
+
+        // Clean up sandbox dirs
+        let _ = fs::remove_dir_all(test_repos_dir);
+        let _ = fs::remove_dir_all(test_sandbox_dir);
     }
 }

@@ -7,56 +7,71 @@ reference-friendly, documentation of the tool's usage.
 **Table of Contents**
 
 - [Usage](#usage)
-    - [Setting the environment](#setting-the-environment)
-    - [Show the current version](#show-the-current-version)
-    - [`init`ialize the tool](#initialize-the-tool)
-    - [Set the log level](#set-the-log-level)
-    - [Manage `context`s](#manage-contexts)
-        - [`context new`](#context-new)
-        - [`context list`](#context-list)
-        - [`context switch`](#context-switch)
-    - [managing `repo`sitories](#managing-repositories)
-        - [`add` repos to the current working context](#add-repos-to-the-current-working-context)
-        - [`list` the repos in the current context](#list-the-repos-in-the-current-context)
-    - [Viewing logical `unit`s](#viewing-logical-units)
-        - [`list` all the units in the current context](#list-all-the-units-in-the-current-context)
-            - [`unit list --fmt json`](#unit-list---fmt-json)
-            - [`unit list --fmt json`](#unit-list---fmt-json-1)
-        - [`show` all information about a particular unit](#show-all-information-about-a-particular-unit)
-            - [`unit show --format json`](#unit-show---format-json)
-            - [`unit show --format csv`](#unit-show---format-csv)
-    - [`sync`ing repos in the context](#syncing-repos-in-the-context)
-    - [`parse`ing specs](#parseing-specs)
-        - [`parse --format json` (the default, if no argument is given)](#parse---format-json-the-default-if-no-argument-is-given)
-        - [`parse --format csv`](#parse---format-csv)
-    - [`linkify`ing spec files](#linkifying-spec-files)
-    - [`graph`ing the context](#graphing-the-context)
-    - [Cleanup](#cleanup)
+    - [Environment](#environment)
+        - [`kontxt --version`](#kontxt---version)
+        - [`kontxt init`](#kontxt-init)
+        - [Logging](#logging)
+    - [Context management](#context-management)
+        - [`kontxt new NAME`: Create a new context](#kontxt-new-name-create-a-new-context)
+        - [`kontxt list`: List the available contexts](#kontxt-list-list-the-available-contexts)
+        - [`kontxt switch NAME`: Switch between contexts](#kontxt-switch-name-switch-between-contexts)
+    - [Repository management](#repository-management)
+        - [`kontxt repo add REPO`: Add repositories to the current context](#kontxt-repo-add-repo-add-repositories-to-the-current-context)
+        - [`kontxt repo list`: List the repositories in the current context](#kontxt-repo-list-list-the-repositories-in-the-current-context)
+    - [Viewing logical units](#viewing-logical-units)
+        - [`kontxt unit list`: A synoptic listing of the current context's units](#kontxt-unit-list-a-synoptic-listing-of-the-current-contexts-units)
+            - [`kontxt unit list --format json`: A complete report of units in the current context](#kontxt-unit-list---format-json-a-complete-report-of-units-in-the-current-context)
+            - [`kontxt unit list --format csv`: A complete report of units in the current context](#kontxt-unit-list---format-csv-a-complete-report-of-units-in-the-current-context)
+        - [`kontxt unit show TAG`: Present all information about the unit](#kontxt-unit-show-tag-present-all-information-about-the-unit)
+            - [`kontxt unit show TAG --format json`: The same in JSON](#kontxt-unit-show-tag---format-json-the-same-in-json)
+            - [`kontxt unit show TAG --format csv`: The same in CSV](#kontxt-unit-show-tag---format-csv-the-same-in-csv)
+    - [Synchronization](#synchronization)
+        - [`kontxt sync`: Update the information in the current context](#kontxt-sync-update-the-information-in-the-current-context)
+    - [Operating on files](#operating-on-files)
+        - [Parsing](#parsing)
+            - [`kontxt parse FILE --format json` (the default, if no argument is given)](#kontxt-parse-file---format-json-the-default-if-no-argument-is-given)
+                - [`kontxt file parse FILE --format csv`](#kontxt-file-parse-file---format-csv)
+    - [Processing](#processing)
+        - [`kontxt file linkify FILE`](#kontxt-file-linkify-file)
+    - [Generating views and reports](#generating-views-and-reports)
+        - [Graphs](#graphs)
+            - [`kontxt generate graph --format dot`](#kontxt-generate-graph---format-dot)
+            - [`kontxt generate graph --format svg` (default)](#kontxt-generate-graph---format-svg-default)
+        - [Static site](#static-site)
+            - [`kontxt generate site`: Generate a static site summarizing the context](#kontxt-generate-site-generate-a-static-site-summarizing-the-context)
 
 <!-- markdown-toc end -->
 
-## Setting the environment
+## Environment
 
 These variables are used in the environment of the following tests. You can
 ignore these when consulting this document for usage.
 
 <!-- TODO replace by adding the executable to the path -->
-<!-- $MDX set-TRACER_HOME=../target/test-sandbox,set-RUST_LOG=error -->
 ```sh
-$ echo TRACER_HOME: $TRACER_HOME
-TRACER_HOME: ../target/test-sandbox
+$ echo RUST_LOG=$RUST_LOG
+RUST_LOG=error
+$ echo TRACER_HOME=$TRACER_HOME
+TRACER_HOME=../target/test-sandbox
 ```
 
-## Initialize the tool and show the current version
+### `kontxt --version`
 
 ```sh
 $ kontxt --version
 kontxt 0.1.0
+```
+
+### `kontxt init`
+
+```sh
+$ kontxt init
+Initialized into ../target/test-sandbox/.tracer
 $ ls $TRACER_HOME/.tracer
 tracer.db
 ```
 
-## Set the log level
+### Logging
 
 Set the logging level by setting the environment variable `RUST_LOG`. Valid
 levels are
@@ -75,51 +90,47 @@ $ RUST_LOG=info kontxt --version 2>&1 | sed "s/^.*Z /[/"
 kontxt 0.1.0
 ```
 
-## Manage `context`s
+## Context management
 
-### `context new`
+### `kontxt new NAME`: Create a new context
 
 ```sh
-$ kontxt context new foo
-$ kontxt context new bar
+$ kontxt new foo
 ```
 
-### `context list`
+### `kontxt list`: List the available contexts
 
-List the existing contexts as follows:
+The current context is stared.
 
 ```sh
-$ kontxt context list
+$ kontxt list
+* foo
+```
+
+Creating a new context also activates it. 
+
+```sh
+$ kontxt new bar
+$ kontxt list
 * bar
   foo
 ```
 
-Note that creating a new context also activates it. Thus the last created
-context, `bar` is now active.
-
-### `context switch`
-
-Switch contexts as follows:
+### `kontxt switch NAME`: Switch between contexts
 
 ```sh
-$ kontxt context switch bar
-```
-
-The current context is indicted by a `*` preceding its name in the context list:
-
-```sh
-$ kontxt context list
-* bar
-  foo
-$ kontxt context switch foo
-$ kontxt context list
+$ kontxt switch foo; kontxt list
   bar
 * foo
 ```
 
-## managing `repo`sitories
+## Repository management
 
 Assume we want to work with the following repositories:
+
+**NOTE**: Here and in following sections, we use the filter `| sed "s:$(pwd)/::"` 
+to trim the absolute path prefix from output. But, the tool always associates
+repositories with  their absolute (local) path.
 
 ```sh
 $ mkdir repos
@@ -168,13 +179,7 @@ $ cat > repos/repo-a/dir/main.rs <<EOF \
 > EOF
 ```
 
-**NOTE**: Here and following, we use the filter `| sed "s:$(pwd)/::"` to trim
-the absolute path prefix from output, so that the accuracy of this documentation
-is ensured by integration tests. However, the tool always associates
-repositories with their absolute path. This is the unique name of a repository
-(in the user's local file system or on the world wide web).
-
-### `add` repos to the current working context
+### `kontxt repo add REPO`: Add repositories to the current context
 
 Add a repo to your current working context as follows:
 
@@ -187,35 +192,32 @@ When a repository is added to a context, all of the logical units that the tool
 can find in the repository are loaded into the database. See [Viewing logical
 units](#viewing-logical-units).
 
-### `list` the repos in the current context
+### `kontxt repo list`: List the repositories in the current context
 
 ```sh
-$ kontxt context list
-  bar
+$ kontxt list | grep "\*"
 * foo
-$ kontxt repo list | sed "s:$(pwd)/::" # We trim the absolute path prefix, for testing purposes
+$ kontxt repo list | sed "s:$(pwd)/::"
   repos/repo-a
   repos/repo-b
 ```
 
 Each context has it's own associated repos. We haven't added any repos to  the
-context `bar` yet, so if we switch contexts and list its repos, we'll see that
-reflected:
+context `bar` yet, so if we switch contexts and then list its repos, we'll see
+that reflected:
 
 ```sh
-$ kontxt context switch bar
+$ kontxt switch bar
 $ kontxt repo list
 ```
 
-## Viewing logical `unit`s
+## Viewing logical units
 
-### `list` all the units in the current context
-
-`unit list` outputs a human readable synopsis of all units in the current context:
+### `kontxt unit list`: A synoptic listing of the current context's units
 
 ```sh
-$ kontxt context switch foo
-$ kontxt context list
+$ kontxt switch foo
+$ kontxt list
   bar
 * foo
 $ kontxt unit list | sed "s:$(pwd)/::" # We trim the absolute path prefix, for testing purposes
@@ -226,10 +228,7 @@ FOO.1           repos/repo-a  First unit.
 FOO.1::BAR.1    repos/repo-a  A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”
 ```
 
-#### `unit list --fmt json`
-
-Using the `--fmt json` option you can output the complete data of all logical
-units in the context, serialized into json:
+#### `kontxt unit list --format json`: A complete report of units in the current context
 
 ```sh
 $ kontxt unit list --format json | sed "s:$(pwd)/::"
@@ -240,10 +239,7 @@ $ kontxt unit list --format json | sed "s:$(pwd)/::"
 {"id":"FOO.1::BAR.1","kind":"Requirement","repo":{"location":{"inner":{"Local":{"path":"repos/repo-a","upstream":"git@github.com:informalsystems/themis-tracer.git","branch":null}}}},"file":"spec-1.md","line":null,"content":"A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”","references":[]}
 ```
 
-#### `unit list --fmt json`
-
-Using the `--fmt csv` option you can output the complete data of all logical
-units in the context, serialized into csv:
+#### `kontxt unit list --format csv`: A complete report of units in the current context
 
 ```sh
 $ kontxt unit list --format csv | sed "s:$(pwd)/::"
@@ -254,7 +250,7 @@ FOO.1,Requirement,repos/repo-a,git@github.com:informalsystems/themis-tracer.git,
 FOO.1::BAR.1,Requirement,repos/repo-a,git@github.com:informalsystems/themis-tracer.git,,spec-1.md,,"A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”"
 ```
 
-### `show` all information about a particular unit
+### `kontxt unit show TAG`: Present all information about the unit
 
 Show all recorded information associated with the particular unit identified by
 the given `TAG`:
@@ -271,7 +267,7 @@ refs:
 A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”
 ```
 
-#### `unit show --format json`
+#### `kontxt unit show TAG --format json`: The same in JSON
 
 Using the `--format json` option outputs the complete data of a logical unit
 serialized into JSON:
@@ -299,7 +295,7 @@ $ kontxt unit show FOO.1::BAR.1 --format json | sed "s:$(pwd)/::" | jq
 }
 ```
 
-#### `unit show --format csv`
+#### `kontxt unit show TAG --format csv`: The same in CSV
 
 Using the `--format csv` option outputs the complete data of a logical unit,
 serialized into CSV:
@@ -309,7 +305,9 @@ $ kontxt unit show FOO.1::BAR.1 --format csv | sed "s:$(pwd)/::"
 FOO.1::BAR.1,Requirement,repos/repo-a,git@github.com:informalsystems/themis-tracer.git,,spec-1.md,,"A unit with a long description: “Proofs, from the formal standpoint, are likewise nothing but finite series of formulae (with certain specifiable characteristics).”"
 ```
 
-## `sync`ing repos in the context
+## Synchronization
+
+### `kontxt sync`: Update the information in the current context
 
 When the artifacts in a repository have been changed, the database of logical
 units is updated using the `sync` subcommand.
@@ -338,10 +336,12 @@ FOO.2           repos/repo-a  We’ve updated the first unit.
 FOO.2::BAZ.1    repos/repo-a  And we replaced FOO.1::BAR.1 with this unit.
 ```
 
-## `parse`ing specs
+## Operating on files
 
-You can use the tool to parse logical units out of individual files, so that you
-can do computations with the specs via your own scripts or programs.
+You can use the tool to parse and transform files containing logical units. 
+
+The former enables users to do computations with the specs via your own scripts
+or programs.
 
 The following spec describes our current support for parsing logical units:
 
@@ -389,17 +389,18 @@ Supported formats include:
  - [smallcaps]{.smallcaps}
 ```
 
-We'll use this spec as an example to illustrate the options for parsing logical
-units.
+We'll use this spec as an example to illustrate the supported operations on files.
+
+### Parsing
 
 <!-- TODO Annotate with verification tags, tying to the implementations -->
 
-### `parse --format json` (the default, if no argument is given)
+#### `kontxt parse FILE --format json` (the default, if no argument is given)
 
 The default formatting for parsed files is a stream of JSON objects:
 
 ```sh
-$ kontxt parse parsing-spec.md | jq
+$ kontxt file parse parsing-spec.md | jq
 {
   "id": "PARSE-SPECS.1",
   "kind": "Requirement",
@@ -465,10 +466,10 @@ $ kontxt parse parsing-spec.md | jq
 }
 ```
 
-### `parse --format csv`
+##### `kontxt file parse FILE --format csv`
 
 ```sh
-$ kontxt parse parsing-spec.md --format csv
+$ kontxt file parse parsing-spec.md --format csv
 PARSE-SPECS.1,Requirement,,parsing-spec.md,,"We can parse a file of logical units into different formats, preserving all critical content of the logical unit content."
 PARSE-SPECS.1::CONTENT.1,Requirement,,parsing-spec.md,,Parsing must support all expected forms of content.
 PARSE-SPECS.1::CONTENT.1::INLINE.1,Requirement,,parsing-spec.md,,"The folowing inline styling must be preserved:
@@ -492,7 +493,9 @@ PARSE-SPECS.1::FORMAT.1::CSV.1,Requirement,,parsing-spec.md,,Must support parse 
 PARSE-SPECS.1::FORMAT.1::JSON.1,Requirement,,parsing-spec.md,,Must support parsing a file of specs into JSON.
 ```
 
-## `linkify`ing spec files
+## Processing
+
+### `kontxt file linkify FILE`
 
 The tool can add unit reference links and unit definition anchors to
 specifications written in markdown.
@@ -502,7 +505,7 @@ repositories](#managing-repositories), in `repo-a`, which is registered  in
 context `foo`:
 
 ```sh
-$ kontxt context list
+$ kontxt list
   bar
 * foo
 $ kontxt repo list | sed "s:$(pwd)/::"
@@ -516,7 +519,7 @@ repos/repo-a/spec-1.md
 We can linkify them with
 
 ```sh
-$ kontxt linkify repos/repo-a/*.md repos/repo-a/dir/*.md
+$ kontxt file linkify repos/repo-a/*.md repos/repo-a/dir/*.md
 ```
 
 Which will change the files in place, yielding the following:
@@ -544,14 +547,18 @@ in repos/repo-a/dir/spec-2.md...
   [FLIM.1]: https://github.com/informalsystems/themis-tracer/blob/master/dir/spec-2.md#FLIM.1
 ```
 
-## `graph`ing the context
+## Generating views and reports
 
-### `graph --format dot`
+Generate views and reports to help understand and navigate contexts.
+
+### Graphs
+
+#### `kontxt generate graph --format dot`
 
 We can generate a graphviz dot graph of the current context with
 
 ```sh
-$ kontxt graph --format dot
+$ kontxt generate graph --format dot
 digraph {
     0 [ label="FLIM.1" tooltip="A unit in a nested directory." href="TODO#FLIM.1" ]
     1 [ label="FLIM.1::FLAM.1" tooltip="Second unit in the same directory. This one has a newline. And refers to [FLIM.1]" href="TODO#FLIM.1::FLAM.1" ]
@@ -565,22 +572,23 @@ digraph {
 
 ```
 
-### `graph --format svg`
+#### `kontxt generate graph --format svg` (default)
 
 And we can generate an SVG of the context with
 
 ```sh
-$ kontxt graph --format svg > context.svg
+$ kontxt generate graph --format svg > context.svg
 ```
 
 ![Graph of the current context](./context.svg)
 
-### `site`
+### Static site
 
-We can generate HTML summarizing the current context with
+
+#### `kontxt generate site`: Generate a static site summarizing the context
 
 ```sh
-$ kontxt site
+$ kontxt generate site
 <html >
   <head >
     <title >
@@ -656,12 +664,4 @@ $ kontxt site
     </dl>
   </body>
 </html>
-```
-
-<!-- FIXME: Remove need for this -->
-## Cleanup
-
-```sh
-$ rm -rf ../target/test-sandbox
-$ rm -rf ./repos
 ```

@@ -39,10 +39,6 @@ pub(super) fn ensured() -> Result<sql::Connection> {
 
 /// Run the tool initializion program
 pub fn run() -> Result<()> {
-    let dir = locations::tracer_dir()?;
-    if dir.exists() {
-        Err(InitError::Exists(dir).into())
-    } else {
-        ensured().map(|_| ())
-    }
+    let _ = ensured()?;
+    Ok(())
 }
