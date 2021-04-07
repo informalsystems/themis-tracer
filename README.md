@@ -125,7 +125,7 @@ installing from source, as documented in the next section.
 ```sh
 git clone git@github.com:informalsystems/themis-tracer.git
 cd themis-tracer
-cargo install
+cargo install --path .
 ```
 
 ## Documentation
