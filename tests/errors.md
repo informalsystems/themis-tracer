@@ -189,7 +189,8 @@ $ kontxt file linkify repos/repo-a/spec-with-invalid-reference.md
 Error: linkifying file repos/repo-a/spec-with-invalid-reference.md
 
 Caused by:
-    No unit found corresponding to tag NO-UNIT.1
+    0: linkifying string
+    1: No unit found corresponding to tag NO-UNIT.1
 [1]
 ```
 

@@ -49,10 +49,11 @@ fn html_from_md_bytes(b: &[u8]) -> Result<String> {
     }
 }
 
-/// Returns an [`Ok`] [`Pandoc`] value if the string can be parsed into the
-/// pandoc AST, otherwise returns an [`Err`] with a string explaining the
-/// failure.
-fn parse_string(s: &str) -> Result<scraper::Html> {
+fn parse_string_to_html(s: &str) -> Result<scraper::Html> {
+    html_from_md_bytes(&parse_string(&s)?).map(|s| scraper::Html::parse_fragment(&s))
+}
+
+pub fn parse_string(s: &str) -> Result<Vec<u8>> {
     let process = Command::new(PANDOC)
         .args(ARGS)
         .stdout(Stdio::piped())
@@ -72,8 +73,7 @@ fn parse_string(s: &str) -> Result<scraper::Html> {
         .stdout
         .ok_or_else(|| Error::PandocData("trying to read from stdout".into()))
         .and_then(|mut c| c.read_to_end(&mut bytes).map_err(Error::PandocInvocation))?;
-
-    html_from_md_bytes(&bytes).map(|s| scraper::Html::parse_fragment(&s))
+    Ok(bytes)
 }
 
 /// `parse_file(path)` parses the markdown file at `path` into an html string
@@ -231,7 +231,7 @@ pub fn definitions_from_file(path: &Path) -> Result<Vec<(String, String)>> {
 }
 
 pub fn definitions_from_string(s: &str) -> Result<Vec<(String, String)>> {
-    let html = parse_string(s)?;
+    let html = parse_string_to_html(s)?;
     definitions_from_html(html)
 }
 
