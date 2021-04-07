@@ -169,9 +169,8 @@ $ cat > repos/repo-a/spec-dup.md<<EOF \
 > |FOO.1| \
 > : Duplicate unit. \
 > EOF
-$ kontxt sync
-Error: Duplicate logical units found LOGICAL-UNIT{repo: /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a, file: spec-1.md, id: FOO.1, kind: Requirement, content: "First unit."} LOGICAL-UNIT{repo: /home/sf/Sync/informal-systems/mvd/themis-tracer/tests/repos/repo-a, file: spec-dup.md, id: FOO.1, kind: Requirement, content: "Duplicate unit."}
-[1]
+$ kontxt sync 2>&1 | sed "s:$(pwd)/::g"
+Error: Duplicate logical units found LOGICAL-UNIT{repo: repos/repo-a, file: spec-1.md, id: FOO.1, kind: Requirement, content: "First unit."} LOGICAL-UNIT{repo: repos/repo-a, file: spec-dup.md, id: FOO.1, kind: Requirement, content: "Duplicate unit."}
 $ rm repos/repo-a/spec-dup.md
 ```
 
