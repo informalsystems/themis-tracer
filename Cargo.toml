@@ -1,5 +1,5 @@
 [package]
-name = "themis-tracer"
+name = "kontxt"
 # TODO Add version constraints before incrementing version
 version = "0.1.0"
 authors = [
@@ -19,9 +19,10 @@ name = "tracer"
 path = "src/lib.rs"
 
 [[bin]]
-name = "themis-tracer"
+name = "kontxt"
 doc = false
 
+# TODO Pin to versions
 [dependencies]
 anyhow = "*"
 csv = "*"
@@ -38,8 +39,8 @@ log = "*"
 peg = "*"
 petgraph = "0.5.1"
 regex = "*"
-rusqlite = "*"
-scraper = "*" # TODO Replace with lol_html?
+rusqlite = "0.24.2" # TODO Update
+scraper = "*"
 serde = { version = "*", features = ["derive"] }
 serde_json = "*"
 structopt = "*"

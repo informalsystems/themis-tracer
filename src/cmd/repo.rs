@@ -1,5 +1,5 @@
 use {
-    crate::{artifact::Artifact, cmd::opt, db, locations, repo::Repo},
+    crate::{artifact::Artifact, cmd::opt, db, graph, locations, repo::Repo},
     anyhow::Result,
     rusqlite as sql,
     std::{
@@ -42,6 +42,9 @@ pub fn load_units_from_repo(conn: &sql::Connection, repo: &Repo) -> Result<()> {
         let path = path.strip_prefix(repo.path())?;
         load_units_from_file(conn, repo, &path)?
     }
+    // Build the graph to check for orphan units
+    let units = db::unit::get_all_in_context(&conn)?;
+    graph::of_units(&units);
     Ok(())
 }
 
@@ -73,8 +76,8 @@ fn add(path: PathBuf) -> Result<()> {
 }
 
 pub fn run(opt: opt::Repo) -> Result<()> {
-    match opt.cmd {
-        opt::RepoCmd::List {} => list(),
-        opt::RepoCmd::Add { path } => add(path),
+    match opt {
+        opt::Repo::List {} => list(),
+        opt::Repo::Add { path } => add(path),
     }
 }

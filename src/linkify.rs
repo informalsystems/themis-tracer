@@ -33,11 +33,26 @@ pub fn file_via_pandoc(conn: &sql::Connection, path: &path::Path, gfm: bool) -> 
     if gfm {
         log::debug!("adapting output for github flavored markdown");
     }
-    let html = pandoc::parse_file(path)?;
-    let new_html = linkify_spec_string(Some(conn), &html, gfm)
+    let mut md = String::new();
+    {
+        fs::File::open(path)?.read_to_string(&mut md)?;
+    }
+    let new_md = string_via_pandoc(&conn, &md, gfm)
         .with_context(|| format!("linkifying file {}", path.display()))?;
+    {
+        let mut f = fs::File::create(&path)?;
+        let _ = f.write_all(new_md.as_bytes())?;
+    }
+    Ok(())
+}
+
+pub fn string_via_pandoc(conn: &sql::Connection, s: &str, gfm: bool) -> Result<String> {
+    let bytes = &pandoc::parse_string(s)?;
+    let html = String::from_utf8_lossy(bytes);
+    let new_html = linkify_spec_string(Some(conn), &html, gfm).context("linkifying string")?;
     let pandoc_md = pandoc::html_to_markdown(&new_html)?;
 
+    // FIXME Horrible that we have to do this :(
     // Adjustments to the pandoc generated markdown
     let adjusted = {
         if gfm {
@@ -46,12 +61,7 @@ pub fn file_via_pandoc(conn: &sql::Connection, path: &path::Path, gfm: bool) -> 
             pandoc_md.replace("[\\|", "[|").replace("\\|]", "|]")
         }
     };
-
-    {
-        let mut f = fs::File::create(&path)?;
-        let _ = f.write_all(adjusted.as_bytes())?;
-    }
-    Ok(())
+    Ok(adjusted)
 }
 
 fn gfm_anchorify(md: &str) -> String {

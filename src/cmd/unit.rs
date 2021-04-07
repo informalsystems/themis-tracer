@@ -17,9 +17,9 @@ pub enum Error {
 }
 
 pub fn run(opt: opt::Unit) -> Result<()> {
-    match opt.cmd {
-        opt::UnitCmd::List { format } => list(format),
-        opt::UnitCmd::Show { tag, format } => show(tag, format),
+    match opt {
+        opt::Unit::List { format } => list(format),
+        opt::Unit::Show { tag, format } => show(tag, format),
     }
 }
 

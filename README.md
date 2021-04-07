@@ -125,7 +125,7 @@ installing from source, as documented in the next section.
 ```sh
 git clone git@github.com:informalsystems/themis-tracer.git
 cd themis-tracer
-cargo install
+cargo install --path .
 ```
 
 ## Documentation
@@ -160,16 +160,8 @@ the code need to change too.
 
 ### Aliases and scripts
 
-Demos of useful CLI patterns. We aim to support this natively shortly, but these
-are useful to drop in your rc file in the meantime.
-
-#### Lookup info on a unit via fuzzy matching
-
-Requires [fzf](https://github.com/junegunn/fzf).
-
-```sh
-alias themis-tracer-search='themis-tracer unit show $(themis-tracer unit list | fzf | awk '\''{print $1}'\'')'
-```
+Useful bash functions and alias are collected in [./utils.sh](./utils.sh). You
+might wish to source this from your rc file.
 
 ## License
 
