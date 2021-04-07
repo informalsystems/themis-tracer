@@ -43,8 +43,6 @@ the correctness and continuity of communication, implementation, and operation.
   #+begin_src sh
   edit $(themis-tracer unit list --format json | rg worksite | jq '.repo.location.inner.Local.path + .file')
   #+end_src
-*** KILL Implement format on save
-- Add --stdin arg to lnkify to take data from stdin and output to stdout
 *** TODO Write presentation plan
 **** Contekst (working title)
 ***** Vision and roadmap
@@ -77,6 +75,9 @@ the correctness and continuity of communication, implementation, and operation.
 - editor integration?
 ***** What's next
 *** DONE Install starship status line
+** TODO Implement format on save
+- Add --stdin arg to lnkify to take data from stdin and output to stdout
+  (set-formatter! 'erlfmt  "erlfmt -" :modes '(erlang-mode))
 ** TODO Use zerocopy for cheap serde https://github.com/spacejam/sled/blob/main/examples/structured.rs#L17
 ** TODO Software development as a value flow
 
