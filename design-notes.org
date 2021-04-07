@@ -36,10 +36,10 @@ the correctness and continuity of communication, implementation, and operation.
 ** TODO Prep for demo
 *** DONE Report on duplicate logical units
 *** DONE Ensure any logical units have a parent
-*** TODO Implement helper bash functions
-- [ ] Rename to kontxt
-- [ ] Put existing aliases in a sh file in the repo that we can source.
-- [ ] Make function for jumping to source file of unit
+*** DONE Implement helper bash functions
+- [X] Rename to kontxt
+- [X] Put existing aliases in a sh file in the repo that we can source.
+- [X] Make function for jumping to source file of unit
   #+begin_src sh
   edit $(themis-tracer unit list --format json | rg worksite | jq '.repo.location.inner.Local.path + .file')
   #+end_src
